@@ -13,7 +13,6 @@ import com.google.mediapipe.tasks.vision.core.RunningMode;
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetector;
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetectorResult;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 

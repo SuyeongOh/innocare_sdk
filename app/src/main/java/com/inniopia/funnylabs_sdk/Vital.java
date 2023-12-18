@@ -1,8 +1,6 @@
 package com.inniopia.funnylabs_sdk;
 
-import android.app.Application;
 import android.content.Context;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.util.Log;
 

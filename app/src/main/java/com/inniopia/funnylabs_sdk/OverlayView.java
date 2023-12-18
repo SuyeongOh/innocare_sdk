@@ -2,7 +2,6 @@ package com.inniopia.funnylabs_sdk;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -16,10 +15,6 @@ import com.google.mediapipe.tasks.vision.facedetector.FaceDetectorResult;
 import java.util.List;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatDelegate;
-import androidx.core.content.ContextCompat;
-
-import static java.lang.Double.min;
 
 public class OverlayView extends View {
     private FaceDetectorResult result;

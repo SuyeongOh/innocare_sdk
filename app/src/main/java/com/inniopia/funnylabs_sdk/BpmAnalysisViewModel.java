@@ -2,10 +2,6 @@ package com.inniopia.funnylabs_sdk;
 
 import android.app.Application;
 import android.content.Context;
-import android.util.Log;
-
-import org.pytorch.LiteModuleLoader;
-import org.pytorch.Module;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -14,12 +10,6 @@ public class BpmAnalysisViewModel extends AndroidViewModel {
     private Vital vital;
     public BpmAnalysisViewModel(@NonNull Application application, Context context) {
         super(application);
-//        try {
-//            mTorchModule = LiteModuleLoader.load(
-//                    FileUtils.assetFilePath(application, TORCH_MODULE_NAME));
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
         vital = new Vital(context);
     }
 
