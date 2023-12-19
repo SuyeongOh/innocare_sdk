@@ -24,11 +24,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mediapipe.framework.image.MPImage;
 import com.google.mediapipe.tasks.components.containers.NormalizedKeypoint;
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetectorResult;
+import com.inniopia.funnylabs_sdk.ui.CommonPopupView;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -42,6 +44,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private OverlayView mTrackingOverlayView;
     private ProgressBar mProgressBar;
     private BpmAnalysisViewModel mBpmAnalysisViewModel;
+    private CommonPopupView mGuidePopupView;
+    private TextView mGuidePopupText;
 
     //Camera Property variable
     private EnhanceFaceDetector faceDetector;
@@ -57,7 +61,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private int ROTATION = Surface.ROTATION_0;
 
     private int sNthFrame = 0;
-    private static int percent = 0;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -82,9 +85,16 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
         View view = inflater.inflate(R.layout.fragment_main, container, false);
 
+        //Face Detection
         mCameraView = view.findViewById(R.id.view_finder);
         mTrackingOverlayView = view.findViewById(R.id.tracking_overlay);
         mProgressBar = view.findViewById(R.id.progress);
+
+        //Face Guide Popup
+        View viewNoDetectionPopup = inflater.inflate(R.layout.layout_detection_popup, container, false);
+        mGuidePopupView = new CommonPopupView(requireContext(),viewNoDetectionPopup);
+        mGuidePopupText = viewNoDetectionPopup.findViewById(R.id.text_face_popup);
+        mGuidePopupText.setText(R.string.face_no_detection);
 
         return view;
     }
@@ -160,13 +170,17 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
         try {
             if (faceDetectorResults.get(0).detections().size() >= 1) {
+                RectF box = faceDetectorResults.get(0).detections().get(0).boundingBox();
+                if(mTrackingOverlayView.isOutOfSize(box)){
+                    stopPrediction();
+                    return;
+                }
+                mGuidePopupView.dismiss();
                 int width = image.getWidth();
                 int height = image.getHeight();
-                //[0] : 왼위, [1] : 왼오, [2] : 코
-                //[3] : 턱, [4] : 왼광대, [5] : 오광대
                 List<NormalizedKeypoint> keypointList = faceDetectorResults.get(0).detections().get(0).keypoints().get();
 
-                RectF box = faceDetectorResults.get(0).detections().get(0).boundingBox();
+
                 float x = box.right;
                 float start_x = box.left;
                 RectF rectF = new RectF(start_x, box.top, x, box.bottom);
@@ -186,8 +200,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 mTrackingOverlayView.invalidate();
             }
             if(mProgressBar.getProgress() != (sNthFrame/6)){
-                mProgressBar.setProgress(sNthFrame/6);
-                mProgressBar.invalidate();
+                updateProgressBar(sNthFrame/6);
             }
         } catch (Exception e){
             e.printStackTrace();
@@ -223,6 +236,15 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
             processImage(input, resultBundle);
         }
     }
+
+    private void stopPrediction(){
+        mTrackingOverlayView.clear();
+        sNthFrame = 0;
+        updateProgressBar(mProgressBar.getMin());
+        mGuidePopupView.show();
+        readyForNextImage();
+    }
+
     @Override
     public void onError(String error, int errorCode) {
 
@@ -230,5 +252,11 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
     public long getLastFrameUtcTimeMs(){
         return lastFrameUtcTimeMs;
+    }
+
+    private void updateProgressBar(int progress){
+        if(mProgressBar.getProgress() == mProgressBar.getMin()) return;
+        mProgressBar.setProgress(progress);
+        mProgressBar.invalidate();
     }
 }
