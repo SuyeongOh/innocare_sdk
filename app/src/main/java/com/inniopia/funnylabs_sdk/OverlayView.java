@@ -51,7 +51,7 @@ public class OverlayView extends View {
 
                 float realTop = boundingBox.top * scaleFactor;
                 float realBottom = boundingBox.bottom * scaleFactor;
-                @SuppressLint("DrawAllocation")
+                @SuppressLint("DrawAllocation") //warning 방지 없어도 무관함
                 RectF drawRect = new RectF(left, realTop, right, realBottom);
                 canvas.drawRect(drawRect, boxPaint);
                 if(isClear){
@@ -68,6 +68,7 @@ public class OverlayView extends View {
     }
 
     public void clear(){
+        //중복 방지 차원
         if(!isClear){
             isClear = true;
             result = null;
@@ -83,11 +84,12 @@ public class OverlayView extends View {
         boxPaint.setStyle(Paint.Style.STROKE);
     }
 
-    public boolean isOutOfSize(RectF bBox){
+    public boolean isBigSize(RectF bBox){
         //bBox는 현재 1280x720 기준으로 동작하기 때문에 해당 사이즈에 맞게 값을 설정해줘야함
-        return !(
-                (bBox.width() * bBox.height() < FULL_SIZE_OF_DETECTION * STANDARD_BIG_SIZE_OF_POPUP)
-                && (bBox.width() * bBox.height() > FULL_SIZE_OF_DETECTION * STANDARD_SMALL_SIZE_OF_POPUP)
-        );
+        return !(bBox.width() * bBox.height() < FULL_SIZE_OF_DETECTION * STANDARD_BIG_SIZE_OF_POPUP);
+    }
+
+    public boolean isSmallSize(RectF bBox){
+        return !(bBox.width() * bBox.height() > FULL_SIZE_OF_DETECTION * STANDARD_SMALL_SIZE_OF_POPUP);
     }
 }

@@ -62,6 +62,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
     private int sNthFrame = 0;
 
+    private boolean isStopPredict = false;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -171,15 +173,22 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         try {
             if (faceDetectorResults.get(0).detections().size() >= 1) {
                 RectF box = faceDetectorResults.get(0).detections().get(0).boundingBox();
-                if(mTrackingOverlayView.isOutOfSize(box)){
-                    stopPrediction();
+
+                if(mTrackingOverlayView.isBigSize(box)){
+                    if(!isStopPredict) {
+                        stopPrediction(Config.TYPE_OF_BIG);
+                    }
+                    readyForNextImage();
+                    return;
+                } else if (mTrackingOverlayView.isSmallSize(box)) {
+                    if(!isStopPredict) {
+                        stopPrediction(Config.TYPE_OF_SMALL);
+                    }
+                    readyForNextImage();
                     return;
                 }
+                isStopPredict = false;
                 mGuidePopupView.dismiss();
-                int width = image.getWidth();
-                int height = image.getHeight();
-                List<NormalizedKeypoint> keypointList = faceDetectorResults.get(0).detections().get(0).keypoints().get();
-
 
                 float x = box.right;
                 float start_x = box.left;
@@ -237,12 +246,17 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         }
     }
 
-    private void stopPrediction(){
+    private void stopPrediction(String type){
+        if(type.equals(Config.TYPE_OF_BIG)){
+            mGuidePopupText.setText(R.string.face_big_detection);
+        }else if(type.equals(Config.TYPE_OF_SMALL)){
+            mGuidePopupText.setText(R.string.face_no_detection);
+        }
         mTrackingOverlayView.clear();
         sNthFrame = 0;
         updateProgressBar(mProgressBar.getMin());
         mGuidePopupView.show();
-        readyForNextImage();
+        isStopPredict = true;
     }
 
     @Override
@@ -255,7 +269,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     }
 
     private void updateProgressBar(int progress){
-        if(mProgressBar.getProgress() == mProgressBar.getMin()) return;
+        if((progress == mProgressBar.getMin())
+                && (mProgressBar.getProgress() == mProgressBar.getMin())) return;
         mProgressBar.setProgress(progress);
         mProgressBar.invalidate();
     }
