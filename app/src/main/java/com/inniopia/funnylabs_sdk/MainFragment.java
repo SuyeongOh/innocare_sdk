@@ -209,7 +209,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 mTrackingOverlayView.invalidate();
             }
             if(mProgressBar.getProgress() != (sNthFrame/(Vital.BATCH_SIZE * Vital.FRAME_WINDOW_SIZE / 100))){
-                updateProgressBar(sNthFrame/6);
+                updateProgressBar(sNthFrame/(Vital.BATCH_SIZE * Vital.FRAME_WINDOW_SIZE / 100));
             }
         } catch (Exception e){
             e.printStackTrace();
