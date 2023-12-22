@@ -163,7 +163,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
     public void processImage(MPImage image, EnhanceFaceDetector.ResultBundle resultBundle){
         postInferenceCallback = image::close;
-        if(sNthFrame > 600){
+        if(sNthFrame > Vital.BATCH_SIZE * Vital.FRAME_WINDOW_SIZE){
             return;
         }
         List<FaceDetectorResult> faceDetectorResults = resultBundle.getResults();
@@ -208,7 +208,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                         resultBundle.inputImageHeight);
                 mTrackingOverlayView.invalidate();
             }
-            if(mProgressBar.getProgress() != (sNthFrame/6)){
+            if(mProgressBar.getProgress() != (sNthFrame/(Vital.BATCH_SIZE * Vital.FRAME_WINDOW_SIZE / 100))){
                 updateProgressBar(sNthFrame/6);
             }
         } catch (Exception e){

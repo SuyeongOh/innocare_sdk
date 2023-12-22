@@ -4,6 +4,7 @@ import android.Manifest;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 
 public class MainActivity extends FragmentActivity {
@@ -30,12 +31,7 @@ public class MainActivity extends FragmentActivity {
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.fragmentContainerView, fragment)
                 .commit();
-
-
     }
 
-    public static void onFinish(){
-
-    }
 
 }
