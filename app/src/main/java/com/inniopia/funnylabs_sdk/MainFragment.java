@@ -140,15 +140,14 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 .setTargetRotation(ROTATION)
                 .build();
 
-         mImageAnalysis = new ImageAnalysis.Builder().setTargetAspectRatio(CAMERA_RATIO)
+        mImageAnalysis = new ImageAnalysis.Builder().setTargetAspectRatio(CAMERA_RATIO)
                  .setTargetRotation(ROTATION)
                  .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                  .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
                  .build();
 
-         mImageAnalysis.setAnalyzer(
-                 mFrontCameraExecutor, faceDetector::detectLiveStreamFrame);
-
+        mImageAnalysis.setAnalyzer(
+                mFrontCameraExecutor, faceDetector::detectLiveStreamFrame);
         cameraProvider.unbindAll();
 
         try{
