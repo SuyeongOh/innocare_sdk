@@ -46,13 +46,13 @@ public class OverlayView extends View {
                 RectF boundingBox = person.boundingBox();
 
                 List<NormalizedKeypoint> keypointList = person.keypoints().get();
-                float left = getWidth() * (keypointList.get(0).x() + keypointList.get(4).x()) / 2;
-                float right = getWidth() * (keypointList.get(1).x() + keypointList.get(5).x()) / 2;
+//                float left = getWidth() * (keypointList.get(0).x() + keypointList.get(4).x()) / 2;
+//                float right = getWidth() * (keypointList.get(1).x() + keypointList.get(5).x()) / 2;
 
                 float realTop = boundingBox.top * scaleFactor;
                 float realBottom = boundingBox.bottom * scaleFactor;
                 @SuppressLint("DrawAllocation") //warning 방지 없어도 무관함
-                RectF drawRect = new RectF(left, realTop, right, realBottom);
+                RectF drawRect = new RectF(boundingBox.left, realTop, boundingBox.right, realBottom);
                 canvas.drawRect(drawRect, boxPaint);
                 if(isClear){
                     isClear = false;

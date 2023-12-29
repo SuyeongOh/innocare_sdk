@@ -32,9 +32,9 @@ import static java.lang.Math.abs;
 
 public class VitalLagacy {
     private static final int BUFFER_SIZE = 100;
-    private static final int BPM_BUFFER_SIZE = 50;
-    private static final int BPM_CALCULATION_FREQUENCY = 32;
-    private static final int BP_CALCULATION_FREQUENCY = 500;
+    private static final int BPM_BUFFER_SIZE = 32;
+    private static final int BPM_CALCULATION_FREQUENCY = 16;
+    private static final int BP_CALCULATION_FREQUENCY = 512;
     private static final int VIDEO_FRAME_RATE = 30;
 
     private static final int GAUSSIAN_W = 50;
@@ -62,6 +62,7 @@ public class VitalLagacy {
 
     private final double[][]f_pixel_buff = new double[3][BUFFER_SIZE];
     private int bufferIndex = 0;
+    private int pixelIndex = 0;
     private final float[] bpm_Buffer = new float[BPM_BUFFER_SIZE];
     private final float[] rr_Buffer = new float[BPM_BUFFER_SIZE];
     private int bpm_buffer_index = 0;
@@ -132,7 +133,7 @@ public class VitalLagacy {
 
 
         }
-        if ((bufferIndex % BP_CALCULATION_FREQUENCY) == (BP_CALCULATION_FREQUENCY - 1)) {
+        if ((pixelIndex % BP_CALCULATION_FREQUENCY) == (BP_CALCULATION_FREQUENCY - 1)) {
             double[] preprocessed_g = get_normG(f_pixel_buff[1]);
             double peak_avg = get_peak_avg(preprocessed_g,true);
             double valley_avg = get_peak_avg(preprocessed_g,false);
@@ -149,7 +150,7 @@ public class VitalLagacy {
             lastResult.RR_result = FloatUtils.mean(rr_Buffer);
         }
         bufferIndex = (bufferIndex + 1) % BUFFER_SIZE;
-
+        pixelIndex++;
         return lastResult;
     }
 
