@@ -51,8 +51,11 @@ public class OverlayView extends View {
 
                 float realTop = boundingBox.top * scaleFactor;
                 float realBottom = boundingBox.bottom * scaleFactor;
+                float realLeft = boundingBox.left * scaleFactor;
+                float realRight = boundingBox.right * scaleFactor;
+
                 @SuppressLint("DrawAllocation") //warning 방지 없어도 무관함
-                RectF drawRect = new RectF(boundingBox.left, realTop, boundingBox.right, realBottom);
+                RectF drawRect = new RectF(realLeft, realTop, realRight, realBottom);
                 canvas.drawRect(drawRect, boxPaint);
                 if(isClear){
                     isClear = false;
