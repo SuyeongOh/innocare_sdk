@@ -21,6 +21,16 @@
             android:autoSizeTextType="uniform"
             android:hint="Bmi를 입력하세요" />
 
+        <Switch
+            android:id="@+id/init_view_camera_switch"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:autoSizeTextType="uniform"
+            android:textColor="@color/black"
+            android:checked="false"
+            android:text="상대방을 찍으시겠습니까?" />
+
         <Button
             android:id="@+id/init_btn_submit"
             android:layout_width="match_parent"
@@ -28,6 +38,7 @@
             android:layout_weight="1"
             android:autoSizeTextType="uniform"
             android:text="입력 완료" />
+
 
     </LinearLayout>
 

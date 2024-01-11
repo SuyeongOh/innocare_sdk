@@ -134,7 +134,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private void bindCameraUseCases(Preview.SurfaceProvider surfaceProvider){
         ProcessCameraProvider cameraProvider = mCameraProvider;
         CameraSelector cameraSelector =
-                new CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_FRONT).build();
+                new CameraSelector.Builder().requireLensFacing(Config.USE_CAMERA_DIRECTION).build();
+
         mPreview = new Preview.Builder()
                 .setTargetAspectRatio(CAMERA_RATIO)
                 .setTargetRotation(ROTATION)

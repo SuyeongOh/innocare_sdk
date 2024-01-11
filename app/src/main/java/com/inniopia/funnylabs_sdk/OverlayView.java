@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.AttributeSet;
@@ -20,11 +21,13 @@ import androidx.annotation.Nullable;
 public class OverlayView extends View {
     private FaceDetectorResult result;
     private Paint boxPaint = new Paint();
-    private Float scaleFactor = 1f;
-
+    private Float scaleFactorWidth = 1f;
+    private Float scaleFactorHeight = 1f;
     private Rect bounds;
 
-    private static final int FULL_SIZE_OF_DETECTION = 1280 * 720;
+    private static final int FULL_SIZE_OF_WIDTH = 720;
+    private static final int FULL_SIZE_OF_HEIGHT = 1280;
+    private static final int FULL_SIZE_OF_DETECTION = FULL_SIZE_OF_WIDTH * FULL_SIZE_OF_HEIGHT;
     //popup의 민감도를 바꾸려면 이부분을 바꾸세요.
 
     private float STANDARD_BIG_SIZE_OF_POPUP = 1f/2f;
@@ -49,14 +52,26 @@ public class OverlayView extends View {
 //                float left = getWidth() * (keypointList.get(0).x() + keypointList.get(4).x()) / 2;
 //                float right = getWidth() * (keypointList.get(1).x() + keypointList.get(5).x()) / 2;
 
-                float realTop = boundingBox.top * scaleFactor;
-                float realBottom = boundingBox.bottom * scaleFactor;
-                float realLeft = boundingBox.left * scaleFactor;
-                float realRight = boundingBox.right * scaleFactor;
+                float realTop = boundingBox.top * scaleFactorHeight;
+                float realBottom = boundingBox.bottom * scaleFactorHeight;
+                float realLeft = boundingBox.left * scaleFactorWidth;
+                float realRight = boundingBox.right * scaleFactorWidth;
 
                 @SuppressLint("DrawAllocation") //warning 방지 없어도 무관함
                 RectF drawRect = new RectF(realLeft, realTop, realRight, realBottom);
                 canvas.drawRect(drawRect, boxPaint);
+
+                Path facePath = new Path();
+                int width = getWidth();
+                int height = getHeight();
+                facePath.lineTo(keypointList.get(5).x() * width, keypointList.get(5).y() * height);
+                facePath.lineTo(keypointList.get(3).x() * width, keypointList.get(3).y() * height);
+                facePath.lineTo(keypointList.get(4).x() * width, keypointList.get(4).y() * height);
+                facePath.lineTo(keypointList.get(5).x() * width, keypointList.get(5).y() * height);
+
+                canvas.clipPath(facePath);
+                canvas.drawPath(facePath, boxPaint);
+
                 if(isClear){
                     isClear = false;
                 }
@@ -66,7 +81,8 @@ public class OverlayView extends View {
 
     public void setResults(FaceDetectorResult detectResult, int imageWidth, int imageHeight) {
         result = detectResult;
-        scaleFactor = Math.min(getWidth() * 1f / imageWidth, getHeight()* 1f / imageHeight);
+        scaleFactorWidth = getWidth()/ (float)imageWidth;
+        scaleFactorHeight =  getHeight() / (float)imageHeight;
         invalidate();
     }
 
@@ -93,6 +109,11 @@ public class OverlayView extends View {
     }
 
     public boolean isSmallSize(RectF bBox){
-        return !(bBox.width() * bBox.height() > FULL_SIZE_OF_DETECTION * STANDARD_SMALL_SIZE_OF_POPUP);
+        return !((bBox.width() > 50) && (bBox.height() > 50));
+    }
+
+    public boolean isOutBoundary(RectF bBox){
+        return (bBox.left + bBox.width() > FULL_SIZE_OF_WIDTH)
+                || bBox.top + bBox.height() > FULL_SIZE_OF_HEIGHT;
     }
 }

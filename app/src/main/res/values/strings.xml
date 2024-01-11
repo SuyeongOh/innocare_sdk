@@ -34,5 +34,5 @@
     <string name="vital_stress_danger">위험</string>
     <string name="face_no_detection">\n얼굴이 인식되지 않습니다.\n가까이 와주세요.\n</string>
     <string name="face_big_detection">\n얼굴이 너무 가깝습니다.\n조금 떨어져 주세요.\n</string>
-
+    <string name="face_out_detection">\n얼굴이 범위를 벗어났습니다.\n화면 중앙을 향해주세요.\n</string>
 </resources>

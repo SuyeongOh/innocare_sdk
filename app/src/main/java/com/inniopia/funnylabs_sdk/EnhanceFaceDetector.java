@@ -131,7 +131,9 @@ public class EnhanceFaceDetector {
 
         Matrix matrix = new Matrix();
         matrix.postRotate(imageProxy.getImageInfo().getRotationDegrees());
-        matrix.postScale(-1f, 1f, imageProxy.getWidth(), imageProxy.getHeight());
+        if(Config.USE_CAMERA_DIRECTION == Config.CAMERA_DIRECTION_FRONT){
+            matrix.postScale(-1f, 1f, imageProxy.getWidth(), imageProxy.getHeight());
+        }
 
         Bitmap rotatedBitmap = Bitmap.createBitmap(buffer, 0, 0, buffer.getWidth(), buffer.getHeight(), matrix, true);
         MPImage mpImage = new BitmapImageBuilder(rotatedBitmap).build();

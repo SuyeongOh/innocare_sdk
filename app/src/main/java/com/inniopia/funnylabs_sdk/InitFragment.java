@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Switch;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,7 +16,7 @@ public class InitFragment extends Fragment {
 
     private EditText bmiInputView;
     private Button applyBtn;
-
+    private Switch cameraDirectionSwitch;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -23,6 +24,8 @@ public class InitFragment extends Fragment {
 
         bmiInputView = view.findViewById(R.id.init_view_bmi_input);
         applyBtn = view.findViewById(R.id.init_btn_submit);
+        cameraDirectionSwitch = view.findViewById(R.id.init_view_camera_switch);
+
         return view;
     }
 
@@ -34,6 +37,11 @@ public class InitFragment extends Fragment {
             public void onClick(View v) {
                 String bmi = bmiInputView.getText().toString();
                 Config.USER_BMI = Double.parseDouble(bmi);
+
+                if(cameraDirectionSwitch.isChecked()){
+                    Config.USE_CAMERA_DIRECTION = Config.CAMERA_DIRECTION_BACK;
+                }
+
                 bmiInputView.clearFocus();
                 MainActivity activity = (MainActivity) getActivity();
                 activity.replaceFragment(new MainFragment());
