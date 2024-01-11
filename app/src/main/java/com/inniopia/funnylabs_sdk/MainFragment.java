@@ -173,8 +173,15 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         try {
             if (faceDetectorResults.get(0).detections().size() >= 1) {
                 RectF box = faceDetectorResults.get(0).detections().get(0).boundingBox();
+                List<NormalizedKeypoint> facePoints = faceDetectorResults.get(0).detections().get(0).keypoints().get();
 
-                if(mTrackingOverlayView.isBigSize(box)){
+                if(mTrackingOverlayView.isOutBoundary(box)){
+                    if(!isStopPredict) {
+                        stopPrediction(Config.TYPE_OF_OUT);
+                    }
+                    readyForNextImage();
+                    return;
+                } else if(mTrackingOverlayView.isBigSize(box)){
                     if(!isStopPredict) {
                         stopPrediction(Config.TYPE_OF_BIG);
                     }
@@ -190,11 +197,18 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 isStopPredict = false;
                 mGuidePopupView.dismiss();
 
-                float x = box.right;
-                float start_x = box.left;
-                RectF rectF = new RectF(start_x, box.top, x, box.bottom);
+                int width = image.getWidth();
+                int height = image.getHeight();
+                float left = facePoints.get(4).x() * width;
+                float right = facePoints.get(5).x() * width;
+                float top = Math.max(facePoints.get(4).y(), facePoints.get(5).y()) * height;
+                float bottom = facePoints.get(3).y() * height;
+                RectF rectF = new RectF(left, top, right, bottom);
+
                 Rect rect = new Rect();
-                rectF.round(rect);
+                box.round(rect);
+
+                Log.d("jupiter", String.format("%d Frame Box : (%d, %d, %d, %d", sNthFrame, rect.left, rect.top, rect.right, rect.bottom));
                 Bitmap croppedFaceBitmap = Bitmap.createBitmap(mOriginalBitmap, rect.left, rect.top, rect.width(), rect.height());
                 faceImageModel = new FaceImageModel(croppedFaceBitmap, getLastFrameUtcTimeMs());
                 Log.d("Result", "Nth Frame : " + sNthFrame);
@@ -251,6 +265,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
             mGuidePopupText.setText(R.string.face_big_detection);
         }else if(type.equals(Config.TYPE_OF_SMALL)){
             mGuidePopupText.setText(R.string.face_no_detection);
+        }else if(type.equals(Config.TYPE_OF_OUT)){
+            mGuidePopupText.setText(R.string.face_out_detection);
         }
         mTrackingOverlayView.clear();
         sNthFrame = 0;

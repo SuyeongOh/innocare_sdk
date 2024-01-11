@@ -1,6 +1,7 @@
 package com.inniopia.funnylabs_sdk;
 
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.util.Log;
 
 import com.github.psambit9791.jdsp.signal.Detrend;
@@ -14,7 +15,9 @@ import com.inniopia.funnylabs_sdk.utils.FloatUtils;
 import com.paramsen.noise.Noise;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import jsat.SimpleDataSet;
 import jsat.classifiers.CategoricalData;
@@ -31,13 +34,14 @@ import uk.me.berndporr.iirj.Butterworth;
 import static java.lang.Math.abs;
 
 public class VitalLagacy {
-    private static final int BUFFER_SIZE = 100;
-    private static final int BPM_BUFFER_SIZE = 32;
-    private static final int BPM_CALCULATION_FREQUENCY = 16;
+    private static final int BUFFER_SIZE = 512;
+    private static final int BPM_BUFFER_SIZE = 8;
+    private static final int BPM_CALCULATION_FREQUENCY = 64;
     private static final int BP_CALCULATION_FREQUENCY = 512;
-    private static final int VIDEO_FRAME_RATE = 30;
+    public static int VIDEO_FRAME_RATE = 30;
 
     private static final int GAUSSIAN_W = 50;
+    private static final int DETREND_POWER = 6;
 
     public static class Result {
         public float LF_HF_ratio = 0;
@@ -55,6 +59,8 @@ public class VitalLagacy {
     float RR1 = 0;
     float RR2 = 0;
     double SDNN_result;
+    private long firstFrameTime = 0;
+    private long lastFrameTime = 0;
     ArrayList<Float> NN = new ArrayList<Float>();
     ArrayList<Float> result = new ArrayList<Float>();
     final float r_banddy = -2335.36371041202f;
@@ -70,10 +76,12 @@ public class VitalLagacy {
     final float[] bpm = {0.0f};
     final float[] rr = {0.0f};
 
-    public Result calculateVital(Bitmap bitmap) {
+    public Result calculateVital(FaceImageModel model) {
         //rescale: resizez + gaussian
+        if(pixelIndex == 0) firstFrameTime = model.frameUtcTimeMs;
+
+        Bitmap bitmap = model.bitmap;
         Bitmap test_cropped = Bitmap.createScaledBitmap(bitmap, GAUSSIAN_W, GAUSSIAN_W, false); //Gaussian pyramid 2단계 50x50 resize
-        Log.d("Jupiter", String.format("cropped image size ( %d, %d )", test_cropped.getWidth(), test_cropped.getHeight()));
 
         int totalR = 0, totalG = 0, totalB = 0;
         for(int i = 0; i < GAUSSIAN_W; i++){
@@ -98,6 +106,8 @@ public class VitalLagacy {
         f_pixel_buff[2][bufferIndex]= Float.parseFloat(String.valueOf(totalB));
 
         if (bufferIndex % BPM_CALCULATION_FREQUENCY == BPM_CALCULATION_FREQUENCY - 1) {
+            lastFrameTime = model.frameUtcTimeMs;
+            VIDEO_FRAME_RATE = 1000 / (int)((lastFrameTime - firstFrameTime) / pixelIndex);
             double[] pre_processed = preprocessing(f_pixel_buff,false);
             bpm_Buffer[bpm_buffer_index] = (get_HR(pre_processed,BUFFER_SIZE));
             rr_Buffer[bpm_buffer_index] = (get_RR(pre_processed,BUFFER_SIZE));
@@ -130,15 +140,14 @@ public class VitalLagacy {
                 lastResult.spo2_result = 0;
             }
             lastResult.spo2_result = Math.round(lastResult.spo2_result);
-
-
+            Log.d("jupiter", Arrays.toString(bpm_Buffer));
         }
         if ((pixelIndex % BP_CALCULATION_FREQUENCY) == (BP_CALCULATION_FREQUENCY - 1)) {
             double[] preprocessed_g = get_normG(f_pixel_buff[1]);
             double peak_avg = get_peak_avg(preprocessed_g,true);
             double valley_avg = get_peak_avg(preprocessed_g,false);
             Log.d("BP",""+peak_avg+":"+valley_avg);
-            double bmi = 20.7;
+            double bmi = Config.USER_BMI;
 
             //원래는 23.7889
             lastResult.SBP = 23.7889 + (95.4335 * peak_avg) + (4.5958 * bmi) - (5.109 * peak_avg * bmi);
@@ -157,17 +166,16 @@ public class VitalLagacy {
     public double[] preprocessing(double[][] pixel, boolean ica_flag){
 
         String mode = "rectangular";
-        int wsize = 5;
-
+        int wsize = 4;
 
         Smooth g = new Smooth(pixel[1], wsize, mode);
         double[] s_g = g.smoothSignal();
-        Detrend d2 = new Detrend(s_g,"constant");
+        Detrend d2 = new Detrend(s_g,DETREND_POWER);
         double[] d_g = d2.detrendSignal();
+
         Vec v_g = DenseVector.toDenseVec(d_g);
         v_g = v_g.subtract(v_g.mean());
         v_g = v_g.divide(v_g.standardDeviation());
-
 
         if(ica_flag) {
 
@@ -177,8 +185,8 @@ public class VitalLagacy {
             double[] s_r = r.smoothSignal();
             double[] s_b = b.smoothSignal();
 
-            Detrend d1 = new Detrend(s_r, "constant");
-            Detrend d3 = new Detrend(s_b, "constant");
+            Detrend d1 = new Detrend(s_r, DETREND_POWER);
+            Detrend d3 = new Detrend(s_b, DETREND_POWER);
             double[] d_r = d1.detrendSignal();
             double[] d_b = d3.detrendSignal();
 
@@ -216,8 +224,7 @@ public class VitalLagacy {
             X.applyTransform(ica);
             Vec col_2 = X.getNumericColumn(1);
 
-            double[] comp2 = new double[col_2.length()];
-            comp2 = col_2.arrayCopy();
+            double[] comp2 = col_2.arrayCopy();
 
             DiscreteFourier fft_r = new DiscreteFourier(comp2);
             fft_r.dft();
@@ -225,10 +232,7 @@ public class VitalLagacy {
             return fft_r.returnAbsolute(true);
         }
 
-        double[] comp2 = new double[v_g.length()];
-        comp2 = v_g.arrayCopy();
-
-        DiscreteFourier fft_r = new DiscreteFourier(comp2);
+        DiscreteFourier fft_r = new DiscreteFourier(v_g.arrayCopy());
         fft_r.dft();
 
         return fft_r.returnAbsolute(true);
@@ -239,7 +243,7 @@ public class VitalLagacy {
         int wsize = 5;
         Smooth g = new Smooth(g_pixel, wsize, mode);
         double[] s_g = g.smoothSignal();
-        Detrend d2 = new Detrend(s_g,"constant");
+        Detrend d2 = new Detrend(s_g,DETREND_POWER);
         double[] d_g = d2.detrendSignal();
         Vec v_g = DenseVector.toDenseVec(d_g);
         v_g = v_g.subtract(v_g.mean());
@@ -272,11 +276,11 @@ public class VitalLagacy {
     public float get_HR(double[] real_dft, int buff_size) {
         int max_index = 0;
         float max_val = 0;
-        float filter_interval = 30 / (float)buff_size;
+        float filter_interval = VIDEO_FRAME_RATE / (float)buff_size;
         for( int i =0 ; i < real_dft.length ; i++){
-            if( i * filter_interval < 0.7 )
+            if( i * filter_interval < 0.83 )
                 continue;
-            else if( i * filter_interval > 2.2){
+            else if( i * filter_interval > 2.5){
                 break;
             }
             else{
@@ -312,7 +316,7 @@ public class VitalLagacy {
 
         float LF = 0.0f;
         float HF = 0.0f;
-        float filter_interval = 30 / (float)buff_size;
+        float filter_interval = VIDEO_FRAME_RATE / (float)buff_size;
         for( int i =0 ; i < real_dft.length ; i++){
             if( 0.8<= i * filter_interval && i * filter_interval < 1.5)
                 LF += real_dft[i]; //1을 저장공간으로 사용
@@ -428,7 +432,7 @@ public class VitalLagacy {
 
         //--- DETREND ---//{ 확인 필요 }
         //--R
-        Detrend d_R = new Detrend(R_result, "constant");
+        Detrend d_R = new Detrend(R_result, DETREND_POWER);
         double[] out_R = d_R.detrendSignal();
 
         ArrayList<Double> r_list = new ArrayList<Double>();
@@ -437,7 +441,7 @@ public class VitalLagacy {
                 r_list.add(R_envelope_mean);
         }
         //--B
-        Detrend d_B = new Detrend(B_result, "constant");
+        Detrend d_B = new Detrend(B_result, DETREND_POWER);
         double[] out = d_B.detrendSignal();
 
         ArrayList<Double> b_list = new ArrayList<Double>();
@@ -615,5 +619,23 @@ public class VitalLagacy {
         convert.sdnn_result = result.sdnn_result;
         convert.spo2_result = result.spo2_result;
         return convert;
+    }
+
+    private int[] getAdjustPixel(Bitmap bitmap, int x, int y){
+        int[] adjustPixel = new int[9];
+        if(x >= 1){
+            if(y >= 1){
+                adjustPixel[0] = bitmap.getPixel(x - 1, y - 1);
+                adjustPixel[6] = bitmap.getPixel(x - 1, y + 1);
+                adjustPixel[3] = bitmap.getPixel(x - 1, y);
+                adjustPixel[1] = bitmap.getPixel(x, y - 1);
+                adjustPixel[4] = bitmap.getPixel(x, y);
+                adjustPixel[7] = bitmap.getPixel(x, y + 1);
+                adjustPixel[2] = bitmap.getPixel(x + 1, y - 1);
+                adjustPixel[5] = bitmap.getPixel(x + 1, y);
+                adjustPixel[8] = bitmap.getPixel(x + 1, y + 1);
+            }
+        }
+        return adjustPixel;
     }
 }
