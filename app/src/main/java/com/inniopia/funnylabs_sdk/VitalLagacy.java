@@ -36,7 +36,7 @@ import static java.lang.Math.abs;
 
 public class VitalLagacy {
     private static final int BUFFER_SIZE = 512;
-    private static final int BPM_BUFFER_SIZE = 8;
+    public static final int BPM_BUFFER_SIZE = 8;
     public static final int BPM_CALCULATION_FREQUENCY = 64;
     private static final int BP_CALCULATION_FREQUENCY = 512;
     public static int VIDEO_FRAME_RATE = 30;
@@ -657,6 +657,9 @@ public class VitalLagacy {
     }
     public float[] getBpmBuffer(){
         return bpm_Buffer;
+    }
+    public float[] getRRBuffer(){
+        return rr_Buffer;
     }
     public double[] getGreenSignal(){
         return f_pixel_buff[1];

@@ -224,8 +224,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         yAxis.setDrawAxisLine(false);
         yAxis.setAxisLineWidth(2);
         yAxis.setAxisMinimum(0f); // 최솟값
-        yAxis.setAxisMaximum((float) 255); // 최댓값
-        yAxis.setGranularity((float) 255);
+        yAxis.setAxisMaximum((float) 1); // 최댓값
+        yAxis.setGranularity((float) 0.1);
 
         mGreenChart.getDescription().setText("G signal");
         mGreenChart.getDescription().setEnabled(true);
@@ -360,8 +360,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
                 Rect rect = new Rect();
                 box.round(rect);
-
-                Log.d("jupiter", String.format("%d Frame Box : (%d, %d, %d, %d", sNthFrame, rect.left, rect.top, rect.right, rect.bottom));
                 Bitmap croppedFaceBitmap = Bitmap.createBitmap(mOriginalBitmap, rect.left, rect.top, rect.width(), rect.height());
                 faceImageModel = new FaceImageModel(croppedFaceBitmap, getLastFrameUtcTimeMs());
                 Log.d("Result", "Nth Frame : " + sNthFrame);

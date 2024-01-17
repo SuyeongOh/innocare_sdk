@@ -1,5 +1,7 @@
 package com.inniopia.funnylabs_sdk.data;
 
+import com.inniopia.funnylabs_sdk.VitalLagacy;
+
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,4 +18,6 @@ public class ResultVitalSign {
     @Getter @Setter public double BP = 0;
     @Getter @Setter public double SBP = 0;
     @Getter @Setter public double DBP = 0;
+    @Getter @Setter public float[] hr_array = new float[VitalLagacy.BPM_BUFFER_SIZE];
+    @Getter @Setter public float[] rr_array = new float[VitalLagacy.BPM_BUFFER_SIZE];
 }
