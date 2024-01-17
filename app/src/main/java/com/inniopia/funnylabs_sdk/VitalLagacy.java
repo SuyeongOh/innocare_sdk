@@ -29,6 +29,7 @@ import jsat.linear.DenseMatrix;
 import jsat.linear.DenseVector;
 import jsat.linear.Matrix;
 import jsat.linear.Vec;
+import lombok.Getter;
 import uk.me.berndporr.iirj.Butterworth;
 
 import static java.lang.Math.abs;
@@ -66,15 +67,16 @@ public class VitalLagacy {
     final float r_banddy = -2335.36371041202f;
     final float b_banddy = -2335.36371041202f;
 
-    private final double[][]f_pixel_buff = new double[3][BUFFER_SIZE];
+    private double[][]f_pixel_buff = new double[3][BUFFER_SIZE];
     private int bufferIndex = 0;
     private int pixelIndex = 0;
-    private final float[] bpm_Buffer = new float[BPM_BUFFER_SIZE];
-    private final float[] rr_Buffer = new float[BPM_BUFFER_SIZE];
+    private float[] bpm_Buffer = new float[BPM_BUFFER_SIZE];
+    private float[] rr_Buffer = new float[BPM_BUFFER_SIZE];
     private int bpm_buffer_index = 0;
+    private double[] lastBvpSignal = new double[254];
 
-    final float[] bpm = {0.0f};
-    final float[] rr = {0.0f};
+    float[] bpm = {0.0f};
+    float[] rr = {0.0f};
 
     public Result calculateVital(FaceImageModel model) {
         //rescale: resizez + gaussian
@@ -108,7 +110,8 @@ public class VitalLagacy {
         if (bufferIndex % BPM_CALCULATION_FREQUENCY == BPM_CALCULATION_FREQUENCY - 1) {
             lastFrameTime = model.frameUtcTimeMs;
             VIDEO_FRAME_RATE = 1000 / (int)((lastFrameTime - firstFrameTime) / pixelIndex);
-            double[] pre_processed = preprocessing(f_pixel_buff,false);
+            double[] pre_processed = preprocessing(f_pixel_buff,true);
+            lastBvpSignal = pre_processed;
             bpm_Buffer[bpm_buffer_index] = (get_HR(pre_processed,BUFFER_SIZE));
             rr_Buffer[bpm_buffer_index] = (get_RR(pre_processed,BUFFER_SIZE));
             bpm_buffer_index = (bpm_buffer_index + 1) % BPM_BUFFER_SIZE;
@@ -637,5 +640,28 @@ public class VitalLagacy {
             }
         }
         return adjustPixel;
+    }
+
+    public void clearAnalysis(){
+        firstFrameTime = 0;
+        lastFrameTime = 0;
+        f_pixel_buff = new double[3][BUFFER_SIZE];
+        bufferIndex = 0;
+        pixelIndex = 0;
+        bpm_Buffer = new float[BPM_BUFFER_SIZE];
+        rr_Buffer = new float[BPM_BUFFER_SIZE];
+        bpm_buffer_index = 0;
+
+        bpm = new float[]{0.0f};
+        rr = new float[]{0.0f};
+    }
+    public float[] getBpmBuffer(){
+        return bpm_Buffer;
+    }
+    public double[] getGreenSignal(){
+        return f_pixel_buff[1];
+    }
+    public double[] getBvpSignal(){
+        return lastBvpSignal;
     }
 }

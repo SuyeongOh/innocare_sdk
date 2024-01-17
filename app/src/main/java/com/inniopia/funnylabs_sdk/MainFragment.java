@@ -2,6 +2,7 @@ package com.inniopia.funnylabs_sdk;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.camera.core.AspectRatio;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
@@ -13,10 +14,16 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import android.app.Application;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Surface;
@@ -26,18 +33,32 @@ import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mediapipe.framework.image.MPImage;
 import com.google.mediapipe.tasks.components.containers.NormalizedKeypoint;
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetectorResult;
 import com.inniopia.funnylabs_sdk.ui.CommonPopupView;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class MainFragment extends Fragment implements EnhanceFaceDetector.DetectorListener {
+    private static final boolean FLAG_INNER_TEST = true;
 
     //View Variable
     private PreviewView mCameraView;
@@ -46,6 +67,12 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private BpmAnalysisViewModel mBpmAnalysisViewModel;
     private CommonPopupView mGuidePopupView;
     private TextView mGuidePopupText;
+    private BarChart mBvpChart;
+    private LineChart mGreenChart;
+    private View mVitalGroup;
+
+    private BarDataSet mBvpDataset;
+    private LineDataSet mGreenData;
 
     //Camera Property variable
     private EnhanceFaceDetector faceDetector;
@@ -77,8 +104,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                     faceDetector.setupFaceDetector();
                 }
         );
-
-
     }
 
     @Nullable
@@ -91,6 +116,15 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         mCameraView = view.findViewById(R.id.view_finder);
         mTrackingOverlayView = view.findViewById(R.id.tracking_overlay);
         mProgressBar = view.findViewById(R.id.progress);
+
+
+        if(FLAG_INNER_TEST){
+            mVitalGroup = view.findViewById(R.id.vital_info_group);
+            mVitalGroup.setVisibility(View.VISIBLE);
+            mBvpChart = view.findViewById(R.id.bvp_chart);
+            mGreenChart = view.findViewById(R.id.green_chart);
+            initChart();
+        }
 
         //Face Guide Popup
         View viewNoDetectionPopup = inflater.inflate(R.layout.layout_detection_popup, container, false);
@@ -112,6 +146,88 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 setUpCamera(mCameraView.getSurfaceProvider());
             }
         });
+    }
+
+    private void initChart(){
+        mBvpChart.getDescription().setText("BVP");
+        mBvpChart.getDescription().setEnabled(true);
+        Legend legend = mBvpChart.getLegend();
+        legend.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
+        legend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.LEFT);
+        legend.setForm(Legend.LegendForm.CIRCLE);
+        legend.setFormSize(10);
+        legend.setTextSize(13);
+        legend.setTextColor(Color.parseColor("#A3A3A3"));
+        legend.setOrientation(Legend.LegendOrientation.VERTICAL);
+        legend.setDrawInside(true);
+        legend.setYEntrySpace(5);
+
+        // XAxis (아래쪽) - 선 유무, 사이즈, 색상, 축 위치 설정
+        XAxis xAxis = mBvpChart.getXAxis();
+        xAxis.setDrawAxisLine(false);
+        xAxis.setDrawGridLines(false);
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM); // x축 데이터 표시 위치
+        xAxis.setGranularity(1f);
+        xAxis.setTextSize(14f);
+        xAxis.setTextColor(Color.BLACK);
+        xAxis.setSpaceMin(0.1f); // Chart 맨 왼쪽 간격 띄우기
+        xAxis.setSpaceMax(0.1f); // Chart 맨 오른쪽 간격 띄우기
+
+        // YAxis(Right) (왼쪽) - 선 유무, 데이터 최솟값/최댓값, 색상
+        YAxis yAxisLeft = mBvpChart.getAxisLeft();
+        yAxisLeft.setDrawAxisLine(false);
+        yAxisLeft.setTextColor(Color.BLACK);
+        yAxisLeft.setDrawAxisLine(false);
+        yAxisLeft.setAxisLineWidth(2);
+        yAxisLeft.setAxisMinimum(0f); // 최솟값
+
+        // YAxis(Left) (오른쪽) - 선 유무, 데이터 최솟값/최댓값, 색상
+        YAxis yAxis = mBvpChart.getAxisRight();
+        yAxis.setDrawLabels(false); // label 삭제
+        yAxis.setTextColor(Color.BLACK);
+        yAxis.setDrawAxisLine(false);
+        yAxis.setAxisLineWidth(2);
+        yAxis.setAxisMinimum(0f); // 최솟값
+        yAxis.setAxisMaximum((float) 255); // 최댓값
+        yAxis.setGranularity((float) 255);
+
+        mGreenChart.getDescription().setText("G signal");
+        mGreenChart.getDescription().setEnabled(true);
+        Legend legend_g = mGreenChart.getLegend();
+        legend_g.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
+        legend_g.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
+        legend_g.setForm(Legend.LegendForm.CIRCLE);
+        legend_g.setFormSize(10);
+        legend_g.setTextSize(13);
+        legend_g.setTextColor(Color.parseColor("#A3A3A3"));
+        legend_g.setOrientation(Legend.LegendOrientation.VERTICAL);
+        legend_g.setDrawInside(false);
+        legend_g.setYEntrySpace(5);
+
+        // XAxis (아래쪽) - 선 유무, 사이즈, 색상, 축 위치 설정
+        XAxis xAxis_g = mGreenChart.getXAxis();
+        xAxis_g.setDrawAxisLine(false);
+        xAxis_g.setDrawGridLines(false);
+        xAxis_g.setPosition(XAxis.XAxisPosition.BOTTOM); // x축 데이터 표시 위치
+        xAxis_g.setGranularity(1f);
+        xAxis_g.setTextSize(14f);
+        xAxis_g.setTextColor(Color.BLACK);
+        xAxis_g.setSpaceMin(0.1f); // Chart 맨 왼쪽 간격 띄우기
+        xAxis_g.setSpaceMax(0.1f); // Chart 맨 오른쪽 간격 띄우기
+
+        // YAxis(Right) (왼쪽) - 선 유무, 데이터 최솟값/최댓값, 색상
+        YAxis yAxisLeft_g = mGreenChart.getAxisLeft();
+        yAxisLeft_g.setDrawAxisLine(false);
+
+        // YAxis(Left) (오른쪽) - 선 유무, 데이터 최솟값/최댓값, 색상
+        YAxis yAxis_g = mGreenChart.getAxisRight();
+        yAxis_g.setDrawLabels(false); // label 삭제
+        yAxis_g.setTextColor(Color.BLACK);
+        yAxis_g.setDrawAxisLine(false);
+        yAxis_g.setAxisLineWidth(2);
+        yAxis_g.setAxisMinimum(0f); // 최솟값
+        yAxis_g.setAxisMaximum((float) 512); // 최댓값
+        yAxis_g.setGranularity((float) 512);
     }
 
     private void setUpCamera(Preview.SurfaceProvider surfaceProvider){
@@ -166,6 +282,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         if(sNthFrame > Vital.BATCH_SIZE * Vital.FRAME_WINDOW_SIZE){
             return;
         }
+        boolean isFinishAnalysis = false;
         List<FaceDetectorResult> faceDetectorResults = resultBundle.getResults();
 
         FaceImageModel faceImageModel = null;
@@ -213,7 +330,53 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 faceImageModel = new FaceImageModel(croppedFaceBitmap, getLastFrameUtcTimeMs());
                 Log.d("Result", "Nth Frame : " + sNthFrame);
                 sNthFrame ++;
-                mBpmAnalysisViewModel.addFaceImageModel(faceImageModel);
+                isFinishAnalysis = mBpmAnalysisViewModel.addFaceImageModel(faceImageModel);
+                if(FLAG_INNER_TEST){
+                    Vital vital = mBpmAnalysisViewModel.getVital();
+                    VitalLagacy lagacy = vital.getVitalLagacy();
+
+                    HandlerThread thread_g = new HandlerThread("G signal Thread");
+                    HandlerThread thread_bvp = new HandlerThread("bvp signal Thread");
+                    thread_g.start();
+                    thread_bvp.start();
+                    new Handler(thread_g.getLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            List<Entry> entryList = new ArrayList<>();
+                            double[] g_signal = lagacy.getGreenSignal();
+                            for(int i = 0; i < g_signal.length; i++){
+                                entryList.add(new Entry(i, (float)g_signal[i]));
+                            }
+                            mGreenData = new LineDataSet(entryList, "G_signal");
+                            LineData data = new LineData(mGreenData);
+                            data.setValueTextColor(Color.CYAN);
+                            mGreenChart.setData(data);
+                            mGreenChart.invalidate();
+                            thread_g.quitSafely();
+                        }
+                    });
+
+                    if(sNthFrame % 64 == 0){
+                        new Handler(thread_bvp.getLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                List<BarEntry> entryList = new ArrayList<>();
+                                double[] bvp_signal = lagacy.getBvpSignal();
+                                for(int i = 0; i < bvp_signal.length; i++){
+                                    entryList.add(new BarEntry((float)bvp_signal[i], i));
+                                }
+                                mBvpDataset = new BarDataSet(entryList, "bvp signal");
+                                BarData data = new BarData(mBvpDataset);
+                                data.setValueTextColor(Color.MAGENTA);
+                                mBvpChart.setData(data);
+                                mBvpChart.notifyDataSetChanged();
+                                mBvpChart.invalidate();
+                                thread_bvp.quitSafely();
+                            }
+                        });
+                    }
+
+                }
             }
             if (mTrackingOverlayView != null) {
                 FaceDetectorResult result = resultBundle.getResults().get(0);
@@ -229,6 +392,29 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
             e.printStackTrace();
         }
         readyForNextImage();
+        if(isFinishAnalysis){
+//            if(FLAG_INNER_TEST){
+//                new AlertDialog.Builder(getContext())
+//                        .setTitle("분석 마침")
+//                        .setMessage("결과화면으로 넘어가시겠습니까?")
+//                        .setPositiveButton("예", new DialogInterface.OnClickListener() {
+//                            @Override
+//                            public void onClick(DialogInterface dialog, int which) {
+//                                Intent intent = new Intent(getContext(), ResultActivity.class);
+//                                getContext().startActivity(intent);
+//                            }
+//                        })
+//                        .setNegativeButton("아니오", new DialogInterface.OnClickListener() {
+//                            @Override
+//                            public void onClick(DialogInterface dialog, int which) {
+//                                dialog.dismiss();
+//                            }
+//                        }).create().show();
+//            }else{
+                Intent intent = new Intent(getContext(), ResultActivity.class);
+                getContext().startActivity(intent);
+//            }
+        }
     }
 
     protected void readyForNextImage() {
@@ -270,8 +456,10 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         }
         mTrackingOverlayView.clear();
         sNthFrame = 0;
+        mBpmAnalysisViewModel.clearAnalysis();
         updateProgressBar(mProgressBar.getMin());
         mGuidePopupView.show();
+        mGreenChart.clearValues();
         isStopPredict = true;
     }
 

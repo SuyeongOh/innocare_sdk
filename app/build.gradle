@@ -74,4 +74,6 @@ dependencies {
     implementation('com.github.psambit9791:jdsp:0.5.1') {
         exclude group: 'org.apache.maven.surefire', module: 'surefire-api'
     }
+
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
 }

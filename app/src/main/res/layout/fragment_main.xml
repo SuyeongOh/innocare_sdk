@@ -37,7 +37,6 @@
         android:id="@+id/top_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/vital_analysis_top_background"
         app:layout_constraintTop_toTopOf="parent">
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/top_bar"
@@ -55,7 +54,7 @@
         android:id="@+id/progress"
         style="@style/Widget.AppCompat.ProgressBar.Horizontal"
         android:layout_width="0dp"
-        android:layout_height="20dp"
+        android:layout_height="10dp"
         android:elevation="4dp"
         android:max="100"
         android:progress="0"
@@ -66,48 +65,48 @@
         tools:progress="50" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/vital_info_group"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:background="@drawable/vital_analysis_bottom_background"
-        app:layout_constraintHeight_percent="0.3"
-        app:layout_constraintBottom_toBottomOf="parent">
+        android:visibility="gone"
+        app:layout_constraintHeight_percent="0.5"
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:visibility="visible">
 
-        <com.robinhood.ticker.TickerView
-            android:id="@+id/total_ews"
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/green_chart"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginBottom="5dp"
-            android:textAppearance="@style/TickerTextAppearance_main"
-            android:background="@drawable/bg_white_border_light_blue_grey_r4"
-            android:textColor="@color/greyish_brown"
-            android:gravity="center_vertical"
-            android:padding="5dp"
-            android:visibility="gone"
-            app:layout_constraintWidth_percent="0.2655"
-            app:layout_constraintLeft_toLeftOf="@id/old_vital_info_layout"
+            android:layout_marginStart="@dimen/vital_analysis_start_margin"
+            android:layout_marginEnd="@dimen/vital_analysis_end_margin"
+            android:background="@color/white70"
+            android:visibility="visible"
+            app:layout_constraintHeight_percent="0.2"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/old_vital_info_layout"
-            tools:text="Total EWS : 10"/>
+            app:layout_constraintBottom_toTopOf="@id/bvp_chart"
+            tools:visibility="visible"/>
 
-        <com.robinhood.ticker.TickerView
-            android:id="@+id/total_diagnosis"
+        <com.github.mikephil.charting.charts.BarChart
+            android:id="@+id/bvp_chart"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:textAppearance="@style/TickerTextAppearance_main"
-            android:background="@drawable/bg_white_border_light_blue_grey_r4"
-            android:textColor="@color/greyish_brown"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="5dp"
-            android:padding="5dp"
-            android:visibility="gone"
-            app:layout_constraintRight_toRightOf="@id/old_vital_info_layout"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/old_vital_info_layout"
-            app:layout_constraintWidth_percent="0.59"
-            tools:text="Comment : 건강이 위험합니다."/>
+            android:layout_marginStart="@dimen/vital_analysis_start_margin"
+            android:layout_marginEnd="@dimen/vital_analysis_end_margin"
+            android:layout_marginTop="@dimen/vital_new_info_margin_top"
+            android:background="@color/white70"
+            android:visibility="visible"
+            app:layout_constraintHeight_percent="0.2"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/green_chart"
+            app:layout_constraintBottom_toTopOf="@id/vital_info_layout"
+            tools:visibility="visible"/>
 
         <include
-            android:id="@+id/old_vital_info_layout"
+            android:id="@+id/vital_info_layout"
             layout="@layout/layout_info_container"
             android:layout_width="match_parent"
             android:layout_height="@dimen/info_container_h"
@@ -115,7 +114,8 @@
             android:layout_marginEnd="@dimen/vital_analysis_end_margin"
             android:layout_marginTop="@dimen/vital_origin_info_margin_top"
             android:layout_marginBottom="@dimen/vital_origin_info_margin_bottom"
-            android:visibility="gone"
+            android:visibility="visible"
+            app:layout_constraintTop_toBottomOf="@id/bvp_chart"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />

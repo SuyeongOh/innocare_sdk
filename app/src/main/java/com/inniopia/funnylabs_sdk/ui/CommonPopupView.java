@@ -10,6 +10,7 @@ import androidx.appcompat.app.AlertDialog;
 public class CommonPopupView{
 
     private AlertDialog popupDialog;
+
     public CommonPopupView(Context context, View view){
         popupDialog = new AlertDialog.Builder(context)
                 .setView(view)
