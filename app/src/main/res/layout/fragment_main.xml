@@ -80,28 +80,28 @@
             android:layout_height="0dp"
             android:layout_marginStart="@dimen/vital_analysis_start_margin"
             android:layout_marginEnd="@dimen/vital_analysis_end_margin"
+            android:layout_marginBottom="10dp"
             android:background="@color/white70"
             android:visibility="visible"
             app:layout_constraintHeight_percent="0.2"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toTopOf="@id/bvp_chart"
             tools:visibility="visible"/>
 
-        <com.github.mikephil.charting.charts.BarChart
+        <com.github.mikephil.charting.charts.LineChart
             android:id="@+id/bvp_chart"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginStart="@dimen/vital_analysis_start_margin"
+            android:layout_marginBottom="10dp"
             android:layout_marginEnd="@dimen/vital_analysis_end_margin"
-            android:layout_marginTop="@dimen/vital_new_info_margin_top"
+            android:layout_marginTop="10dp"
             android:background="@color/white70"
             android:visibility="visible"
-            app:layout_constraintHeight_percent="0.2"
+            app:layout_constraintHeight_percent="0.25"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="@id/green_chart"
             app:layout_constraintBottom_toTopOf="@id/vital_info_layout"
             tools:visibility="visible"/>
 
@@ -109,13 +109,11 @@
             android:id="@+id/vital_info_layout"
             layout="@layout/layout_info_container"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/info_container_h"
+            android:layout_height="100dp"
             android:layout_marginStart="@dimen/vital_analysis_start_margin"
             android:layout_marginEnd="@dimen/vital_analysis_end_margin"
-            android:layout_marginTop="@dimen/vital_origin_info_margin_top"
             android:layout_marginBottom="@dimen/vital_origin_info_margin_bottom"
             android:visibility="visible"
-            app:layout_constraintTop_toBottomOf="@id/bvp_chart"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />

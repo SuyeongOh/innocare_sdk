@@ -37,7 +37,7 @@ import static java.lang.Math.abs;
 public class VitalLagacy {
     private static final int BUFFER_SIZE = 512;
     private static final int BPM_BUFFER_SIZE = 8;
-    private static final int BPM_CALCULATION_FREQUENCY = 64;
+    public static final int BPM_CALCULATION_FREQUENCY = 64;
     private static final int BP_CALCULATION_FREQUENCY = 512;
     public static int VIDEO_FRAME_RATE = 30;
 

@@ -2,7 +2,6 @@ package com.inniopia.funnylabs_sdk;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.camera.core.AspectRatio;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
@@ -13,6 +12,7 @@ import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import android.app.AlertDialog;
 import android.app.Application;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -48,7 +48,9 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mediapipe.framework.image.MPImage;
 import com.google.mediapipe.tasks.components.containers.NormalizedKeypoint;
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetectorResult;
+import com.inniopia.funnylabs_sdk.data.ResultVitalSign;
 import com.inniopia.funnylabs_sdk.ui.CommonPopupView;
+import com.robinhood.ticker.TickerView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,12 +68,21 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private ProgressBar mProgressBar;
     private BpmAnalysisViewModel mBpmAnalysisViewModel;
     private CommonPopupView mGuidePopupView;
+    private AlertDialog mFinishPopup;
     private TextView mGuidePopupText;
-    private BarChart mBvpChart;
+    private LineChart mBvpChart;
     private LineChart mGreenChart;
     private View mVitalGroup;
+    private TickerView hrValueView;
+    private TickerView rrValueView;
+    private TickerView sdnnValueView;
+    private TickerView spo2ValueView;
+    private TickerView stressValueView;
+    private TickerView sbpValueView;
+    private TickerView dbpValueView;
 
-    private BarDataSet mBvpDataset;
+    private View vitalValueLayout;
+    private LineDataSet mBvpDataset;
     private LineDataSet mGreenData;
 
     //Camera Property variable
@@ -132,6 +143,31 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         mGuidePopupText = viewNoDetectionPopup.findViewById(R.id.text_face_popup);
         mGuidePopupText.setText(R.string.face_no_detection);
 
+        vitalValueLayout = view.findViewById(R.id.vital_info_layout);
+        hrValueView = view.findViewById(R.id.heart_rate_value);
+        rrValueView = view.findViewById(R.id.respiratory_rate_value);
+        sdnnValueView = view.findViewById(R.id.hrv_sdnn_value);
+        spo2ValueView = view.findViewById(R.id.oxygen_saturation_value);
+        stressValueView = view.findViewById(R.id.stress_value);
+        sbpValueView = view.findViewById(R.id.highest_blood_pressure_value);
+        dbpValueView = view.findViewById(R.id.lowest_blood_pressure_value);
+
+        mFinishPopup = new AlertDialog.Builder(getContext())
+                .setTitle("분석 마침")
+                .setMessage("결과화면으로 넘어가시겠습니까?")
+                .setPositiveButton("예", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(getContext(), ResultActivity.class);
+                        getContext().startActivity(intent);
+                    }
+                })
+                .setNegativeButton("아니오", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                }).create();
         return view;
     }
 
@@ -347,35 +383,36 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                             for(int i = 0; i < g_signal.length; i++){
                                 entryList.add(new Entry(i, (float)g_signal[i]));
                             }
-                            mGreenData = new LineDataSet(entryList, "G_signal");
+                            mGreenData = new LineDataSet(entryList, "");
+                            mGreenData.setDrawCircles(false);
+                            mGreenData.setColor(Color.CYAN);
                             LineData data = new LineData(mGreenData);
-                            data.setValueTextColor(Color.CYAN);
                             mGreenChart.setData(data);
+                            mGreenChart.notifyDataSetChanged();
                             mGreenChart.invalidate();
-                            thread_g.quitSafely();
                         }
                     });
 
-                    if(sNthFrame % 64 == 0){
+                    if(sNthFrame % VitalLagacy.BPM_CALCULATION_FREQUENCY == 0){
                         new Handler(thread_bvp.getLooper()).post(new Runnable() {
                             @Override
                             public void run() {
-                                List<BarEntry> entryList = new ArrayList<>();
+                                List<Entry> entryList = new ArrayList<>();
                                 double[] bvp_signal = lagacy.getBvpSignal();
                                 for(int i = 0; i < bvp_signal.length; i++){
-                                    entryList.add(new BarEntry((float)bvp_signal[i], i));
+                                    entryList.add(new Entry(i, (float)bvp_signal[i]));
                                 }
-                                mBvpDataset = new BarDataSet(entryList, "bvp signal");
-                                BarData data = new BarData(mBvpDataset);
-                                data.setValueTextColor(Color.MAGENTA);
+                                mBvpDataset = new LineDataSet(entryList, "");
+                                mBvpDataset.setDrawCircles(false);
+                                mBvpDataset.setColor(Color.MAGENTA);
+                                LineData data = new LineData(mBvpDataset);
                                 mBvpChart.setData(data);
                                 mBvpChart.notifyDataSetChanged();
                                 mBvpChart.invalidate();
-                                thread_bvp.quitSafely();
                             }
                         });
+                        updateVitalSignValue();
                     }
-
                 }
             }
             if (mTrackingOverlayView != null) {
@@ -393,26 +430,12 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         }
         readyForNextImage();
         if(isFinishAnalysis){
+            Intent intent = new Intent(getContext(), ResultActivity.class);
+            getContext().startActivity(intent);
 //            if(FLAG_INNER_TEST){
-//                new AlertDialog.Builder(getContext())
-//                        .setTitle("분석 마침")
-//                        .setMessage("결과화면으로 넘어가시겠습니까?")
-//                        .setPositiveButton("예", new DialogInterface.OnClickListener() {
-//                            @Override
-//                            public void onClick(DialogInterface dialog, int which) {
-//                                Intent intent = new Intent(getContext(), ResultActivity.class);
-//                                getContext().startActivity(intent);
-//                            }
-//                        })
-//                        .setNegativeButton("아니오", new DialogInterface.OnClickListener() {
-//                            @Override
-//                            public void onClick(DialogInterface dialog, int which) {
-//                                dialog.dismiss();
-//                            }
-//                        }).create().show();
+//                mFinishPopup.show();
 //            }else{
-                Intent intent = new Intent(getContext(), ResultActivity.class);
-                getContext().startActivity(intent);
+//
 //            }
         }
     }
@@ -477,5 +500,20 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 && (mProgressBar.getProgress() == mProgressBar.getMin())) return;
         mProgressBar.setProgress(progress);
         mProgressBar.invalidate();
+    }
+
+    private void updateVitalSignValue(){
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                hrValueView.setText(String.valueOf(ResultVitalSign.vitalSignData.HR_result));
+                rrValueView.setText(String.valueOf(ResultVitalSign.vitalSignData.RR_result));
+                sdnnValueView.setText(String.valueOf(ResultVitalSign.vitalSignData.sdnn_result));
+                stressValueView.setText(String.valueOf(ResultVitalSign.vitalSignData.LF_HF_ratio));
+                spo2ValueView.setText(String.valueOf(ResultVitalSign.vitalSignData.spo2_result));
+                sbpValueView.setText(String.valueOf(ResultVitalSign.vitalSignData.SBP));
+                dbpValueView.setText(String.valueOf(ResultVitalSign.vitalSignData.DBP));
+            }
+        });
     }
 }
