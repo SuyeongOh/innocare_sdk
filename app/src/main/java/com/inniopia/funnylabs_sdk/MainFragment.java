@@ -103,6 +103,10 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
     private boolean isStopPredict = false;
 
+    HandlerThread thread_g = new HandlerThread("G signal Thread");
+    HandlerThread thread_hr = new HandlerThread("hr signal Thread");
+    HandlerThread thread_bvp = new HandlerThread("bvp signal Thread");
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -116,6 +120,10 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                     faceDetector.setupFaceDetector();
                 }
         );
+
+        thread_g.start();
+        thread_bvp.start();
+        thread_hr.start();
     }
 
     @Nullable
@@ -278,12 +286,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                     Vital vital = mBpmAnalysisViewModel.getVital();
                     VitalLagacy lagacy = vital.getVitalLagacy();
 
-                    HandlerThread thread_g = new HandlerThread("G signal Thread");
-                    HandlerThread thread_hr = new HandlerThread("hr signal Thread");
-                    HandlerThread thread_bvp = new HandlerThread("bvp signal Thread");
-                    thread_g.start();
-                    thread_bvp.start();
-                    thread_hr.start();
+
+
                     new Handler(thread_g.getLooper()).post(new Runnable() {
                         @Override
                         public void run() {
@@ -299,7 +303,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                             mGreenChart.setData(data);
                             mGreenChart.notifyDataSetChanged();
                             mGreenChart.invalidate();
-                            thread_g.quitSafely();
                         }
                     });
 
@@ -319,7 +322,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                 mBvpChart.setData(data);
                                 mBvpChart.notifyDataSetChanged();
                                 mBvpChart.invalidate();
-                                thread_bvp.quitSafely();
                             }
                         });
                         new Handler(thread_hr.getLooper()).post(new Runnable() {
@@ -338,7 +340,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                 mHrChart.setData(data);
                                 mHrChart.notifyDataSetChanged();
                                 mHrChart.invalidate();
-                                thread_hr.quitSafely();
                             }
                         });
                         updateVitalSignValue();
@@ -380,6 +381,9 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     public void onDestroyView() {
         super.onDestroyView();
         try{
+            thread_g.quitSafely();
+            thread_bvp.quitSafely();
+            thread_hr.quitSafely();
             mFrontCameraExecutor.shutdown();
             mFrontCameraExecutor.awaitTermination(
                     Long.MAX_VALUE,
@@ -432,8 +436,11 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     }
 
     private void updateProgressBar(int progress){
+        Log.d("jupiter", "current progress bar : " + mProgressBar.getProgress());
+        Log.d("jupiter", "update progress bar : " + progress);
         if((progress == mProgressBar.getMin())
-                && (mProgressBar.getProgress() == mProgressBar.getMin())) return;
+                && (mProgressBar.getProgress() == mProgressBar.getMin()))
+            return;
         mProgressBar.setProgress(progress);
         mProgressBar.invalidate();
     }
