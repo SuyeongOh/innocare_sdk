@@ -1,7 +1,6 @@
 package com.inniopia.funnylabs_sdk;
 
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.util.Log;
 
 import com.github.psambit9791.jdsp.signal.Detrend;
@@ -17,7 +16,6 @@ import com.paramsen.noise.Noise;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
 
 import jsat.SimpleDataSet;
 import jsat.classifiers.CategoricalData;
@@ -29,7 +27,6 @@ import jsat.linear.DenseMatrix;
 import jsat.linear.DenseVector;
 import jsat.linear.Matrix;
 import jsat.linear.Vec;
-import lombok.Getter;
 import uk.me.berndporr.iirj.Butterworth;
 
 import static java.lang.Math.abs;

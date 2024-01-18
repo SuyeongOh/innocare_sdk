@@ -20,6 +20,7 @@ import com.google.mediapipe.tasks.vision.facedetector.FaceDetector;
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetectorResult;
 import com.inniopia.funnylabs_sdk.data.Constant;
 import com.inniopia.funnylabs_sdk.utils.FileUtils;
+
 import java.util.Collections;
 import java.util.List;
 

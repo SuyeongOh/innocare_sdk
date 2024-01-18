@@ -3,8 +3,6 @@ package com.inniopia.funnylabs_sdk;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.inniopia.funnylabs_sdk.data.ResultVitalSign;

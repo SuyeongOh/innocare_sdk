@@ -2,8 +2,6 @@ package com.inniopia.funnylabs_sdk;
 
 import com.inniopia.funnylabs_sdk.data.Constant;
 
-import androidx.camera.core.CameraSelector;
-
 public class Config {
     public static final float THRESHOLD_DEFAULT = 0.5F;
     public static int CURRENT_DELEGATE = Constant.DELEGATE_CPU;
