@@ -27,10 +27,18 @@ public class MainActivity extends FragmentActivity {
 
         requestPermissions(LIST_NEW_SDK_PERMISSION, 1);
 
-        InitFragment fragment = new InitFragment();
-        getSupportFragmentManager().beginTransaction()
-                .add(R.id.fragmentContainerView, fragment)
-                .commit();
+        if(Config.FLAG_INNER_TEST){
+            MainFragment fragment = new MainFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragmentContainerView, fragment)
+                    .commit();
+        }else{
+            InitFragment fragment = new InitFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragmentContainerView, fragment)
+                    .commit();
+        }
+
     }
 
     public void replaceFragment(Fragment fragment){

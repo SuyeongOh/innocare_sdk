@@ -18,6 +18,7 @@ import com.google.mediapipe.tasks.core.Delegate;
 import com.google.mediapipe.tasks.vision.core.RunningMode;
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetector;
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetectorResult;
+import com.inniopia.funnylabs_sdk.data.Constant;
 import com.inniopia.funnylabs_sdk.utils.FileUtils;
 import java.util.Collections;
 import java.util.List;
@@ -27,7 +28,7 @@ import androidx.camera.core.ImageProxy;
 public class EnhanceFaceDetector {
     private static final String FACE_DETECTION_MODEL_NAME = "face_detection_short_range.tflite";
     private static final float threshold = Config.THRESHOLD_DEFAULT;
-    private static final int currentDelegate = Config.DELEGATE_CPU;
+    private static final int currentDelegate = Constant.DELEGATE_CPU;
     private static final RunningMode runningMode = RunningMode.LIVE_STREAM;
 
     private DetectorListener mDetectorListener;
@@ -48,9 +49,9 @@ public class EnhanceFaceDetector {
     public void setupFaceDetector(){
         BaseOptions.Builder baseoptionBuilder = BaseOptions.builder();
 
-        if(currentDelegate == Config.DELEGATE_CPU){
+        if(currentDelegate == Constant.DELEGATE_CPU){
             baseoptionBuilder.setDelegate(Delegate.CPU);
-        }else if(currentDelegate == Config.DELEGATE_GPU){
+        }else if(currentDelegate == Constant.DELEGATE_GPU){
             baseoptionBuilder.setDelegate(Delegate.GPU);
         }
         baseoptionBuilder.setModelAssetPath(FACE_DETECTION_MODEL_NAME);
@@ -131,7 +132,7 @@ public class EnhanceFaceDetector {
 
         Matrix matrix = new Matrix();
         matrix.postRotate(imageProxy.getImageInfo().getRotationDegrees());
-        if(Config.USE_CAMERA_DIRECTION == Config.CAMERA_DIRECTION_FRONT){
+        if(Config.USE_CAMERA_DIRECTION == Constant.CAMERA_DIRECTION_FRONT){
             matrix.postScale(-1f, 1f, imageProxy.getWidth(), imageProxy.getHeight());
         }
 

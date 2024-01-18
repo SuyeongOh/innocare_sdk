@@ -20,4 +20,17 @@ public class ResultVitalSign {
     @Getter @Setter public double DBP = 0;
     @Getter @Setter public float[] hr_array = new float[VitalLagacy.BPM_BUFFER_SIZE];
     @Getter @Setter public float[] rr_array = new float[VitalLagacy.BPM_BUFFER_SIZE];
+
+    public void init(){
+        LF_HF_ratio = 0;
+        HR_result = 0;
+        RR_result = 0;
+        spo2_result = 0;
+        sdnn_result = 0;
+        BP = 0;
+        SBP = 0;
+        DBP = 0;
+        hr_array = new float[VitalLagacy.BPM_BUFFER_SIZE];
+        rr_array = new float[VitalLagacy.BPM_BUFFER_SIZE];
+    }
 }

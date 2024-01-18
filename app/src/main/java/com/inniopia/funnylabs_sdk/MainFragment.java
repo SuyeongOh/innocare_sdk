@@ -1,17 +1,5 @@
 package com.inniopia.funnylabs_sdk;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.camera.core.AspectRatio;
-import androidx.camera.core.Camera;
-import androidx.camera.core.CameraSelector;
-import androidx.camera.core.ImageAnalysis;
-import androidx.camera.core.Preview;
-import androidx.camera.lifecycle.ProcessCameraProvider;
-import androidx.camera.view.PreviewView;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-
 import android.app.AlertDialog;
 import android.app.Application;
 import android.content.DialogInterface;
@@ -30,17 +18,14 @@ import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
-import com.github.mikephil.charting.data.BarData;
-import com.github.mikephil.charting.data.BarDataSet;
-import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
@@ -48,19 +33,31 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mediapipe.framework.image.MPImage;
 import com.google.mediapipe.tasks.components.containers.NormalizedKeypoint;
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetectorResult;
+import com.inniopia.funnylabs_sdk.data.Constant;
 import com.inniopia.funnylabs_sdk.data.ResultVitalSign;
 import com.inniopia.funnylabs_sdk.ui.CommonPopupView;
 import com.robinhood.ticker.TickerView;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.camera.core.AspectRatio;
+import androidx.camera.core.Camera;
+import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ImageAnalysis;
+import androidx.camera.core.Preview;
+import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.view.PreviewView;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+
 public class MainFragment extends Fragment implements EnhanceFaceDetector.DetectorListener {
-    private static final boolean FLAG_INNER_TEST = true;
+
 
     //View Variable
     private PreviewView mCameraView;
@@ -80,6 +77,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private TickerView stressValueView;
     private TickerView sbpValueView;
     private TickerView dbpValueView;
+    private Button reStartBtn;
+    private Button nextPageBtn;
 
     private View vitalValueLayout;
     private LineDataSet mBvpDataset;
@@ -129,7 +128,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         mProgressBar = view.findViewById(R.id.progress);
 
 
-        if(FLAG_INNER_TEST){
+        if(Config.FLAG_INNER_TEST){
             mVitalGroup = view.findViewById(R.id.vital_info_group);
             mVitalGroup.setVisibility(View.VISIBLE);
             mBvpChart = view.findViewById(R.id.bvp_chart);
@@ -151,23 +150,12 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         stressValueView = view.findViewById(R.id.stress_value);
         sbpValueView = view.findViewById(R.id.highest_blood_pressure_value);
         dbpValueView = view.findViewById(R.id.lowest_blood_pressure_value);
+        reStartBtn = view.findViewById(R.id.vital_recheck_btn);
+        nextPageBtn = view.findViewById(R.id.vital_next_page);
 
-        mFinishPopup = new AlertDialog.Builder(getContext())
-                .setTitle("분석 마침")
-                .setMessage("결과화면으로 넘어가시겠습니까?")
-                .setPositiveButton("예", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Intent intent = new Intent(getContext(), ResultActivity.class);
-                        getContext().startActivity(intent);
-                    }
-                })
-                .setNegativeButton("아니오", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                }).create();
+        reStartBtn.setVisibility(View.INVISIBLE);
+        nextPageBtn.setVisibility(View.INVISIBLE);
+        initListener();
         return view;
     }
 
@@ -184,6 +172,261 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         });
     }
 
+    private void setUpCamera(Preview.SurfaceProvider surfaceProvider){
+        ListenableFuture<ProcessCameraProvider> cameraProvider
+                = ProcessCameraProvider.getInstance(requireContext());
+
+        cameraProvider.addListener(new Runnable() {
+            @Override
+            public void run() {
+                try{
+                    mCameraProvider = cameraProvider.get();
+                    bindCameraUseCases(surfaceProvider);
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        }, ContextCompat.getMainExecutor(requireContext()));
+    }
+
+    private void bindCameraUseCases(Preview.SurfaceProvider surfaceProvider){
+        ProcessCameraProvider cameraProvider = mCameraProvider;
+        CameraSelector cameraSelector =
+                new CameraSelector.Builder().requireLensFacing(Config.USE_CAMERA_DIRECTION).build();
+
+        mPreview = new Preview.Builder()
+                .setTargetAspectRatio(CAMERA_RATIO)
+                .setTargetRotation(ROTATION)
+                .build();
+
+        mImageAnalysis = new ImageAnalysis.Builder().setTargetAspectRatio(CAMERA_RATIO)
+                 .setTargetRotation(ROTATION)
+                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
+                 .build();
+
+        mImageAnalysis.setAnalyzer(
+                mFrontCameraExecutor, faceDetector::detectLiveStreamFrame);
+        cameraProvider.unbindAll();
+
+        try{
+            mCamera = cameraProvider.bindToLifecycle(this, cameraSelector, mPreview, mImageAnalysis);
+            mPreview.setSurfaceProvider(surfaceProvider);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private Runnable postInferenceCallback;
+
+    public void processImage(MPImage image, EnhanceFaceDetector.ResultBundle resultBundle){
+        postInferenceCallback = image::close;
+        if(sNthFrame > Vital.BATCH_SIZE * Vital.FRAME_WINDOW_SIZE){
+            return;
+        }
+        boolean isFinishAnalysis = false;
+        List<FaceDetectorResult> faceDetectorResults = resultBundle.getResults();
+
+        FaceImageModel faceImageModel = null;
+
+        try {
+            if (faceDetectorResults.get(0).detections().size() >= 1) {
+                RectF box = faceDetectorResults.get(0).detections().get(0).boundingBox();
+                List<NormalizedKeypoint> facePoints = faceDetectorResults.get(0).detections().get(0).keypoints().get();
+
+                if(mTrackingOverlayView.isOutBoundary(box)){
+                    if(!isStopPredict) {
+                        stopPrediction(Constant.TYPE_OF_OUT);
+                    }
+                    readyForNextImage();
+                    return;
+                } else if(mTrackingOverlayView.isBigSize(box)){
+                    if(!isStopPredict) {
+                        stopPrediction(Constant.TYPE_OF_BIG);
+                    }
+                    readyForNextImage();
+                    return;
+                } else if (mTrackingOverlayView.isSmallSize(box)) {
+                    if(!isStopPredict) {
+                        stopPrediction(Constant.TYPE_OF_SMALL);
+                    }
+                    readyForNextImage();
+                    return;
+                }
+                isStopPredict = false;
+                mGuidePopupView.dismiss();
+
+                int width = image.getWidth();
+                int height = image.getHeight();
+                float left = facePoints.get(4).x() * width;
+                float right = facePoints.get(5).x() * width;
+                float top = Math.max(facePoints.get(4).y(), facePoints.get(5).y()) * height;
+                float bottom = facePoints.get(3).y() * height;
+                RectF rectF = new RectF(left, top, right, bottom);
+
+                Rect rect = new Rect();
+                box.round(rect);
+                Bitmap croppedFaceBitmap = Bitmap.createBitmap(mOriginalBitmap, rect.left, rect.top, rect.width(), rect.height());
+                faceImageModel = new FaceImageModel(croppedFaceBitmap, getLastFrameUtcTimeMs());
+                Log.d("Result", "Nth Frame : " + sNthFrame);
+                sNthFrame ++;
+                isFinishAnalysis = mBpmAnalysisViewModel.addFaceImageModel(faceImageModel);
+                if(Config.FLAG_INNER_TEST){
+                    Vital vital = mBpmAnalysisViewModel.getVital();
+                    VitalLagacy lagacy = vital.getVitalLagacy();
+
+                    HandlerThread thread_g = new HandlerThread("G signal Thread");
+                    HandlerThread thread_bvp = new HandlerThread("bvp signal Thread");
+                    thread_g.start();
+                    thread_bvp.start();
+                    new Handler(thread_g.getLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            List<Entry> entryList = new ArrayList<>();
+                            double[] g_signal = lagacy.getGreenSignal();
+                            for(int i = 0; i < g_signal.length; i++){
+                                entryList.add(new Entry(i, (float)g_signal[i]));
+                            }
+                            mGreenData = new LineDataSet(entryList, "");
+                            mGreenData.setDrawCircles(false);
+                            mGreenData.setColor(Color.CYAN);
+                            LineData data = new LineData(mGreenData);
+                            mGreenChart.setData(data);
+                            mGreenChart.notifyDataSetChanged();
+                            mGreenChart.invalidate();
+                        }
+                    });
+
+                    if(sNthFrame % VitalLagacy.BPM_CALCULATION_FREQUENCY == 0){
+                        new Handler(thread_bvp.getLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                List<Entry> entryList = new ArrayList<>();
+                                double[] bvp_signal = lagacy.getBvpSignal();
+                                float filter_interval = VitalLagacy.VIDEO_FRAME_RATE / (float)VitalLagacy.BUFFER_SIZE;
+                                for(int i = 0; i < bvp_signal.length; i++){
+                                    entryList.add(new Entry((float)(i + 0.83/filter_interval) * filter_interval * 60, (float)bvp_signal[i]));
+                                }
+                                mBvpDataset = new LineDataSet(entryList, "");
+                                mBvpDataset.setDrawCircles(false);
+                                mBvpDataset.setColor(Color.MAGENTA);
+                                LineData data = new LineData(mBvpDataset);
+                                mBvpChart.setData(data);
+                                mBvpChart.notifyDataSetChanged();
+                                mBvpChart.invalidate();
+                            }
+                        });
+                        updateVitalSignValue();
+                    }
+                }
+            }
+            if (mTrackingOverlayView != null) {
+                FaceDetectorResult result = resultBundle.getResults().get(0);
+                mTrackingOverlayView.setResults(result,
+                        resultBundle.inputImageWidth,
+                        resultBundle.inputImageHeight);
+                mTrackingOverlayView.invalidate();
+            }
+            if(mProgressBar.getProgress() != (sNthFrame/(Vital.BATCH_SIZE * Vital.FRAME_WINDOW_SIZE / 100))){
+                updateProgressBar(sNthFrame/(Vital.BATCH_SIZE * Vital.FRAME_WINDOW_SIZE / 100));
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        readyForNextImage();
+        if(isFinishAnalysis){
+            if(Config.FLAG_INNER_TEST){
+                new Handler(Looper.getMainLooper()).post(() -> mFinishPopup.show());
+            }else{
+                Intent intent = new Intent(getContext(), ResultActivity.class);
+                getContext().startActivity(intent);
+            }
+        }
+    }
+
+    protected void readyForNextImage() {
+        if (postInferenceCallback != null) {
+            postInferenceCallback.run();
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        try{
+            mFrontCameraExecutor.shutdown();
+            mFrontCameraExecutor.awaitTermination(
+                    Long.MAX_VALUE,
+                    TimeUnit.NANOSECONDS
+            );
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onResults(MPImage input, Bitmap original, EnhanceFaceDetector.ResultBundle resultBundle) {
+        lastFrameUtcTimeMs = System.currentTimeMillis();
+        mOriginalBitmap = original;
+        if(sNthFrame <= 600){
+            processImage(input, resultBundle);
+        }
+    }
+
+    private void stopPrediction(String type){
+        switch (type) {
+            case Constant.TYPE_OF_BIG:
+                mGuidePopupText.setText(R.string.face_big_detection);
+                mGuidePopupView.show();
+                break;
+            case Constant.TYPE_OF_SMALL:
+                mGuidePopupText.setText(R.string.face_no_detection);
+                mGuidePopupView.show();
+                break;
+            case Constant.TYPE_OF_OUT:
+                mGuidePopupText.setText(R.string.face_out_detection);
+                mGuidePopupView.show();
+                break;
+        }
+        mTrackingOverlayView.clear();
+        sNthFrame = 0;
+        mBpmAnalysisViewModel.clearAnalysis();
+        updateProgressBar(mProgressBar.getMin());
+        mGreenChart.clearValues();
+        isStopPredict = true;
+    }
+
+    @Override
+    public void onError(String error, int errorCode) {
+
+    }
+
+    public long getLastFrameUtcTimeMs(){
+        return lastFrameUtcTimeMs;
+    }
+
+    private void updateProgressBar(int progress){
+        if((progress == mProgressBar.getMin())
+                && (mProgressBar.getProgress() == mProgressBar.getMin())) return;
+        mProgressBar.setProgress(progress);
+        mProgressBar.invalidate();
+    }
+
+    private void updateVitalSignValue(){
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                hrValueView.setText(String.valueOf(Math.round(ResultVitalSign.vitalSignData.HR_result)));
+                rrValueView.setText(String.valueOf(Math.round(ResultVitalSign.vitalSignData.RR_result)));
+                sdnnValueView.setText(String.valueOf(Math.round(ResultVitalSign.vitalSignData.sdnn_result)));
+                stressValueView.setText(String.valueOf(Math.round(ResultVitalSign.vitalSignData.LF_HF_ratio)));
+                spo2ValueView.setText(String.valueOf(Math.round(ResultVitalSign.vitalSignData.spo2_result)));
+                sbpValueView.setText(String.valueOf(Math.round(ResultVitalSign.vitalSignData.SBP)));
+                dbpValueView.setText(String.valueOf(Math.round(ResultVitalSign.vitalSignData.DBP)));
+            }
+        });
+    }
+
     private void initChart(){
         mBvpChart.getDescription().setText("BVP");
         mBvpChart.getDescription().setEnabled(true);
@@ -196,7 +439,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         legend.setTextColor(Color.parseColor("#A3A3A3"));
         legend.setOrientation(Legend.LegendOrientation.VERTICAL);
         legend.setDrawInside(true);
-        legend.setYEntrySpace(5);
+        legend.setYEntrySpace(3);
 
         // XAxis (아래쪽) - 선 유무, 사이즈, 색상, 축 위치 설정
         XAxis xAxis = mBvpChart.getXAxis();
@@ -266,251 +509,40 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         yAxis_g.setGranularity((float) 512);
     }
 
-    private void setUpCamera(Preview.SurfaceProvider surfaceProvider){
-        ListenableFuture<ProcessCameraProvider> cameraProvider
-                = ProcessCameraProvider.getInstance(requireContext());
+    private void initListener(){
+        mFinishPopup = new AlertDialog.Builder(getContext())
+                .setTitle("분석 마침")
+                .setMessage("결과화면으로 넘어가시겠습니까?")
+                .setPositiveButton("예", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(getContext(), ResultActivity.class);
+                        getContext().startActivity(intent);
+                    }
+                })
+                .setNegativeButton("아니오", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        reStartBtn.setVisibility(View.VISIBLE);
+                        nextPageBtn.setVisibility(View.VISIBLE);
+                        dialog.dismiss();
+                    }
+                }).create();
 
-        cameraProvider.addListener(new Runnable() {
+        reStartBtn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void run() {
-                try{
-                    mCameraProvider = cameraProvider.get();
-                    bindCameraUseCases(surfaceProvider);
-                } catch (Exception e){
-                    e.printStackTrace();
-                }
-            }
-        }, ContextCompat.getMainExecutor(requireContext()));
-    }
-
-    private void bindCameraUseCases(Preview.SurfaceProvider surfaceProvider){
-        ProcessCameraProvider cameraProvider = mCameraProvider;
-        CameraSelector cameraSelector =
-                new CameraSelector.Builder().requireLensFacing(Config.USE_CAMERA_DIRECTION).build();
-
-        mPreview = new Preview.Builder()
-                .setTargetAspectRatio(CAMERA_RATIO)
-                .setTargetRotation(ROTATION)
-                .build();
-
-        mImageAnalysis = new ImageAnalysis.Builder().setTargetAspectRatio(CAMERA_RATIO)
-                 .setTargetRotation(ROTATION)
-                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
-                 .build();
-
-        mImageAnalysis.setAnalyzer(
-                mFrontCameraExecutor, faceDetector::detectLiveStreamFrame);
-        cameraProvider.unbindAll();
-
-        try{
-            mCamera = cameraProvider.bindToLifecycle(this, cameraSelector, mPreview, mImageAnalysis);
-            mPreview.setSurfaceProvider(surfaceProvider);
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    private Runnable postInferenceCallback;
-
-    public void processImage(MPImage image, EnhanceFaceDetector.ResultBundle resultBundle){
-        postInferenceCallback = image::close;
-        if(sNthFrame > Vital.BATCH_SIZE * Vital.FRAME_WINDOW_SIZE){
-            return;
-        }
-        boolean isFinishAnalysis = false;
-        List<FaceDetectorResult> faceDetectorResults = resultBundle.getResults();
-
-        FaceImageModel faceImageModel = null;
-
-        try {
-            if (faceDetectorResults.get(0).detections().size() >= 1) {
-                RectF box = faceDetectorResults.get(0).detections().get(0).boundingBox();
-                List<NormalizedKeypoint> facePoints = faceDetectorResults.get(0).detections().get(0).keypoints().get();
-
-                if(mTrackingOverlayView.isOutBoundary(box)){
-                    if(!isStopPredict) {
-                        stopPrediction(Config.TYPE_OF_OUT);
-                    }
-                    readyForNextImage();
-                    return;
-                } else if(mTrackingOverlayView.isBigSize(box)){
-                    if(!isStopPredict) {
-                        stopPrediction(Config.TYPE_OF_BIG);
-                    }
-                    readyForNextImage();
-                    return;
-                } else if (mTrackingOverlayView.isSmallSize(box)) {
-                    if(!isStopPredict) {
-                        stopPrediction(Config.TYPE_OF_SMALL);
-                    }
-                    readyForNextImage();
-                    return;
-                }
+            public void onClick(View v) {
                 isStopPredict = false;
-                mGuidePopupView.dismiss();
-
-                int width = image.getWidth();
-                int height = image.getHeight();
-                float left = facePoints.get(4).x() * width;
-                float right = facePoints.get(5).x() * width;
-                float top = Math.max(facePoints.get(4).y(), facePoints.get(5).y()) * height;
-                float bottom = facePoints.get(3).y() * height;
-                RectF rectF = new RectF(left, top, right, bottom);
-
-                Rect rect = new Rect();
-                box.round(rect);
-                Bitmap croppedFaceBitmap = Bitmap.createBitmap(mOriginalBitmap, rect.left, rect.top, rect.width(), rect.height());
-                faceImageModel = new FaceImageModel(croppedFaceBitmap, getLastFrameUtcTimeMs());
-                Log.d("Result", "Nth Frame : " + sNthFrame);
-                sNthFrame ++;
-                isFinishAnalysis = mBpmAnalysisViewModel.addFaceImageModel(faceImageModel);
-                if(FLAG_INNER_TEST){
-                    Vital vital = mBpmAnalysisViewModel.getVital();
-                    VitalLagacy lagacy = vital.getVitalLagacy();
-
-                    HandlerThread thread_g = new HandlerThread("G signal Thread");
-                    HandlerThread thread_bvp = new HandlerThread("bvp signal Thread");
-                    thread_g.start();
-                    thread_bvp.start();
-                    new Handler(thread_g.getLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            List<Entry> entryList = new ArrayList<>();
-                            double[] g_signal = lagacy.getGreenSignal();
-                            for(int i = 0; i < g_signal.length; i++){
-                                entryList.add(new Entry(i, (float)g_signal[i]));
-                            }
-                            mGreenData = new LineDataSet(entryList, "");
-                            mGreenData.setDrawCircles(false);
-                            mGreenData.setColor(Color.CYAN);
-                            LineData data = new LineData(mGreenData);
-                            mGreenChart.setData(data);
-                            mGreenChart.notifyDataSetChanged();
-                            mGreenChart.invalidate();
-                        }
-                    });
-
-                    if(sNthFrame % VitalLagacy.BPM_CALCULATION_FREQUENCY == 0){
-                        new Handler(thread_bvp.getLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                List<Entry> entryList = new ArrayList<>();
-                                double[] bvp_signal = lagacy.getBvpSignal();
-                                for(int i = 0; i < bvp_signal.length; i++){
-                                    entryList.add(new Entry(i, (float)bvp_signal[i]));
-                                }
-                                mBvpDataset = new LineDataSet(entryList, "");
-                                mBvpDataset.setDrawCircles(false);
-                                mBvpDataset.setColor(Color.MAGENTA);
-                                LineData data = new LineData(mBvpDataset);
-                                mBvpChart.setData(data);
-                                mBvpChart.notifyDataSetChanged();
-                                mBvpChart.invalidate();
-                            }
-                        });
-                        updateVitalSignValue();
-                    }
-                }
+                sNthFrame = 0;
+                ResultVitalSign.vitalSignData.init();
+                mBpmAnalysisViewModel = new BpmAnalysisViewModel(new Application(), requireContext());
             }
-            if (mTrackingOverlayView != null) {
-                FaceDetectorResult result = resultBundle.getResults().get(0);
-                mTrackingOverlayView.setResults(result,
-                        resultBundle.inputImageWidth,
-                        resultBundle.inputImageHeight);
-                mTrackingOverlayView.invalidate();
-            }
-            if(mProgressBar.getProgress() != (sNthFrame/(Vital.BATCH_SIZE * Vital.FRAME_WINDOW_SIZE / 100))){
-                updateProgressBar(sNthFrame/(Vital.BATCH_SIZE * Vital.FRAME_WINDOW_SIZE / 100));
-            }
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-        readyForNextImage();
-        if(isFinishAnalysis){
-            Intent intent = new Intent(getContext(), ResultActivity.class);
-            getContext().startActivity(intent);
-//            if(FLAG_INNER_TEST){
-//                mFinishPopup.show();
-//            }else{
-//
-//            }
-        }
-    }
-
-    protected void readyForNextImage() {
-        if (postInferenceCallback != null) {
-            postInferenceCallback.run();
-        }
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        try{
-            mFrontCameraExecutor.shutdown();
-            mFrontCameraExecutor.awaitTermination(
-                    Long.MAX_VALUE,
-                    TimeUnit.NANOSECONDS
-            );
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void onResults(MPImage input, Bitmap original, EnhanceFaceDetector.ResultBundle resultBundle) {
-        lastFrameUtcTimeMs = System.currentTimeMillis();
-        mOriginalBitmap = original;
-        if(sNthFrame <= 600){
-            processImage(input, resultBundle);
-        }
-    }
-
-    private void stopPrediction(String type){
-        if(type.equals(Config.TYPE_OF_BIG)){
-            mGuidePopupText.setText(R.string.face_big_detection);
-        }else if(type.equals(Config.TYPE_OF_SMALL)){
-            mGuidePopupText.setText(R.string.face_no_detection);
-        }else if(type.equals(Config.TYPE_OF_OUT)){
-            mGuidePopupText.setText(R.string.face_out_detection);
-        }
-        mTrackingOverlayView.clear();
-        sNthFrame = 0;
-        mBpmAnalysisViewModel.clearAnalysis();
-        updateProgressBar(mProgressBar.getMin());
-        mGuidePopupView.show();
-        mGreenChart.clearValues();
-        isStopPredict = true;
-    }
-
-    @Override
-    public void onError(String error, int errorCode) {
-
-    }
-
-    public long getLastFrameUtcTimeMs(){
-        return lastFrameUtcTimeMs;
-    }
-
-    private void updateProgressBar(int progress){
-        if((progress == mProgressBar.getMin())
-                && (mProgressBar.getProgress() == mProgressBar.getMin())) return;
-        mProgressBar.setProgress(progress);
-        mProgressBar.invalidate();
-    }
-
-    private void updateVitalSignValue(){
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        });
+        nextPageBtn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void run() {
-                hrValueView.setText(String.valueOf(ResultVitalSign.vitalSignData.HR_result));
-                rrValueView.setText(String.valueOf(ResultVitalSign.vitalSignData.RR_result));
-                sdnnValueView.setText(String.valueOf(ResultVitalSign.vitalSignData.sdnn_result));
-                stressValueView.setText(String.valueOf(ResultVitalSign.vitalSignData.LF_HF_ratio));
-                spo2ValueView.setText(String.valueOf(ResultVitalSign.vitalSignData.spo2_result));
-                sbpValueView.setText(String.valueOf(ResultVitalSign.vitalSignData.SBP));
-                dbpValueView.setText(String.valueOf(ResultVitalSign.vitalSignData.DBP));
+            public void onClick(View v) {
+                Intent intent = new Intent(getContext(), ResultActivity.class);
+                getContext().startActivity(intent);
             }
         });
     }

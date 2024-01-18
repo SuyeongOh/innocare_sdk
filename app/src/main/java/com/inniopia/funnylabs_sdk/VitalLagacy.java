@@ -35,7 +35,7 @@ import uk.me.berndporr.iirj.Butterworth;
 import static java.lang.Math.abs;
 
 public class VitalLagacy {
-    private static final int BUFFER_SIZE = 512;
+    public static final int BUFFER_SIZE = 512;
     public static final int BPM_BUFFER_SIZE = 8;
     public static final int BPM_CALCULATION_FREQUENCY = 64;
     private static final int BP_CALCULATION_FREQUENCY = 512;
@@ -665,6 +665,7 @@ public class VitalLagacy {
         return f_pixel_buff[1];
     }
     public double[] getBvpSignal(){
-        return lastBvpSignal;
+        float filter_interval = VIDEO_FRAME_RATE / (float)BUFFER_SIZE;
+        return Arrays.copyOfRange(lastBvpSignal, (int)(0.83/filter_interval), (int)(2.5/filter_interval));
     }
 }

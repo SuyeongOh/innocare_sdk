@@ -8,6 +8,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Switch;
 
+import com.inniopia.funnylabs_sdk.data.Constant;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -39,7 +41,7 @@ public class InitFragment extends Fragment {
                 Config.USER_BMI = Double.parseDouble(bmi);
 
                 if(cameraDirectionSwitch.isChecked()){
-                    Config.USE_CAMERA_DIRECTION = Config.CAMERA_DIRECTION_BACK;
+                    Config.USE_CAMERA_DIRECTION = Constant.CAMERA_DIRECTION_BACK;
                 }
 
                 bmiInputView.clearFocus();
