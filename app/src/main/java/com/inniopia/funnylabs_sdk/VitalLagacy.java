@@ -73,7 +73,9 @@ public class VitalLagacy {
     private float[] bpm_Buffer = new float[BPM_BUFFER_SIZE];
     private float[] rr_Buffer = new float[BPM_BUFFER_SIZE];
     private int bpm_buffer_index = 0;
-    private double[] lastBvpSignal = new double[254];
+
+    private double[] lastBvpSignal = new double[512];
+    private double[] lastHrSignal = new double[254];
 
     float[] bpm = {0.0f};
     float[] rr = {0.0f};
@@ -111,7 +113,7 @@ public class VitalLagacy {
             lastFrameTime = model.frameUtcTimeMs;
             VIDEO_FRAME_RATE = 1000 / (int)((lastFrameTime - firstFrameTime) / pixelIndex);
             double[] pre_processed = preprocessing(f_pixel_buff,true);
-            lastBvpSignal = pre_processed;
+            lastHrSignal = pre_processed;
             bpm_Buffer[bpm_buffer_index] = (get_HR(pre_processed,BUFFER_SIZE));
             rr_Buffer[bpm_buffer_index] = (get_RR(pre_processed,BUFFER_SIZE));
             bpm_buffer_index = (bpm_buffer_index + 1) % BPM_BUFFER_SIZE;
@@ -151,6 +153,8 @@ public class VitalLagacy {
             double valley_avg = get_peak_avg(preprocessed_g,false);
             Log.d("BP",""+peak_avg+":"+valley_avg);
             double bmi = Config.USER_BMI;
+
+            if(bmi == 0) bmi = 20.1f;
 
             //원래는 23.7889
             lastResult.SBP = 23.7889 + (95.4335 * peak_avg) + (4.5958 * bmi) - (5.109 * peak_avg * bmi);
@@ -229,12 +233,14 @@ public class VitalLagacy {
 
             double[] comp2 = col_2.arrayCopy();
 
+            lastBvpSignal = comp2;
             DiscreteFourier fft_r = new DiscreteFourier(comp2);
             fft_r.dft();
 
             return fft_r.returnAbsolute(true);
         }
 
+        lastBvpSignal = v_g.arrayCopy();
         DiscreteFourier fft_r = new DiscreteFourier(v_g.arrayCopy());
         fft_r.dft();
 
@@ -664,8 +670,12 @@ public class VitalLagacy {
     public double[] getGreenSignal(){
         return f_pixel_buff[1];
     }
-    public double[] getBvpSignal(){
+    public double[] getHrSignal(){
         float filter_interval = VIDEO_FRAME_RATE / (float)BUFFER_SIZE;
-        return Arrays.copyOfRange(lastBvpSignal, (int)(0.83/filter_interval), (int)(2.5/filter_interval));
+        return Arrays.copyOfRange(lastHrSignal, (int)(0.83/filter_interval), (int)(2.5/filter_interval));
+    }
+
+    public double[] getBvpSignal(){
+        return lastBvpSignal;
     }
 }

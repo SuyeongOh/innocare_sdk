@@ -67,6 +67,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private CommonPopupView mGuidePopupView;
     private AlertDialog mFinishPopup;
     private TextView mGuidePopupText;
+    private LineChart mHrChart;
     private LineChart mBvpChart;
     private LineChart mGreenChart;
     private View mVitalGroup;
@@ -81,6 +82,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private Button nextPageBtn;
 
     private View vitalValueLayout;
+    private LineDataSet mHrDataset;
     private LineDataSet mBvpDataset;
     private LineDataSet mGreenData;
 
@@ -133,6 +135,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
             mVitalGroup.setVisibility(View.VISIBLE);
             mBvpChart = view.findViewById(R.id.bvp_chart);
             mGreenChart = view.findViewById(R.id.green_chart);
+            mHrChart = view.findViewById(R.id.hr_chart);
             initChart();
         }
 
@@ -276,9 +279,11 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                     VitalLagacy lagacy = vital.getVitalLagacy();
 
                     HandlerThread thread_g = new HandlerThread("G signal Thread");
+                    HandlerThread thread_hr = new HandlerThread("hr signal Thread");
                     HandlerThread thread_bvp = new HandlerThread("bvp signal Thread");
                     thread_g.start();
                     thread_bvp.start();
+                    thread_hr.start();
                     new Handler(thread_g.getLooper()).post(new Runnable() {
                         @Override
                         public void run() {
@@ -289,11 +294,12 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                             }
                             mGreenData = new LineDataSet(entryList, "");
                             mGreenData.setDrawCircles(false);
-                            mGreenData.setColor(Color.CYAN);
+                            mGreenData.setColor(Color.GREEN);
                             LineData data = new LineData(mGreenData);
                             mGreenChart.setData(data);
                             mGreenChart.notifyDataSetChanged();
                             mGreenChart.invalidate();
+                            thread_g.quitSafely();
                         }
                     });
 
@@ -303,9 +309,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                             public void run() {
                                 List<Entry> entryList = new ArrayList<>();
                                 double[] bvp_signal = lagacy.getBvpSignal();
-                                float filter_interval = VitalLagacy.VIDEO_FRAME_RATE / (float)VitalLagacy.BUFFER_SIZE;
                                 for(int i = 0; i < bvp_signal.length; i++){
-                                    entryList.add(new Entry((float)(i + 0.83/filter_interval) * filter_interval * 60, (float)bvp_signal[i]));
+                                    entryList.add(new Entry(i, (float)bvp_signal[i]));
                                 }
                                 mBvpDataset = new LineDataSet(entryList, "");
                                 mBvpDataset.setDrawCircles(false);
@@ -314,10 +319,31 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                 mBvpChart.setData(data);
                                 mBvpChart.notifyDataSetChanged();
                                 mBvpChart.invalidate();
+                                thread_bvp.quitSafely();
+                            }
+                        });
+                        new Handler(thread_hr.getLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                List<Entry> entryList = new ArrayList<>();
+                                double[] bvp_signal = lagacy.getHrSignal();
+                                float filter_interval = VitalLagacy.VIDEO_FRAME_RATE / (float)VitalLagacy.BUFFER_SIZE;
+                                for(int i = 0; i < bvp_signal.length; i++){
+                                    entryList.add(new Entry((float)(i + 0.83/filter_interval) * filter_interval * 60, (float)bvp_signal[i]));
+                                }
+                                mHrDataset = new LineDataSet(entryList, "");
+                                mHrDataset.setDrawCircles(false);
+                                mHrDataset.setColor(Color.CYAN);
+                                LineData data = new LineData(mHrDataset);
+                                mHrChart.setData(data);
+                                mHrChart.notifyDataSetChanged();
+                                mHrChart.invalidate();
+                                thread_hr.quitSafely();
                             }
                         });
                         updateVitalSignValue();
                     }
+
                 }
             }
             if (mTrackingOverlayView != null) {
@@ -428,6 +454,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     }
 
     private void initChart(){
+        //BVP chart
         mBvpChart.getDescription().setText("BVP");
         mBvpChart.getDescription().setEnabled(true);
         Legend legend = mBvpChart.getLegend();
@@ -457,8 +484,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         yAxisLeft.setDrawAxisLine(false);
         yAxisLeft.setTextColor(Color.BLACK);
         yAxisLeft.setDrawAxisLine(false);
+        yAxisLeft.resetAxisMinimum();
         yAxisLeft.setAxisLineWidth(2);
-        yAxisLeft.setAxisMinimum(0f); // 최솟값
 
         // YAxis(Left) (오른쪽) - 선 유무, 데이터 최솟값/최댓값, 색상
         YAxis yAxis = mBvpChart.getAxisRight();
@@ -466,10 +493,11 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         yAxis.setTextColor(Color.BLACK);
         yAxis.setDrawAxisLine(false);
         yAxis.setAxisLineWidth(2);
-        yAxis.setAxisMinimum(0f); // 최솟값
+        yAxisLeft.resetAxisMinimum();
         yAxis.setAxisMaximum((float) 1); // 최댓값
         yAxis.setGranularity((float) 0.1);
 
+        //G signal Chart
         mGreenChart.getDescription().setText("G signal");
         mGreenChart.getDescription().setEnabled(true);
         Legend legend_g = mGreenChart.getLegend();
@@ -507,6 +535,45 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         yAxis_g.setAxisMinimum(0f); // 최솟값
         yAxis_g.setAxisMaximum((float) 512); // 최댓값
         yAxis_g.setGranularity((float) 512);
+
+        //HR chart
+        mHrChart.getDescription().setText("HR");
+        mHrChart.getDescription().setEnabled(true);
+        Legend legend_hr = mHrChart.getLegend();
+        legend_hr.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
+        legend_hr.setHorizontalAlignment(Legend.LegendHorizontalAlignment.LEFT);
+        legend_hr.setForm(Legend.LegendForm.CIRCLE);
+        legend_hr.setFormSize(10);
+        legend_hr.setTextSize(13);
+        legend_hr.setTextColor(Color.parseColor("#A3A3A3"));
+        legend_hr.setOrientation(Legend.LegendOrientation.VERTICAL);
+        legend_hr.setDrawInside(true);
+        legend_hr.setYEntrySpace(3);
+
+        // XAxis (아래쪽) - 선 유무, 사이즈, 색상, 축 위치 설정
+        XAxis xAxis_hr = mHrChart.getXAxis();
+        xAxis_hr.setDrawAxisLine(false);
+        xAxis_hr.setDrawGridLines(false);
+        xAxis_hr.setPosition(XAxis.XAxisPosition.BOTTOM); // x축 데이터 표시 위치
+        xAxis_hr.setGranularity(1f);
+        xAxis_hr.setTextSize(14f);
+        xAxis_hr.setTextColor(Color.BLACK);
+        xAxis_hr.setSpaceMin(0.1f); // Chart 맨 왼쪽 간격 띄우기
+        xAxis_hr.setSpaceMax(0.1f); // Chart 맨 오른쪽 간격 띄우기
+
+        // YAxis(Right) (왼쪽) - 선 유무, 데이터 최솟값/최댓값, 색상
+        YAxis yAxisLeft_hr = mHrChart.getAxisLeft();
+        yAxisLeft_hr.setDrawAxisLine(false);
+
+        // YAxis(Left) (오른쪽) - 선 유무, 데이터 최솟값/최댓값, 색상
+        YAxis yAxis_hr = mHrChart.getAxisRight();
+        yAxis_hr.setDrawLabels(false); // label 삭제
+        yAxis_hr.setTextColor(Color.BLACK);
+        yAxis_hr.setDrawAxisLine(false);
+        yAxis_hr.setAxisLineWidth(2);
+        yAxis_hr.setAxisMinimum(0f); // 최솟값
+        yAxis_hr.setAxisMaximum((float) 512); // 최댓값
+        yAxis_hr.setGranularity((float) 512);
     }
 
     private void initListener(){
