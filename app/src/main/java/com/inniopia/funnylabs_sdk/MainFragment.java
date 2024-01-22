@@ -166,31 +166,18 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
         faceDetector = new EnhanceFaceDetector(requireContext(), this);
         faceDetector.setupFaceDetector();
-
-        thread_g = new HandlerThread("G signal Thread");
-        thread_hr = new HandlerThread("hr signal Thread");
-        thread_bvp = new HandlerThread("bvp signal Thread");
-        thread_g.start();
-        thread_bvp.start();
-        thread_hr.start();
-
-        cameraThread = new HandlerThread("CameraThread");
-        cameraThread.start();
-        cameraHandler = new Handler(cameraThread.getLooper());
-        imageReaderThread = new HandlerThread("imageReaderThread");
-        imageReaderThread.start();
-        imageReaderHandler = new Handler(imageReaderThread.getLooper());
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         FrameLayout cameraContainer = view.findViewById(R.id.container_surface);
         View surfaceView = LayoutInflater.from(requireContext()).inflate(
                 R.layout.layout_surface_container, cameraContainer, false);
         cameraContainer.addView(surfaceView);
+
+        initThread();
 
         //Camera2
         autoFitSurfaceView = view.findViewById(R.id.view_finder_camera2);
@@ -269,6 +256,22 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
             public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
             }
         });
+    }
+
+    private void initThread(){
+        thread_g = new HandlerThread("G signal Thread");
+        thread_hr = new HandlerThread("hr signal Thread");
+        thread_bvp = new HandlerThread("bvp signal Thread");
+        thread_g.start();
+        thread_bvp.start();
+        thread_hr.start();
+
+        cameraThread = new HandlerThread("CameraThread");
+        cameraThread.start();
+        cameraHandler = new Handler(cameraThread.getLooper());
+        imageReaderThread = new HandlerThread("imageReaderThread");
+        imageReaderThread.start();
+        imageReaderHandler = new Handler(imageReaderThread.getLooper());
     }
 
     private void initCamera() {
@@ -454,12 +457,30 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     @Override
     public void onStop() {
         super.onStop();
+        cameraHandler.removeCallbacksAndMessages(null);
+        imageReaderHandler.removeCallbacksAndMessages(null);
+        Camera.close();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
         Camera.close();
         thread_g.quitSafely();
         thread_bvp.quitSafely();
         thread_hr.quitSafely();
         cameraThread.quitSafely();
         imageReaderThread.quitSafely();
+        mFrontCameraExecutor.shutdown();
+        try{
+            mFrontCameraExecutor.awaitTermination(
+                    Long.MAX_VALUE,
+                    TimeUnit.NANOSECONDS
+            );
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
     }
 
     private Runnable postInferenceCallback;
@@ -604,23 +625,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     protected void readyForNextImage() {
         if (postInferenceCallback != null) {
             postInferenceCallback.run();
-        }
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        try{
-            thread_g.quitSafely();
-            thread_bvp.quitSafely();
-            thread_hr.quitSafely();
-            mFrontCameraExecutor.shutdown();
-            mFrontCameraExecutor.awaitTermination(
-                    Long.MAX_VALUE,
-                    TimeUnit.NANOSECONDS
-            );
-        }catch (Exception e){
-            e.printStackTrace();
         }
     }
 
