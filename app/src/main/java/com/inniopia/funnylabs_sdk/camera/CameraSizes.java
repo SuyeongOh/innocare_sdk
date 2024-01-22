@@ -28,7 +28,7 @@ public class CameraSizes {
 
     public static SmartSize getDisplaySmartSize(Display display){
         Point p = new Point();
-        display.getRealSize(p);
+        display.getSize(p);
         return new SmartSize(p.x, p.y);
     }
 

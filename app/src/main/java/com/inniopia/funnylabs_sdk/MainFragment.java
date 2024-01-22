@@ -78,6 +78,7 @@ import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 public class MainFragment extends Fragment implements EnhanceFaceDetector.DetectorListener {
 
@@ -145,9 +146,9 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private boolean calibrationFinish = false;
     private boolean calibrationTimerStart = false;
 
-    HandlerThread thread_g = new HandlerThread("G signal Thread");
-    HandlerThread thread_hr = new HandlerThread("hr signal Thread");
-    HandlerThread thread_bvp = new HandlerThread("bvp signal Thread");
+    private HandlerThread thread_g;
+    private HandlerThread thread_hr;
+    private HandlerThread thread_bvp;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -166,9 +167,13 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         faceDetector = new EnhanceFaceDetector(requireContext(), this);
         faceDetector.setupFaceDetector();
 
+        thread_g = new HandlerThread("G signal Thread");
+        thread_hr = new HandlerThread("hr signal Thread");
+        thread_bvp = new HandlerThread("bvp signal Thread");
         thread_g.start();
         thread_bvp.start();
         thread_hr.start();
+
         cameraThread = new HandlerThread("CameraThread");
         cameraThread.start();
         cameraHandler = new Handler(cameraThread.getLooper());
@@ -326,7 +331,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
                 @Override
                 public void onDisconnected(@NonNull CameraDevice camera) {
-                    requireActivity().finish();
+                    refreshFragment();
                 }
 
                 @Override
@@ -444,6 +449,17 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         } catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Camera.close();
+        thread_g.quitSafely();
+        thread_bvp.quitSafely();
+        thread_hr.quitSafely();
+        cameraThread.quitSafely();
+        imageReaderThread.quitSafely();
     }
 
     private Runnable postInferenceCallback;
@@ -879,5 +895,12 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     }
     private void logCameraAccessException(Exception e){
         Log.e("Camera", "Can not accessed in Camera : " + e.getMessage());
+    }
+
+    private void refreshFragment() {
+        getParentFragmentManager().beginTransaction()
+                .detach(this)
+                .attach(this)
+                .commit();
     }
 }

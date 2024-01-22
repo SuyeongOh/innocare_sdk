@@ -126,8 +126,8 @@ public class VitalLagacy {
             Log.d("BPM", "" + bpm[0] /i + "cnt" + i);
             Log.d("BPM", "RR" + rr[0] /i + "cnt" + i);
 
-            lastResult.HR_result = Math.round(bpm[0] /(i));
-            lastResult.RR_result = Math.round(rr[0] /(i));
+            lastResult.HR_result = get_HR(pre_processed,BUFFER_SIZE);
+            lastResult.RR_result = get_RR(pre_processed,BUFFER_SIZE);
 
             //--------SDNN --------------------//
             lastResult.sdnn_result = SDNN(bpm_Buffer, bpm_buffer_index);
@@ -159,8 +159,8 @@ public class VitalLagacy {
 
             lastResult.BP = lastResult.SBP * 0.33 + lastResult.DBP * 0.66;
 
-            lastResult.HR_result = FloatUtils.mean(bpm_Buffer);
-            lastResult.RR_result = FloatUtils.mean(rr_Buffer);
+//            lastResult.HR_result = FloatUtils.mean(bpm_Buffer);
+//            lastResult.RR_result = FloatUtils.mean(rr_Buffer);
         }
         bufferIndex = (bufferIndex + 1) % BUFFER_SIZE;
         pixelIndex++;
