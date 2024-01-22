@@ -2,23 +2,40 @@ package com.inniopia.funnylabs_sdk;
 
 import android.app.AlertDialog;
 import android.app.Application;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCaptureSession;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraDevice;
+import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.params.StreamConfigurationMap;
+import android.media.Image;
+import android.media.ImageReader;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
+import android.util.Size;
 import android.view.LayoutInflater;
 import android.view.Surface;
+import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -30,15 +47,20 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.mediapipe.framework.image.BitmapImageBuilder;
 import com.google.mediapipe.framework.image.MPImage;
 import com.google.mediapipe.tasks.components.containers.NormalizedKeypoint;
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetectorResult;
+import com.inniopia.funnylabs_sdk.camera.AutoFitSurfaceView;
+import com.inniopia.funnylabs_sdk.camera.CameraSizes;
 import com.inniopia.funnylabs_sdk.data.Constant;
 import com.inniopia.funnylabs_sdk.data.ResultVitalSign;
 import com.inniopia.funnylabs_sdk.ui.CommonPopupView;
+import com.inniopia.funnylabs_sdk.utils.ImageUtils;
 import com.robinhood.ticker.TickerView;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -53,11 +75,26 @@ import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 public class MainFragment extends Fragment implements EnhanceFaceDetector.DetectorListener {
 
+    //Camera2 variable
+
+    private CameraCharacteristics characteristics;
+    private CameraManager cameraManager;
+    private ImageReader imageReader;
+    private HandlerThread cameraThread;
+    private HandlerThread imageReaderThread;
+    private CameraDevice Camera;
+    private String cameraId;
+    private CameraCaptureSession cameraCaptureSession;
+    private AutoFitSurfaceView autoFitSurfaceView;
+    private Handler cameraHandler;
+    private Handler imageReaderHandler;
+    private ExecutorService cameraExecutor;
 
     //View Variable
     private PreviewView mCameraView;
@@ -66,11 +103,14 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private BpmAnalysisViewModel mBpmAnalysisViewModel;
     private CommonPopupView mGuidePopupView;
     private AlertDialog mFinishPopup;
+    private AlertDialog mCountdownPopup;
     private TextView mGuidePopupText;
     private LineChart mHrChart;
     private LineChart mBvpChart;
     private LineChart mGreenChart;
     private View mVitalGroup;
+    private TextView mCountdownTextView;
+    private CountDownTimer mCalibrationTimer;
     private TickerView hrValueView;
     private TickerView rrValueView;
     private TickerView sdnnValueView;
@@ -102,6 +142,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private int sNthFrame = 0;
 
     private boolean isStopPredict = false;
+    private boolean calibrationFinish = false;
+    private boolean calibrationTimerStart = false;
 
     HandlerThread thread_g = new HandlerThread("G signal Thread");
     HandlerThread thread_hr = new HandlerThread("hr signal Thread");
@@ -114,16 +156,25 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
         mFrontCameraExecutor = Executors.newSingleThreadExecutor();
 
-        mFrontCameraExecutor.execute(
-                () -> {
-                    faceDetector = new EnhanceFaceDetector(requireContext(), this);
-                    faceDetector.setupFaceDetector();
-                }
-        );
+//        mFrontCameraExecutor.execute(
+//                () -> {
+//                    faceDetector = new EnhanceFaceDetector(requireContext(), this);
+//                    faceDetector.setupFaceDetector();
+//                }
+//        );
+
+        faceDetector = new EnhanceFaceDetector(requireContext(), this);
+        faceDetector.setupFaceDetector();
 
         thread_g.start();
         thread_bvp.start();
         thread_hr.start();
+        cameraThread = new HandlerThread("CameraThread");
+        cameraThread.start();
+        cameraHandler = new Handler(cameraThread.getLooper());
+        imageReaderThread = new HandlerThread("imageReaderThread");
+        imageReaderThread.start();
+        imageReaderHandler = new Handler(imageReaderThread.getLooper());
     }
 
     @Nullable
@@ -131,6 +182,13 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_main, container, false);
+        FrameLayout cameraContainer = view.findViewById(R.id.container_surface);
+        View surfaceView = LayoutInflater.from(requireContext()).inflate(
+                R.layout.layout_surface_container, cameraContainer, false);
+        cameraContainer.addView(surfaceView);
+
+        //Camera2
+        autoFitSurfaceView = view.findViewById(R.id.view_finder_camera2);
 
         //Face Detection
         mCameraView = view.findViewById(R.id.view_finder);
@@ -138,7 +196,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         mProgressBar = view.findViewById(R.id.progress);
 
 
-        if(Config.FLAG_INNER_TEST){
+        if (Config.FLAG_INNER_TEST) {
             mVitalGroup = view.findViewById(R.id.vital_info_group);
             mVitalGroup.setVisibility(View.VISIBLE);
             mBvpChart = view.findViewById(R.id.bvp_chart);
@@ -149,7 +207,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
         //Face Guide Popup
         View viewNoDetectionPopup = inflater.inflate(R.layout.layout_detection_popup, container, false);
-        mGuidePopupView = new CommonPopupView(requireContext(),viewNoDetectionPopup);
+        mGuidePopupView = new CommonPopupView(requireContext(), viewNoDetectionPopup);
         mGuidePopupText = viewNoDetectionPopup.findViewById(R.id.text_face_popup);
         mGuidePopupText.setText(R.string.face_no_detection);
 
@@ -167,6 +225,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         reStartBtn.setVisibility(View.INVISIBLE);
         nextPageBtn.setVisibility(View.INVISIBLE);
         initListener();
+        initLoadingView();
+        initCalibrationTimer();
         return view;
     }
 
@@ -175,14 +235,172 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         super.onViewCreated(view, savedInstanceState);
         requireActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        mCameraView.post(new Runnable() {
+//        mCameraView.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                setUpCamera(mCameraView.getSurfaceProvider());
+//            }
+//        });
+        cameraId = chooseCamera();
+        autoFitSurfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
-            public void run() {
-                setUpCamera(mCameraView.getSurfaceProvider());
+            public void surfaceCreated(@NonNull SurfaceHolder holder) {
+                Size previewSize = CameraSizes.getPreviewOutputSize(
+                        autoFitSurfaceView.getDisplay()
+                        , characteristics
+                        , SurfaceHolder.class);
+                autoFitSurfaceView.setAspectRatio(
+                        previewSize.getWidth(),
+                        previewSize.getHeight()
+                );
+                view.post(() -> initCamera());
+            }
+
+            @Override
+            public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
+            }
+
+            @Override
+            public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
             }
         });
     }
 
+    private void initCamera() {
+        openCamera(cameraManager, cameraId, cameraHandler);
+        Size[] sizeArray = (characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(Constant.PIXEL_FORMAT));
+        Size maxSize = sizeArray[0];
+//        for (Size size : sizeArray) {
+//            maxSize = (maxSize.getWidth() * maxSize.getHeight() > size.getWidth() * size.getHeight())
+//                    ? maxSize : size;
+//        }
+        //size[7] = FHD
+        Size selectedSize = sizeArray[7];
+
+        imageReader = ImageReader.newInstance(autoFitSurfaceView.getWidth(), autoFitSurfaceView.getHeight(), Constant.PIXEL_FORMAT, Constant.IMAGE_BUFFER_SIZE);
+        createCaptureSession(Camera, Arrays.asList(autoFitSurfaceView.getHolder().getSurface(), imageReader.getSurface()), cameraHandler);
+    }
+
+    private String chooseCamera(){
+        cameraManager = (CameraManager) requireContext().getApplicationContext()
+                .getSystemService(Context.CAMERA_SERVICE);
+        try {
+            for(String cameraId : cameraManager.getCameraIdList()){
+                characteristics = cameraManager.getCameraCharacteristics(cameraId);
+                StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+                if(map != null){
+                    int lens = characteristics.get(CameraCharacteristics.LENS_FACING);
+                    if(Config.USE_CAMERA_DIRECTION == Constant.CAMERA_DIRECTION_FRONT){
+                        if(lens == CameraCharacteristics.LENS_FACING_FRONT){
+                            return cameraId;
+                        }
+                    }else{
+                        if(lens == CameraCharacteristics.LENS_FACING_BACK){
+                            return cameraId;
+                        }
+                    }
+                }
+            }
+        }catch (CameraAccessException e){
+            logCameraAccessException(e);
+        }
+        return null;
+    }
+    private void openCamera(CameraManager manager, String cameraId, Handler handler) {
+        if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        try{
+            manager.openCamera(cameraId, new CameraDevice.StateCallback() {
+                @Override
+                public void onOpened(@NonNull CameraDevice camera) {
+                    Camera = camera;
+                }
+
+                @Override
+                public void onDisconnected(@NonNull CameraDevice camera) {
+                    requireActivity().finish();
+                }
+
+                @Override
+                public void onError(@NonNull CameraDevice camera, int error) {
+
+                }
+
+            }, handler);
+        } catch (CameraAccessException e){
+            e.printStackTrace();
+            logCameraAccessException(e);
+        }
+    }
+
+    private void createCaptureSession(CameraDevice camera, List<Surface> targets, Handler handler){
+        try{
+            camera.createCaptureSession(targets, new CameraCaptureSession.StateCallback() {
+                @Override
+                public void onConfigured(@NonNull CameraCaptureSession session) {
+                    try {
+                        cameraCaptureSession = session;
+                        CaptureRequest.Builder requestBuilder = null;
+                        requestBuilder = Camera.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+                        requestBuilder.addTarget(autoFitSurfaceView.getHolder().getSurface());
+                        requestBuilder.addTarget(imageReader.getSurface());
+                        cameraCaptureSession.setRepeatingRequest(requestBuilder.build(), null, cameraHandler);
+                    } catch (CameraAccessException e) {
+                        logCameraAccessException(e);
+                    }
+                    imageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
+                        @Override
+                        public void onImageAvailable(ImageReader reader) {
+                            Log.d("Camera2", "Image Available !!");
+                            Image inputImage = reader.acquireLatestImage();
+                            if(inputImage == null) {
+                                return;
+                            }
+                            Bitmap bitmapImage = ImageUtils.convertYUV420ToARGB8888(inputImage);
+                            if(sNthFrame == 0 && !calibrationTimerStart){
+                                startCalibrationTimer();
+                                calibrationTimerStart = true;
+                                return;
+                            }
+                            if(!calibrationFinish) {
+                                inputImage.close();
+                                return;
+                            }
+                            if(Config.USE_CAMERA_DIRECTION == Constant.CAMERA_DIRECTION_FRONT){
+                                Matrix rotateMatrix = new Matrix();
+                                Matrix flipMatrix = new Matrix();
+                                rotateMatrix.postRotate(-90);
+                                flipMatrix.setScale(-1, 1);
+                                bitmapImage = Bitmap.createBitmap(
+                                        bitmapImage, 0, 0, bitmapImage.getWidth(), bitmapImage.getHeight(), rotateMatrix, false);
+                                bitmapImage = Bitmap.createBitmap(
+                                        bitmapImage, 0, 0, bitmapImage.getWidth(), bitmapImage.getHeight(), flipMatrix, false);
+                            }
+                            inputImage.close();
+                            MPImage input = new BitmapImageBuilder(bitmapImage).build();
+                            faceDetector.detectAsync(input, bitmapImage, SystemClock.uptimeMillis());
+                        }
+                    }, imageReaderHandler);
+
+                }
+                @Override
+                public void onConfigureFailed(@NonNull CameraCaptureSession session) {
+
+                }
+            }, handler);
+        } catch (CameraAccessException e){
+            logCameraAccessException(e);
+        }
+
+    }
     private void setUpCamera(Preview.SurfaceProvider surfaceProvider){
         ListenableFuture<ProcessCameraProvider> cameraProvider
                 = ProcessCameraProvider.getInstance(requireContext());
@@ -285,9 +503,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 if(Config.FLAG_INNER_TEST){
                     Vital vital = mBpmAnalysisViewModel.getVital();
                     VitalLagacy lagacy = vital.getVitalLagacy();
-
-
-
                     new Handler(thread_g.getLooper()).post(new Runnable() {
                         @Override
                         public void run() {
@@ -352,7 +567,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 mTrackingOverlayView.setResults(result,
                         resultBundle.inputImageWidth,
                         resultBundle.inputImageHeight);
-                mTrackingOverlayView.invalidate();
             }
             if(mProgressBar.getProgress() != (sNthFrame/(Vital.BATCH_SIZE * Vital.FRAME_WINDOW_SIZE / 100))){
                 updateProgressBar(sNthFrame/(Vital.BATCH_SIZE * Vital.FRAME_WINDOW_SIZE / 100));
@@ -436,11 +650,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     }
 
     private void updateProgressBar(int progress){
-        Log.d("jupiter", "current progress bar : " + mProgressBar.getProgress());
-        Log.d("jupiter", "update progress bar : " + progress);
         if((progress == mProgressBar.getMin())
-                && (mProgressBar.getProgress() == mProgressBar.getMin()))
-            return;
+                && (mProgressBar.getProgress() == mProgressBar.getMin())) return;
         mProgressBar.setProgress(progress);
         mProgressBar.invalidate();
     }
@@ -586,7 +797,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private void initListener(){
         mFinishPopup = new AlertDialog.Builder(getContext())
                 .setTitle("분석 마침")
-                .setMessage("결과화면으로 넘어가시겠습니까?")
+                .setMessage("결과화면으로 넘어가시겠습니까?\n")
                 .setPositiveButton("예", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -610,6 +821,10 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 sNthFrame = 0;
                 ResultVitalSign.vitalSignData.init();
                 mBpmAnalysisViewModel = new BpmAnalysisViewModel(new Application(), requireContext());
+                reStartBtn.setVisibility(View.INVISIBLE);
+                nextPageBtn.setVisibility(View.INVISIBLE);
+                calibrationFinish = false;
+                calibrationTimerStart = false;
             }
         });
         nextPageBtn.setOnClickListener(new View.OnClickListener() {
@@ -619,5 +834,50 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 getContext().startActivity(intent);
             }
         });
+    }
+
+    private void initLoadingView(){
+        mCountdownTextView = new TextView(getContext());
+        mCountdownTextView.setLayoutParams(new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        mCountdownTextView.setPadding(40, 40, 40, 40);
+        mCountdownTextView.setTextSize(25);
+
+
+    }
+
+    private void initCalibrationTimer(){
+        mCalibrationTimer = new CountDownTimer(4000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                mCountdownTextView.setText(String.valueOf(millisUntilFinished/1000));
+            }
+
+            @Override
+            public void onFinish() {
+                calibrationFinish = true;
+                mCountdownPopup.dismiss();
+            }
+        };
+    }
+
+    private void startCalibrationTimer(){
+        if(mCountdownPopup == null) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+            mCountdownPopup = builder.setTitle("Countdown Timer")
+                    .setView(mCountdownTextView)
+                    .setCancelable(false)
+                    .create();
+        }
+        mCountdownPopup.show();
+        mCalibrationTimer.start();
+    }
+    private String summaryResult(){
+        return String.format("HR : %f\nRR : %f",
+                ResultVitalSign.vitalSignData.HR_result,
+                ResultVitalSign.vitalSignData.RR_result);
+    }
+    private void logCameraAccessException(Exception e){
+        Log.e("Camera", "Can not accessed in Camera : " + e.getMessage());
     }
 }

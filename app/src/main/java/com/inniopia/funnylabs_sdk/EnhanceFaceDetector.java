@@ -15,6 +15,7 @@ import com.google.mediapipe.framework.image.MPImage;
 import com.google.mediapipe.tasks.components.containers.NormalizedKeypoint;
 import com.google.mediapipe.tasks.core.BaseOptions;
 import com.google.mediapipe.tasks.core.Delegate;
+import com.google.mediapipe.tasks.core.OutputHandler;
 import com.google.mediapipe.tasks.vision.core.RunningMode;
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetector;
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetectorResult;
@@ -35,7 +36,7 @@ public class EnhanceFaceDetector {
     private DetectorListener mDetectorListener;
 
     private Context mContext;
-    private Bitmap tempBitmap;
+    private Bitmap originalBitmap;
 
     private FaceDetector faceDetector;
 
@@ -70,6 +71,9 @@ public class EnhanceFaceDetector {
             if(runningMode.equals(RunningMode.LIVE_STREAM)){
                 optionBuilder.setResultListener(this::returnLivestreamResult)
                     .setErrorListener(this::returnLivestreamError);
+            }else if(runningMode.equals(RunningMode.IMAGE)){
+                optionBuilder.setResultListener(this::returnLivestreamResult)
+                        .setErrorListener(this::returnLivestreamError);
             }
 
             FaceDetector.FaceDetectorOptions options = optionBuilder.build();
@@ -102,7 +106,7 @@ public class EnhanceFaceDetector {
 
         for(int i = 0; i < 512; i++){
             Bitmap curFrame = retriever.getFrameAtIndex(i);
-            tempBitmap = curFrame;
+            originalBitmap = curFrame;
             Bitmap argb8888 = curFrame.copy(Bitmap.Config.ARGB_8888, false);
             MPImage mpImage = new BitmapImageBuilder(argb8888).build();
             FaceDetectorResult result = faceDetector.detectForVideo(mpImage, i*33);
@@ -139,11 +143,16 @@ public class EnhanceFaceDetector {
 
         Bitmap rotatedBitmap = Bitmap.createBitmap(buffer, 0, 0, buffer.getWidth(), buffer.getHeight(), matrix, true);
         MPImage mpImage = new BitmapImageBuilder(rotatedBitmap).build();
-        tempBitmap = rotatedBitmap;
+        originalBitmap = rotatedBitmap;
         detectAsync(mpImage, frametime);
     }
 
     public void detectAsync(MPImage mpImage, long frameTime){
+        faceDetector.detectAsync(mpImage, frameTime);
+    }
+
+    public void detectAsync(MPImage mpImage, Bitmap original, long frameTime){
+        originalBitmap = original;
         faceDetector.detectAsync(mpImage, frameTime);
     }
 
@@ -153,7 +162,7 @@ public class EnhanceFaceDetector {
 
         mDetectorListener.onResults(
                 input,
-                tempBitmap,
+                originalBitmap,
                 new ResultBundle(
                         Collections.singletonList(result),
                         inferencetime,

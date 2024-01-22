@@ -24,10 +24,7 @@ public class OverlayView extends View {
     private Float scaleFactorWidth = 1f;
     private Float scaleFactorHeight = 1f;
     private Rect bounds;
-
-    private static final int FULL_SIZE_OF_WIDTH = 720;
-    private static final int FULL_SIZE_OF_HEIGHT = 1280;
-    private static final int FULL_SIZE_OF_DETECTION = FULL_SIZE_OF_WIDTH * FULL_SIZE_OF_HEIGHT;
+    private static final int FULL_SIZE_OF_DETECTION = Config.FULL_SIZE_OF_WIDTH * Config.FULL_SIZE_OF_HEIGHT;
     //popup의 민감도를 바꾸려면 이부분을 바꾸세요.
 
     private float STANDARD_BIG_SIZE_OF_POPUP = 1f/2f;
@@ -62,15 +59,15 @@ public class OverlayView extends View {
                 canvas.drawRect(drawRect, boxPaint);
 
                 Path facePath = new Path();
-                int width = getWidth();
-                int height = getHeight();
-                facePath.lineTo(keypointList.get(5).x() * width, keypointList.get(5).y() * height);
-                facePath.lineTo(keypointList.get(3).x() * width, keypointList.get(3).y() * height);
-                facePath.lineTo(keypointList.get(4).x() * width, keypointList.get(4).y() * height);
-                facePath.lineTo(keypointList.get(5).x() * width, keypointList.get(5).y() * height);
-
-                canvas.clipPath(facePath);
-                canvas.drawPath(facePath, boxPaint);
+//                int width = getWidth();
+//                int height = getHeight();
+//                facePath.lineTo(keypointList.get(5).x() * width, keypointList.get(5).y() * height);
+//                facePath.lineTo(keypointList.get(3).x() * width, keypointList.get(3).y() * height);
+//                facePath.lineTo(keypointList.get(4).x() * width, keypointList.get(4).y() * height);
+//                facePath.lineTo(keypointList.get(5).x() * width, keypointList.get(5).y() * height);
+//
+//                canvas.clipPath(facePath);
+//                canvas.drawPath(facePath, boxPaint);
 
                 if(isClear){
                     isClear = false;
@@ -113,7 +110,7 @@ public class OverlayView extends View {
     }
 
     public boolean isOutBoundary(RectF bBox){
-        return (bBox.left + bBox.width() > FULL_SIZE_OF_WIDTH)
-                || bBox.top + bBox.height() > FULL_SIZE_OF_HEIGHT;
+        return (bBox.left + bBox.width() > Config.FULL_SIZE_OF_WIDTH)
+                || bBox.top + bBox.height() > Config.FULL_SIZE_OF_HEIGHT;
     }
 }
