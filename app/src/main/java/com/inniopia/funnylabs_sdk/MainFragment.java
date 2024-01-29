@@ -25,7 +25,6 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
-import android.os.SystemClock;
 import android.util.Log;
 import android.util.Size;
 import android.view.LayoutInflater;
@@ -78,7 +77,6 @@ import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 
 public class MainFragment extends Fragment implements EnhanceFaceDetector.DetectorListener {
 
@@ -142,6 +140,9 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
     private int sNthFrame = 0;
 
+    private final Rect faceROI = new Rect();
+    private boolean isFinishAnalysis = false;
+    private boolean isFixedFace = false;
     private boolean isStopPredict = false;
     private boolean calibrationFinish = false;
     private boolean calibrationTimerStart = false;
@@ -166,6 +167,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
         faceDetector = new EnhanceFaceDetector(requireContext(), this);
         faceDetector.setupFaceDetector();
+        //faceDetector.detectVideoFile();
     }
 
     @Nullable
@@ -372,16 +374,25 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                             if(inputImage == null) {
                                 return;
                             }
-                            Bitmap bitmapImage = ImageUtils.convertYUV420ToARGB8888(inputImage);
+                            if(isFinishAnalysis){
+                                inputImage.close();
+                                return;
+                            }
+                            inputImage.getPlanes();
+                            Bitmap tempImage = ImageUtils.convertYUV420ToARGB8888(inputImage);
                             if(sNthFrame == 0 && !calibrationTimerStart){
                                 startCalibrationTimer();
                                 calibrationTimerStart = true;
+                                inputImage.close();
                                 return;
                             }
                             if(!calibrationFinish) {
                                 inputImage.close();
                                 return;
                             }
+                            inputImage.close();
+
+                            Bitmap bitmapImage = tempImage.copy(Bitmap.Config.ARGB_8888, false);
                             if(Config.USE_CAMERA_DIRECTION == Constant.CAMERA_DIRECTION_FRONT){
                                 Matrix rotateMatrix = new Matrix();
                                 Matrix flipMatrix = new Matrix();
@@ -392,9 +403,88 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                 bitmapImage = Bitmap.createBitmap(
                                         bitmapImage, 0, 0, bitmapImage.getWidth(), bitmapImage.getHeight(), flipMatrix, false);
                             }
-                            inputImage.close();
-                            MPImage input = new BitmapImageBuilder(bitmapImage).build();
-                            faceDetector.detectAsync(input, bitmapImage, SystemClock.uptimeMillis());
+
+                            if(isFixedFace){
+                                Bitmap faceImage = Bitmap.createBitmap(bitmapImage, faceROI.left, faceROI.top, faceROI.width(), faceROI.height());
+                                isFinishAnalysis = mBpmAnalysisViewModel.addFaceImageModel(new FaceImageModel(faceImage, System.currentTimeMillis()));
+                                if(Config.FLAG_INNER_TEST) {
+                                    Vital vital = mBpmAnalysisViewModel.getVital();
+                                    VitalLagacy lagacy = vital.getVitalLagacy();
+                                    new Handler(thread_g.getLooper()).post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            List<Entry> entryList = new ArrayList<>();
+                                            double[] g_signal = lagacy.getGreenSignal();
+                                            for (int i = 0; i < g_signal.length; i++) {
+                                                entryList.add(new Entry(i, (float) g_signal[i]));
+                                            }
+                                            mGreenData = new LineDataSet(entryList, "");
+                                            mGreenData.setDrawCircles(false);
+                                            mGreenData.setColor(Color.GREEN);
+                                            LineData data = new LineData(mGreenData);
+                                            mGreenChart.setData(data);
+                                            mGreenChart.notifyDataSetChanged();
+                                            mGreenChart.invalidate();
+                                        }
+                                    });
+                                }
+                                Log.d("Result", "Nth Frame : " + sNthFrame);
+                                if(mProgressBar.getProgress() != (sNthFrame/(Vital.BATCH_SIZE * Vital.FRAME_WINDOW_SIZE / 100))){
+                                    updateProgressBar(sNthFrame/(Vital.BATCH_SIZE * Vital.FRAME_WINDOW_SIZE / 100));
+                                }
+                                sNthFrame ++;
+                                if(isFinishAnalysis){
+                                    if(Config.FLAG_INNER_TEST){
+                                        if (sNthFrame % VitalLagacy.BPM_CALCULATION_FREQUENCY == 0) {
+                                            VitalLagacy lagacy = mBpmAnalysisViewModel.getVital().getVitalLagacy();
+                                            new Handler(thread_bvp.getLooper()).post(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    List<Entry> entryList = new ArrayList<>();
+                                                    double[] bvp_signal = lagacy.getBvpSignal();
+                                                    for (int i = 0; i < bvp_signal.length; i++) {
+                                                        entryList.add(new Entry(i, (float) bvp_signal[i]));
+                                                    }
+                                                    mBvpDataset = new LineDataSet(entryList, "");
+                                                    mBvpDataset.setDrawCircles(false);
+                                                    mBvpDataset.setColor(Color.MAGENTA);
+                                                    LineData data = new LineData(mBvpDataset);
+                                                    mBvpChart.setData(data);
+                                                    mBvpChart.notifyDataSetChanged();
+                                                    mBvpChart.invalidate();
+                                                }
+                                            });
+                                            new Handler(thread_hr.getLooper()).post(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    List<Entry> entryList = new ArrayList<>();
+                                                    double[] hr_signal = lagacy.getHrSignal();
+                                                    float filter_interval = VitalLagacy.VIDEO_FRAME_RATE / (float) VitalLagacy.BUFFER_SIZE;
+                                                    for (int i = 0; i < hr_signal.length; i++) {
+                                                        entryList.add(new Entry((float) (i + 1 + 0.83 / filter_interval) * filter_interval * 60, (float) hr_signal[i]));
+                                                    }
+                                                    mHrDataset = new LineDataSet(entryList, "");
+                                                    mHrDataset.setDrawCircles(false);
+                                                    mHrDataset.setColor(Color.CYAN);
+                                                    LineData data = new LineData(mHrDataset);
+                                                    mHrChart.setData(data);
+                                                    mHrChart.notifyDataSetChanged();
+                                                    mHrChart.invalidate();
+                                                }
+                                            });
+                                            updateVitalSignValue();
+                                        }
+                                        new Handler(Looper.getMainLooper()).post(() -> mFinishPopup.show());
+                                    }else{
+                                        Intent intent = new Intent(getContext(), ResultActivity.class);
+                                        getContext().startActivity(intent);
+                                    }
+                                }
+                            } else{
+                                MPImage image = new BitmapImageBuilder(bitmapImage).build();
+                                faceDetector.detectAsync(image, bitmapImage ,getLastFrameUtcTimeMs());
+                            }
+
                         }
                     }, imageReaderHandler);
 
@@ -439,7 +529,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         mImageAnalysis = new ImageAnalysis.Builder().setTargetAspectRatio(CAMERA_RATIO)
                  .setTargetRotation(ROTATION)
                  .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
+                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
                  .build();
 
         mImageAnalysis.setAnalyzer(
@@ -522,82 +612,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 isStopPredict = false;
                 mGuidePopupView.dismiss();
 
-                int width = image.getWidth();
-                int height = image.getHeight();
-                float left = facePoints.get(4).x() * width;
-                float right = facePoints.get(5).x() * width;
-                float top = Math.max(facePoints.get(4).y(), facePoints.get(5).y()) * height;
-                float bottom = facePoints.get(3).y() * height;
-                RectF rectF = new RectF(left, top, right, bottom);
-
-                Rect rect = new Rect();
-                box.round(rect);
-                Bitmap croppedFaceBitmap = Bitmap.createBitmap(mOriginalBitmap, rect.left, rect.top, rect.width(), rect.height());
-                faceImageModel = new FaceImageModel(croppedFaceBitmap, getLastFrameUtcTimeMs());
-                Log.d("Result", "Nth Frame : " + sNthFrame);
-                sNthFrame ++;
-                isFinishAnalysis = mBpmAnalysisViewModel.addFaceImageModel(faceImageModel);
-                if(Config.FLAG_INNER_TEST){
-                    Vital vital = mBpmAnalysisViewModel.getVital();
-                    VitalLagacy lagacy = vital.getVitalLagacy();
-                    new Handler(thread_g.getLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            List<Entry> entryList = new ArrayList<>();
-                            double[] g_signal = lagacy.getGreenSignal();
-                            for(int i = 0; i < g_signal.length; i++){
-                                entryList.add(new Entry(i, (float)g_signal[i]));
-                            }
-                            mGreenData = new LineDataSet(entryList, "");
-                            mGreenData.setDrawCircles(false);
-                            mGreenData.setColor(Color.GREEN);
-                            LineData data = new LineData(mGreenData);
-                            mGreenChart.setData(data);
-                            mGreenChart.notifyDataSetChanged();
-                            mGreenChart.invalidate();
-                        }
-                    });
-
-                    if(sNthFrame % VitalLagacy.BPM_CALCULATION_FREQUENCY == 0){
-                        new Handler(thread_bvp.getLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                List<Entry> entryList = new ArrayList<>();
-                                double[] bvp_signal = lagacy.getBvpSignal();
-                                for(int i = 0; i < bvp_signal.length; i++){
-                                    entryList.add(new Entry(i, (float)bvp_signal[i]));
-                                }
-                                mBvpDataset = new LineDataSet(entryList, "");
-                                mBvpDataset.setDrawCircles(false);
-                                mBvpDataset.setColor(Color.MAGENTA);
-                                LineData data = new LineData(mBvpDataset);
-                                mBvpChart.setData(data);
-                                mBvpChart.notifyDataSetChanged();
-                                mBvpChart.invalidate();
-                            }
-                        });
-                        new Handler(thread_hr.getLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                List<Entry> entryList = new ArrayList<>();
-                                double[] bvp_signal = lagacy.getHrSignal();
-                                float filter_interval = VitalLagacy.VIDEO_FRAME_RATE / (float)VitalLagacy.BUFFER_SIZE;
-                                for(int i = 0; i < bvp_signal.length; i++){
-                                    entryList.add(new Entry((float)(i + 0.83/filter_interval) * filter_interval * 60, (float)bvp_signal[i]));
-                                }
-                                mHrDataset = new LineDataSet(entryList, "");
-                                mHrDataset.setDrawCircles(false);
-                                mHrDataset.setColor(Color.CYAN);
-                                LineData data = new LineData(mHrDataset);
-                                mHrChart.setData(data);
-                                mHrChart.notifyDataSetChanged();
-                                mHrChart.invalidate();
-                            }
-                        });
-                        updateVitalSignValue();
-                    }
-
-                }
+                isFixedFace = true;
+                box.round(faceROI);
             }
             if (mTrackingOverlayView != null) {
                 FaceDetectorResult result = resultBundle.getResults().get(0);
@@ -605,21 +621,11 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                         resultBundle.inputImageWidth,
                         resultBundle.inputImageHeight);
             }
-            if(mProgressBar.getProgress() != (sNthFrame/(Vital.BATCH_SIZE * Vital.FRAME_WINDOW_SIZE / 100))){
-                updateProgressBar(sNthFrame/(Vital.BATCH_SIZE * Vital.FRAME_WINDOW_SIZE / 100));
-            }
+
         } catch (Exception e){
             e.printStackTrace();
         }
         readyForNextImage();
-        if(isFinishAnalysis){
-            if(Config.FLAG_INNER_TEST){
-                new Handler(Looper.getMainLooper()).post(() -> mFinishPopup.show());
-            }else{
-                Intent intent = new Intent(getContext(), ResultActivity.class);
-                getContext().startActivity(intent);
-            }
-        }
     }
 
     protected void readyForNextImage() {
@@ -845,6 +851,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 nextPageBtn.setVisibility(View.INVISIBLE);
                 calibrationFinish = false;
                 calibrationTimerStart = false;
+                isFinishAnalysis = false;
+                isFixedFace = false;
             }
         });
         nextPageBtn.setOnClickListener(new View.OnClickListener() {

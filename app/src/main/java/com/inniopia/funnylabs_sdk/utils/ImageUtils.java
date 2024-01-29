@@ -1,7 +1,10 @@
 package com.inniopia.funnylabs_sdk.utils;
 
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.media.Image;
+
+import java.nio.ByteBuffer;
 
 public class ImageUtils {
 
@@ -12,6 +15,17 @@ public class ImageUtils {
     // Always prefer the native implementation if available.
     private static boolean useNativeConversion = false;
 
+    public static Bitmap convertARGB8888ToRGB565(Bitmap bitmap){
+        Bitmap convertBitmap = Bitmap.createBitmap(
+                bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.RGB_565);
+        for(int i = 0; i < convertBitmap.getWidth(); i++){
+            for(int j = 0; j < convertBitmap.getHeight(); j++){
+                int color = bitmap.getPixel(i,j);
+                convertBitmap.setPixel(i, j, color);
+            }
+        }
+        return convertBitmap;
+    }
     public static Bitmap convertYUV420ToARGB8888(Image image){
         if(image == null) return null;
         Image.Plane[] planes = image.getPlanes();

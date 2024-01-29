@@ -14,4 +14,7 @@ public class Config {
 
     public static final int FULL_SIZE_OF_WIDTH = 2736;
     public static final int FULL_SIZE_OF_HEIGHT = 3648;
+
+    public static final double MIN_FREQUENCY = 0.83f;
+    public static final double MAX_FREQUENCY = 2.5f;
 }
