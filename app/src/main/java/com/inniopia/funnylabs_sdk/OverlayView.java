@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.AttributeSet;
@@ -23,6 +24,8 @@ public class OverlayView extends View {
     private Paint boxPaint = new Paint();
     private Float scaleFactorWidth = 1f;
     private Float scaleFactorHeight = 1f;
+    private PointF centerPoint = new PointF(0f, 0f);
+    private float radius;
     private Rect bounds;
     private static final int FULL_SIZE_OF_DETECTION = Config.FULL_SIZE_OF_WIDTH * Config.FULL_SIZE_OF_HEIGHT;
     //popup의 민감도를 바꾸려면 이부분을 바꾸세요.
@@ -73,13 +76,30 @@ public class OverlayView extends View {
                     isClear = false;
                 }
             }
+            return;
         }
+        float realTop = (centerPoint.y - radius/2) * scaleFactorHeight;
+        float realBottom = (centerPoint.y + radius/2) * scaleFactorHeight;
+        float realLeft = (centerPoint.x - radius/2) ;
+        float realRight = (centerPoint.x + radius/2) ;
+        @SuppressLint("DrawAllocation")
+        RectF drawRect = new RectF(realLeft, realTop, realRight, realBottom);
+        canvas.drawRect(drawRect, boxPaint);
+
     }
 
     public void setResults(FaceDetectorResult detectResult, int imageWidth, int imageHeight) {
         result = detectResult;
         scaleFactorWidth = getWidth()/ (float)imageWidth;
-        scaleFactorHeight =  getHeight() / (float)imageHeight;
+        scaleFactorHeight = getHeight() / (float)imageHeight;
+        invalidate();
+    }
+
+    public void setResults(PointF nosePoint, float eyeDistance, int imageWidth, int imageHeight) {
+        centerPoint = nosePoint;
+        radius = eyeDistance;
+        scaleFactorWidth = getWidth()/ (float)imageWidth;
+        scaleFactorHeight = getHeight() / (float)imageHeight;
         invalidate();
     }
 

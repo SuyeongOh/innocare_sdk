@@ -3,19 +3,15 @@ package com.inniopia.funnylabs_sdk;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
-import android.graphics.Rect;
-import android.graphics.RectF;
+import android.graphics.PointF;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.SystemClock;
-import android.util.Log;
 
 import com.google.mediapipe.framework.image.BitmapImageBuilder;
 import com.google.mediapipe.framework.image.MPImage;
-import com.google.mediapipe.tasks.components.containers.NormalizedKeypoint;
 import com.google.mediapipe.tasks.core.BaseOptions;
 import com.google.mediapipe.tasks.core.Delegate;
-import com.google.mediapipe.tasks.core.OutputHandler;
 import com.google.mediapipe.tasks.vision.core.RunningMode;
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetector;
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetectorResult;
@@ -40,7 +36,7 @@ public class EnhanceFaceDetector {
 
     private FaceDetector faceDetector;
 
-    private static int Video_Index = 0;
+    private android.media.FaceDetector detector;
 
     public EnhanceFaceDetector(Context context, DetectorListener listener){
         mContext = context;
@@ -86,13 +82,9 @@ public class EnhanceFaceDetector {
 
     public void detectVideoFile(){
         Vital vital = new Vital(mContext);
-        if(Video_Index >= 256) {
-            Log.d("result", "finish");
-            return;
-        }
         Uri videoUri = Uri.EMPTY;
         try{
-            videoUri = Uri.parse(FileUtils.assetFilePath(mContext, "test_face_3_80.mp4"));
+            videoUri = Uri.parse(FileUtils.assetFilePath(mContext, "ubfc_subject_1.mp4"));
         } catch (Exception e){
             e.printStackTrace();
         }
@@ -103,27 +95,38 @@ public class EnhanceFaceDetector {
         FaceImageModel faceImageModel = null;
 
         int width = retriever.getFrameAtIndex(0).getWidth();
+        int height = retriever.getFrameAtIndex(0).getHeight();
+
+        detector = new android.media.FaceDetector(width, height, 1);
+        android.media.FaceDetector.Face[] face = new android.media.FaceDetector.Face[1];
+        //detector.findFaces(ImageUtils.convertARGB8888ToRGB565(bitmapImage), face);
+
+        int faceNum = 0;
+        int frameIdx = 0;
+        PointF midPoint = new PointF();
+
+        while(faceNum == 0){
+            Bitmap curFrame = retriever.getFrameAtIndex(frameIdx);
+            originalBitmap = curFrame;
+            Bitmap inputFrame = curFrame.copy(Bitmap.Config.RGB_565, false);
+            faceNum = detector.findFaces(inputFrame, face);
+            frameIdx++;
+        }
+        face[0].getMidPoint(midPoint);
+        int left = (int)(midPoint.x - face[0].eyesDistance());
+        int right = (int)(midPoint.x + face[0].eyesDistance());
+        int top = (int)(midPoint.y - face[0].eyesDistance());
+        int bottom = (int)(midPoint.y + face[0].eyesDistance());
 
         for(int i = 0; i < 512; i++){
-            Bitmap curFrame = retriever.getFrameAtIndex(i);
+            Bitmap curFrame = retriever.getFrameAtIndex(frameIdx);
             originalBitmap = curFrame;
-            Bitmap argb8888 = curFrame.copy(Bitmap.Config.ARGB_8888, false);
-            MPImage mpImage = new BitmapImageBuilder(argb8888).build();
-            FaceDetectorResult result = faceDetector.detectForVideo(mpImage, i*33);
-            RectF box = result.detections().get(0).boundingBox();
-            List<NormalizedKeypoint> keypoint = result.detections().get(0).keypoints().get();
-            float left = keypoint.get(4).x() * width;
-            float right = keypoint.get(5).x() * width;
 
-            float top = box.top;
-            float bottom = box.bottom;
+            Bitmap croppedFaceBitmap = Bitmap.createBitmap(curFrame, left, top, right-left, bottom-top);
 
-            RectF rectF = new RectF(left, top, right, bottom);
-            Rect rect = new Rect();
-            rectF.round(rect);
-            Bitmap croppedFaceBitmap = Bitmap.createBitmap(curFrame, rect.left, rect.top, rect.width(), rect.height());
             faceImageModel = new FaceImageModel(croppedFaceBitmap, 0);
-            vital.calculatePOSVital(faceImageModel, false);
+            vital.calculatePOSVital(faceImageModel, true);
+            frameIdx++;
         }
         long time = faceImageModel.frameUtcTimeMs;
     }

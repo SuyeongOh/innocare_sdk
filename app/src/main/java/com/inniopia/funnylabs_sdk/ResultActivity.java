@@ -2,73 +2,170 @@ package com.inniopia.funnylabs_sdk;
 
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.widget.TextView;
+import android.view.View;
+import android.widget.Button;
 
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
 import com.inniopia.funnylabs_sdk.data.ResultVitalSign;
-import com.inniopia.funnylabs_sdk.ui.SimpleRecyclerViewAdapter;
+import com.inniopia.funnylabs_sdk.data.VitalChartData;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 public class ResultActivity extends AppCompatActivity {
 
-    private TextView hr_textview;
-    private TextView rr_textview;
-    private TextView stress_textview;
-    private TextView spo2_textview;
-    private TextView sdnn_textview;
-    private TextView sbp_textview;
-    private TextView dbp_textview;
+    private LineChart greenChart;
+    private LineChart smoothChart;
+    private LineChart coreChart;
+    private LineChart detrendChart;
+    private LineChart bpfChart;
+    private LineChart fftChart;
+    private LineChart bvpChart;
+    private LineChart hrChart;
 
-    private RecyclerView hr_listView;
-    private RecyclerView rr_listView;
-
+    private Button restartBtn;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result);
 
-        bind();
+        restartBtn = findViewById(R.id.result_recheck_btn);
+        restartBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                VitalChartData.START_FILTER_INDEX = 0;
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                getApplicationContext().startActivity(intent);
+            }
+        });
+        bindChart();
         setValue();
     }
 
-    private void bind(){
-        hr_textview = findViewById(R.id.result_hr_value);
-        rr_textview = findViewById(R.id.result_rr_value);
-        stress_textview = findViewById(R.id.result_stress_value);
-        spo2_textview = findViewById(R.id.result_spo2_value);
-        sdnn_textview = findViewById(R.id.result_sdnn_value);
-        sbp_textview = findViewById(R.id.result_sbp_value);
-        dbp_textview = findViewById(R.id.result_dbp_value);
-        hr_listView = findViewById(R.id.result_hr_list);
-        rr_listView = findViewById(R.id.result_rr_list);
-        LinearLayoutManager hrLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
-        LinearLayoutManager rrLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
-        hr_listView.setLayoutManager(hrLayoutManager);
-        rr_listView.setLayoutManager(rrLayoutManager);
+    private void bindChart(){
+        greenChart = findViewById(R.id.g_chart);
+        smoothChart = findViewById(R.id.smooth_chart);
+        coreChart = findViewById(R.id.core_chart);
+        detrendChart = findViewById(R.id.detrend_chart);
+        bpfChart = findViewById(R.id.bpf_chart);
+        bvpChart = findViewById(R.id.bvp_chart);
+        fftChart = findViewById(R.id.fft_chart);
+        hrChart = findViewById(R.id.hr_chart);
+
+        initChart(greenChart, "G Signal");
+        initChart(smoothChart, "Smooth");
+        initChart(coreChart, "Core");
+        initChart(detrendChart, "Detrend");
+        initChart(bpfChart, "BPF");
+        initChart(bvpChart, "BVP");
+        initChart(fftChart, "FFT");
+        initChart(hrChart, "FFT-HR");
+
+        setLineChart();
     }
 
     @SuppressLint("SetTextI18n")
     private void setValue(){
         ResultVitalSign vitalsign = ResultVitalSign.vitalSignData;
-
-        hr_textview.setText(Double.toString(vitalsign.HR_result));
-        rr_textview.setText(Double.toString(vitalsign.RR_result));
-        stress_textview.setText(Double.toString(vitalsign.LF_HF_ratio));
-        spo2_textview.setText(Double.toString(vitalsign.spo2_result));
-        sdnn_textview.setText(Double.toString(vitalsign.sdnn_result));
-        sbp_textview.setText(Double.toString(vitalsign.SBP));
-        dbp_textview.setText(Double.toString(vitalsign.DBP));
-
-        SimpleRecyclerViewAdapter hr_adapter = new SimpleRecyclerViewAdapter(vitalsign.hr_array);
-        SimpleRecyclerViewAdapter rr_adapter = new SimpleRecyclerViewAdapter(vitalsign.rr_array);
-        hr_listView.setAdapter(hr_adapter);
-        rr_listView.setAdapter(rr_adapter);
     }
 
+    private void setLineChart(){
+        drawChart(greenChart, VitalChartData.R_SIGNAL, Color.RED);
+        drawChart(greenChart, VitalChartData.G_SIGNAL, Color.GREEN);
+        drawChart(greenChart, VitalChartData.B_SIGNAL, Color.BLUE);
+        drawChart(smoothChart, VitalChartData.SMOOTH_R_SIGNAL, Color.RED);
+        drawChart(smoothChart, VitalChartData.SMOOTH_G_SIGNAL, Color.GREEN);
+        drawChart(smoothChart, VitalChartData.SMOOTH_B_SIGNAL, Color.BLUE);
+        drawChart(coreChart, VitalChartData.CORE_SIGNAL, Color.MAGENTA);
+        drawChart(detrendChart, VitalChartData.DETREND_SIGNAL, Color.CYAN);
+        drawChart(bpfChart, VitalChartData.BPF_SIGNAL, Color.BLUE);
+        drawChart(bvpChart, VitalChartData.BVP_SIGNAL, Color.MAGENTA);
+        drawChart(fftChart, VitalChartData.FFT_SIGNAL, Color.CYAN);
+        drawHrChart(hrChart, VitalChartData.HR_SIGNAL, Color.BLUE);
+    }
+
+    private void initChart(LineChart chart, String description){
+        chart.getDescription().setText(description);
+        chart.getDescription().setEnabled(true);
+        Legend legend = chart.getLegend();
+        legend.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
+        legend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.LEFT);
+        legend.setForm(Legend.LegendForm.CIRCLE);
+        legend.setFormSize(10);
+        legend.setTextSize(13);
+        legend.setTextColor(Color.parseColor("#A3A3A3"));
+        legend.setOrientation(Legend.LegendOrientation.VERTICAL);
+        legend.setDrawInside(true);
+        legend.setYEntrySpace(3);
+
+        XAxis xAxis = chart.getXAxis();
+        xAxis.setDrawAxisLine(false);
+        xAxis.setDrawGridLines(false);
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM); // x축 데이터 표시 위치
+        xAxis.setGranularity(1f);
+        xAxis.setTextSize(14f);
+        xAxis.setTextColor(Color.BLACK);
+        xAxis.setSpaceMin(0.1f); // Chart 맨 왼쪽 간격 띄우기
+        xAxis.setSpaceMax(0.1f); // Chart 맨 오른쪽 간격 띄우기
+
+        // YAxis(Right) (왼쪽) - 선 유무, 데이터 최솟값/최댓값, 색상
+        YAxis yAxisLeft = chart.getAxisLeft();
+        yAxisLeft.setDrawAxisLine(false);
+        yAxisLeft.setTextColor(Color.BLACK);
+        yAxisLeft.setDrawAxisLine(false);
+        yAxisLeft.resetAxisMinimum();
+        yAxisLeft.setAxisLineWidth(2);
+
+        // YAxis(Left) (오른쪽) - 선 유무, 데이터 최솟값/최댓값, 색상
+        YAxis yAxis = chart.getAxisRight();
+        yAxis.setDrawLabels(false); // label 삭제
+        yAxis.setTextColor(Color.BLACK);
+        yAxis.setDrawAxisLine(false);
+        yAxis.setAxisLineWidth(2);
+        yAxisLeft.resetAxisMinimum();
+        yAxis.setAxisMaximum((float) 1); // 최댓값
+        yAxis.setGranularity((float) 0.1);
+    }
+
+    private void drawChart(LineChart chart, double[] signal, int lineColor){
+        List<Entry> entryList = new ArrayList<>();
+        for (int i = 0; i < signal.length; i++) {
+            entryList.add(new Entry(i, (float) signal[i]));
+        }
+        LineDataSet dataset = new LineDataSet(entryList, "");
+        dataset.setDrawCircles(false);
+        dataset.setColor(lineColor);
+        LineData data = new LineData(dataset);
+        chart.setData(data);
+        chart.notifyDataSetChanged();
+        chart.invalidate();
+    }
+    private void drawHrChart(LineChart chart, double[] signal, int lineColor){
+        List<Entry> entryList = new ArrayList<>();
+        for (int i = 0; i < signal.length; i++) {
+            entryList.add(
+                    new Entry(VitalChartData.FILTER_INTERVAL * 60 * i, (float) signal[i]));
+        }
+        LineDataSet dataset = new LineDataSet(entryList, "");
+        dataset.setDrawCircles(false);
+        dataset.setColor(lineColor);
+        LineData data = new LineData(dataset);
+        chart.setData(data);
+        chart.notifyDataSetChanged();
+        chart.invalidate();
+    }
     @Override
     public void onBackPressed() {
         super.onBackPressed();

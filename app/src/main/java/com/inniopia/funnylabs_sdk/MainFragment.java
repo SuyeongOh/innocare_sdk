@@ -369,7 +369,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                     imageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
                         @Override
                         public void onImageAvailable(ImageReader reader) {
-                            Log.d("Camera2", "Image Available !!");
                             Image inputImage = reader.acquireLatestImage();
                             if(inputImage == null) {
                                 return;
@@ -437,41 +436,41 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                     if(Config.FLAG_INNER_TEST){
                                         if (sNthFrame % VitalLagacy.BPM_CALCULATION_FREQUENCY == 0) {
                                             VitalLagacy lagacy = mBpmAnalysisViewModel.getVital().getVitalLagacy();
-                                            new Handler(thread_bvp.getLooper()).post(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    List<Entry> entryList = new ArrayList<>();
-                                                    double[] bvp_signal = lagacy.getBvpSignal();
-                                                    for (int i = 0; i < bvp_signal.length; i++) {
-                                                        entryList.add(new Entry(i, (float) bvp_signal[i]));
-                                                    }
-                                                    mBvpDataset = new LineDataSet(entryList, "");
-                                                    mBvpDataset.setDrawCircles(false);
-                                                    mBvpDataset.setColor(Color.MAGENTA);
-                                                    LineData data = new LineData(mBvpDataset);
-                                                    mBvpChart.setData(data);
-                                                    mBvpChart.notifyDataSetChanged();
-                                                    mBvpChart.invalidate();
-                                                }
-                                            });
-                                            new Handler(thread_hr.getLooper()).post(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    List<Entry> entryList = new ArrayList<>();
-                                                    double[] hr_signal = lagacy.getHrSignal();
-                                                    float filter_interval = VitalLagacy.VIDEO_FRAME_RATE / (float) VitalLagacy.BUFFER_SIZE;
-                                                    for (int i = 0; i < hr_signal.length; i++) {
-                                                        entryList.add(new Entry((float) (i + 1 + 0.83 / filter_interval) * filter_interval * 60, (float) hr_signal[i]));
-                                                    }
-                                                    mHrDataset = new LineDataSet(entryList, "");
-                                                    mHrDataset.setDrawCircles(false);
-                                                    mHrDataset.setColor(Color.CYAN);
-                                                    LineData data = new LineData(mHrDataset);
-                                                    mHrChart.setData(data);
-                                                    mHrChart.notifyDataSetChanged();
-                                                    mHrChart.invalidate();
-                                                }
-                                            });
+//                                            new Handler(thread_bvp.getLooper()).post(new Runnable() {
+//                                                @Override
+//                                                public void run() {
+//                                                    List<Entry> entryList = new ArrayList<>();
+//                                                    double[] bvp_signal = lagacy.getBvpSignal();
+//                                                    for (int i = 0; i < bvp_signal.length; i++) {
+//                                                        entryList.add(new Entry(i, (float) bvp_signal[i]));
+//                                                    }
+//                                                    mBvpDataset = new LineDataSet(entryList, "");
+//                                                    mBvpDataset.setDrawCircles(false);
+//                                                    mBvpDataset.setColor(Color.MAGENTA);
+//                                                    LineData data = new LineData(mBvpDataset);
+//                                                    mBvpChart.setData(data);
+//                                                    mBvpChart.notifyDataSetChanged();
+//                                                    mBvpChart.invalidate();
+//                                                }
+//                                            });
+//                                            new Handler(thread_hr.getLooper()).post(new Runnable() {
+//                                                @Override
+//                                                public void run() {
+//                                                    List<Entry> entryList = new ArrayList<>();
+//                                                    double[] hr_signal = lagacy.getHrSignal();
+//                                                    float filter_interval = VitalLagacy.VIDEO_FRAME_RATE / (float) VitalLagacy.BUFFER_SIZE;
+//                                                    for (int i = 0; i < hr_signal.length; i++) {
+//                                                        entryList.add(new Entry((float) (i + 1 + 0.83 / filter_interval) * filter_interval * 60, (float) hr_signal[i]));
+//                                                    }
+//                                                    mHrDataset = new LineDataSet(entryList, "");
+//                                                    mHrDataset.setDrawCircles(false);
+//                                                    mHrDataset.setColor(Color.CYAN);
+//                                                    LineData data = new LineData(mHrDataset);
+//                                                    mHrChart.setData(data);
+//                                                    mHrChart.notifyDataSetChanged();
+//                                                    mHrChart.invalidate();
+//                                                }
+//                                            });
                                             updateVitalSignValue();
                                         }
                                         new Handler(Looper.getMainLooper()).post(() -> mFinishPopup.show());
@@ -746,7 +745,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         mGreenChart.getDescription().setEnabled(true);
         Legend legend_g = mGreenChart.getLegend();
         legend_g.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
-        legend_g.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
         legend_g.setForm(Legend.LegendForm.CIRCLE);
         legend_g.setFormSize(10);
         legend_g.setTextSize(13);

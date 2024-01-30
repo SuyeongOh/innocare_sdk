@@ -11,6 +11,7 @@ import com.github.psambit9791.jdsp.transform.DiscreteFourier;
 import com.github.psambit9791.jdsp.transform.Hilbert;
 import com.inniopia.funnylabs_sdk.bvp.BandPassFilter;
 import com.inniopia.funnylabs_sdk.data.ResultVitalSign;
+import com.inniopia.funnylabs_sdk.data.VitalChartData;
 import com.paramsen.noise.Noise;
 
 import java.util.ArrayList;
@@ -105,6 +106,7 @@ public class VitalLagacy {
             VIDEO_FRAME_RATE = 1000 / (int)((lastFrameTime - firstFrameTime) / pixelIndex);
             double[] pre_processed = preprocessing_omit(f_pixel_buff);
             //double[] pre_processed = preprocessing_2sr(f_pixel_buff, true);
+            VitalChartData.FFT_SIGNAL = pre_processed;
             lastHrSignal = pre_processed;
             bpm_Buffer[bpm_buffer_index] = (get_HR(pre_processed,BUFFER_SIZE));
             rr_Buffer[bpm_buffer_index] = (get_RR(pre_processed,BUFFER_SIZE));
@@ -164,10 +166,18 @@ public class VitalLagacy {
 
     public double[] preprocessing_omit(double[][] pixel){
         //pixel = setRGB.setRGB();
+        VitalChartData.R_SIGNAL = pixel[0];
+        VitalChartData.G_SIGNAL = pixel[1];
+        VitalChartData.B_SIGNAL = pixel[2];
+
         double[][] smoothPixel = new double[pixel.length][pixel[0].length];
         smoothPixel[0] = new Smooth(pixel[0], 4, "rectangular").smoothSignal();
         smoothPixel[1] = new Smooth(pixel[1], 4, "rectangular").smoothSignal();
         smoothPixel[2] = new Smooth(pixel[2], 4, "rectangular").smoothSignal();
+
+        VitalChartData.SMOOTH_R_SIGNAL = smoothPixel[0];
+        VitalChartData.SMOOTH_G_SIGNAL = smoothPixel[0];
+        VitalChartData.SMOOTH_B_SIGNAL = smoothPixel[0];
 
         Vec v = new DenseVector(1);
         v.mutableAdd(1);
@@ -188,8 +198,12 @@ public class VitalLagacy {
 
         Vec bvpVec = Y.getRow(1);
 
+        VitalChartData.CORE_SIGNAL = bvpVec.arrayCopy();
+
         Detrend d2 = new Detrend(bvpVec.arrayCopy(), DETREND_POWER);
         double[] d_g = d2.detrendSignal();
+
+        VitalChartData.DETREND_SIGNAL = d_g;
 
         BandPassFilter bpf = new BandPassFilter(Config.MAX_FREQUENCY, Config.MIN_FREQUENCY);
 
@@ -197,7 +211,11 @@ public class VitalLagacy {
         for(int i = 1; i < d_g.length; i++){
             bpf_signal[i] = bpf.filter(d_g[i], frameTimeArray[i] - frameTimeArray[i - 1]);
         }
+
+        VitalChartData.BPF_SIGNAL = bpf_signal;
         lastBvpSignal = bpf_signal;
+
+        VitalChartData.BVP_SIGNAL = lastBvpSignal;
         DiscreteFourier fft_r = new DiscreteFourier(bpf_signal);
         fft_r.dft();
 
@@ -316,9 +334,11 @@ public class VitalLagacy {
 
 
     public float get_HR(double[] real_dft, int buff_size) {
+        ArrayList<Double> hr_signal = new ArrayList<>();
         int max_index = 0;
         float max_val = 0;
         float filter_interval = VIDEO_FRAME_RATE / (float)buff_size;
+        VitalChartData.FILTER_INTERVAL = filter_interval;
         for( int i =0 ; i < real_dft.length ; i++){
             if( i * filter_interval < 0.83 )
                 continue;
@@ -326,11 +346,20 @@ public class VitalLagacy {
                 break;
             }
             else{
+                if(VitalChartData.START_FILTER_INDEX == 0){
+                    VitalChartData.START_FILTER_INDEX = i;
+                }
+                hr_signal.add(real_dft[i]);
                 if( real_dft[i] > max_val ) {
                     max_val = (float) real_dft[i];
                     max_index = i;
                 }
             }
+        }
+
+        VitalChartData.HR_SIGNAL = new double[hr_signal.size()];
+        for(int i = 0; i < hr_signal.size(); i++){
+            VitalChartData.HR_SIGNAL[i] = hr_signal.get(i);
         }
         return max_index * filter_interval * 60;
     }
