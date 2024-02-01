@@ -339,6 +339,7 @@ public class VitalLagacy {
         float max_val = 0;
         float filter_interval = 1 / (float)VIDEO_FRAME_RATE;
         VitalChartData.FILTER_INTERVAL = filter_interval;
+        VitalChartData.FRAME_RATE = VIDEO_FRAME_RATE;
         Log.d("Juptier", "frame rate : " + VIDEO_FRAME_RATE);
         for( int i =0 ; i < real_dft.length ; i++){
             if( i * filter_interval < 0.75 )

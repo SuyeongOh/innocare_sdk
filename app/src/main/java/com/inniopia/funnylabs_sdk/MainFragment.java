@@ -481,7 +481,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                 }
                             } else{
                                 MPImage image = new BitmapImageBuilder(bitmapImage).build();
-                                faceDetector.detectAsync(image, bitmapImage ,getLastFrameUtcTimeMs());
+                                faceDetector.detectAsync(image, bitmapImage ,System.currentTimeMillis());
                             }
 
                         }

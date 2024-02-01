@@ -36,12 +36,14 @@ public class ResultActivity extends AppCompatActivity {
     private LineChart hrChart;
 
     private Button restartBtn;
+    @SuppressLint("DefaultLocale")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result);
 
         restartBtn = findViewById(R.id.result_recheck_btn);
+        restartBtn.setText(String.format("재검사, frame : %d", VitalChartData.FRAME_RATE));
         restartBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

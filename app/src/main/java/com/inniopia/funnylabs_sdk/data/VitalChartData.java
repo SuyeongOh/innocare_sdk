@@ -2,6 +2,7 @@ package com.inniopia.funnylabs_sdk.data;
 
 public class VitalChartData {
     public static float FILTER_INTERVAL;
+    public static int FRAME_RATE;
     public static int START_FILTER_INDEX = 0;
     public static double[] R_SIGNAL;
     public static double[] G_SIGNAL;
