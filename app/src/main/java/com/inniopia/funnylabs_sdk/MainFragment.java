@@ -873,7 +873,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     }
 
     private void initCalibrationTimer(){
-        mCalibrationTimer = new CountDownTimer(4000, 1000) {
+        mCalibrationTimer = new CountDownTimer(3999, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 mCountdownTextView.setText(String.valueOf(millisUntilFinished/1000));
