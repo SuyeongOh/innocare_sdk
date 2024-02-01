@@ -103,7 +103,7 @@ public class VitalLagacy {
 
         if (bufferIndex % BPM_CALCULATION_FREQUENCY == BPM_CALCULATION_FREQUENCY - 1) {
             lastFrameTime = model.frameUtcTimeMs;
-            VIDEO_FRAME_RATE = 1000 / (int)((lastFrameTime - firstFrameTime) / pixelIndex);
+            VIDEO_FRAME_RATE = (int)(1000 / ((float)((lastFrameTime - firstFrameTime) / (float)pixelIndex)));
             double[] pre_processed = preprocessing_omit(f_pixel_buff);
             //double[] pre_processed = preprocessing_2sr(f_pixel_buff, true);
             VitalChartData.FFT_SIGNAL = pre_processed;
@@ -337,17 +337,20 @@ public class VitalLagacy {
         ArrayList<Double> hr_signal = new ArrayList<>();
         int max_index = 0;
         float max_val = 0;
-        float filter_interval = VIDEO_FRAME_RATE / (float)buff_size;
+        float filter_interval = 1 / (float)VIDEO_FRAME_RATE;
         VitalChartData.FILTER_INTERVAL = filter_interval;
+        Log.d("Juptier", "frame rate : " + VIDEO_FRAME_RATE);
         for( int i =0 ; i < real_dft.length ; i++){
-            if( i * filter_interval < 0.83 )
+            if( i * filter_interval < 0.75 )
                 continue;
             else if( i * filter_interval > 2.5){
+                Log.d("Juptier", "last filter index : " + i);
                 break;
             }
             else{
                 if(VitalChartData.START_FILTER_INDEX == 0){
                     VitalChartData.START_FILTER_INDEX = i;
+                    Log.d("Juptier", "start filter index : " + i);
                 }
                 hr_signal.add(real_dft[i]);
                 if( real_dft[i] > max_val ) {
