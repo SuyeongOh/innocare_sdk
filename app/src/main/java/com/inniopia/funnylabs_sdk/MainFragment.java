@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.hardware.camera2.CameraAccessException;
@@ -20,6 +21,7 @@ import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -158,12 +160,10 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
         mFrontCameraExecutor = Executors.newSingleThreadExecutor();
 
-//        mFrontCameraExecutor.execute(
-//                () -> {
-//                    faceDetector = new EnhanceFaceDetector(requireContext(), this);
-//                    faceDetector.setupFaceDetector();
-//                }
-//        );
+        //밝기 100%로 올리기
+        WindowManager.LayoutParams layoutParams = getActivity().getWindow().getAttributes();
+        layoutParams.screenBrightness = 1.0f;
+        getActivity().getWindow().setAttributes(layoutParams);
 
         faceDetector = new EnhanceFaceDetector(requireContext(), this);
         faceDetector.setupFaceDetector();
@@ -239,14 +239,38 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         autoFitSurfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(@NonNull SurfaceHolder holder) {
-                Size previewSize = CameraSizes.getPreviewOutputSize(
-                        autoFitSurfaceView.getDisplay()
-                        , characteristics
-                        , SurfaceHolder.class);
-                autoFitSurfaceView.setAspectRatio(
-                        previewSize.getWidth(),
-                        previewSize.getHeight()
-                );
+                openCamera(cameraManager, cameraId, cameraHandler);
+                Size[] sizeArray = (characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(Constant.PIXEL_FORMAT));
+                Size imageReaderSize = null;
+                for(int i = sizeArray.length - 1; i > 0; i--){
+
+                    if(CameraSizes.isHdRatio(sizeArray[i]) && (sizeArray[i].getWidth() >= 640)){
+                        imageReaderSize = sizeArray[i];
+                        break;
+                    }
+                }
+                if(imageReaderSize == null){
+                    imageReaderSize = new Size(autoFitSurfaceView.getWidth(), autoFitSurfaceView.getHeight());
+                }
+                imageReader = ImageReader.newInstance(imageReaderSize.getWidth(), imageReaderSize.getHeight(), Constant.PIXEL_FORMAT, Constant.IMAGE_BUFFER_SIZE);
+
+
+
+                Point displaySize = new Point();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    getActivity().getDisplay().getRealSize(displaySize);
+                }
+
+                //세로 방향 인지 판단
+                int rotation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
+                if(rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270){ // landscape
+                    displaySize.y = displaySize.x * imageReaderSize.getWidth() / imageReaderSize.getHeight();
+                    autoFitSurfaceView.setAspectRatio(displaySize.y, displaySize.x);
+                } else{ // portrait 16:9 >> 9:16 전환
+                    displaySize.y = displaySize.x * imageReaderSize.getWidth() / imageReaderSize.getHeight();
+                    autoFitSurfaceView.setAspectRatio(displaySize.x, displaySize.y);
+                }
+
                 view.post(() -> initCamera());
             }
 
@@ -277,17 +301,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     }
 
     private void initCamera() {
-        openCamera(cameraManager, cameraId, cameraHandler);
-        Size[] sizeArray = (characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(Constant.PIXEL_FORMAT));
-        Size maxSize = sizeArray[0];
-//        for (Size size : sizeArray) {
-//            maxSize = (maxSize.getWidth() * maxSize.getHeight() > size.getWidth() * size.getHeight())
-//                    ? maxSize : size;
-//        }
-        //size[7] = FHD
-        Size selectedSize = sizeArray[7];
-
-        imageReader = ImageReader.newInstance(autoFitSurfaceView.getWidth(), autoFitSurfaceView.getHeight(), Constant.PIXEL_FORMAT, Constant.IMAGE_BUFFER_SIZE);
         createCaptureSession(Camera, Arrays.asList(autoFitSurfaceView.getHolder().getSurface(), imageReader.getSurface()), cameraHandler);
     }
 
@@ -435,42 +448,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                 if(isFinishAnalysis){
                                     if(Config.FLAG_INNER_TEST){
                                         if (sNthFrame % VitalLagacy.BPM_CALCULATION_FREQUENCY == 0) {
-                                            VitalLagacy lagacy = mBpmAnalysisViewModel.getVital().getVitalLagacy();
-//                                            new Handler(thread_bvp.getLooper()).post(new Runnable() {
-//                                                @Override
-//                                                public void run() {
-//                                                    List<Entry> entryList = new ArrayList<>();
-//                                                    double[] bvp_signal = lagacy.getBvpSignal();
-//                                                    for (int i = 0; i < bvp_signal.length; i++) {
-//                                                        entryList.add(new Entry(i, (float) bvp_signal[i]));
-//                                                    }
-//                                                    mBvpDataset = new LineDataSet(entryList, "");
-//                                                    mBvpDataset.setDrawCircles(false);
-//                                                    mBvpDataset.setColor(Color.MAGENTA);
-//                                                    LineData data = new LineData(mBvpDataset);
-//                                                    mBvpChart.setData(data);
-//                                                    mBvpChart.notifyDataSetChanged();
-//                                                    mBvpChart.invalidate();
-//                                                }
-//                                            });
-//                                            new Handler(thread_hr.getLooper()).post(new Runnable() {
-//                                                @Override
-//                                                public void run() {
-//                                                    List<Entry> entryList = new ArrayList<>();
-//                                                    double[] hr_signal = lagacy.getHrSignal();
-//                                                    float filter_interval = VitalLagacy.VIDEO_FRAME_RATE / (float) VitalLagacy.BUFFER_SIZE;
-//                                                    for (int i = 0; i < hr_signal.length; i++) {
-//                                                        entryList.add(new Entry((float) (i + 1 + 0.83 / filter_interval) * filter_interval * 60, (float) hr_signal[i]));
-//                                                    }
-//                                                    mHrDataset = new LineDataSet(entryList, "");
-//                                                    mHrDataset.setDrawCircles(false);
-//                                                    mHrDataset.setColor(Color.CYAN);
-//                                                    LineData data = new LineData(mHrDataset);
-//                                                    mHrChart.setData(data);
-//                                                    mHrChart.notifyDataSetChanged();
-//                                                    mHrChart.invalidate();
-//                                                }
-//                                            });
                                             updateVitalSignValue();
                                         }
                                         new Handler(Looper.getMainLooper()).post(() -> mFinishPopup.show());
@@ -579,25 +556,14 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         if(sNthFrame > Vital.BATCH_SIZE * Vital.FRAME_WINDOW_SIZE){
             return;
         }
-        boolean isFinishAnalysis = false;
         List<FaceDetectorResult> faceDetectorResults = resultBundle.getResults();
-
-        FaceImageModel faceImageModel = null;
-
         try {
             if (faceDetectorResults.get(0).detections().size() >= 1) {
                 RectF box = faceDetectorResults.get(0).detections().get(0).boundingBox();
-                List<NormalizedKeypoint> facePoints = faceDetectorResults.get(0).detections().get(0).keypoints().get();
 
                 if(mTrackingOverlayView.isOutBoundary(box)){
                     if(!isStopPredict) {
                         stopPrediction(Constant.TYPE_OF_OUT);
-                    }
-                    readyForNextImage();
-                    return;
-                } else if(mTrackingOverlayView.isBigSize(box)){
-                    if(!isStopPredict) {
-                        stopPrediction(Constant.TYPE_OF_BIG);
                     }
                     readyForNextImage();
                     return;
@@ -612,7 +578,18 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 mGuidePopupView.dismiss();
 
                 isFixedFace = true;
-                box.round(faceROI);
+                if(Config.LARGE_FACE_MODE){
+                    float width = box.width();
+                    float height = box.height();
+                    box.left -= width/2;
+                    box.right += width/2;
+                    box.top -= height/2;
+                    box.bottom += height/2;
+                    box.round(faceROI);
+                } else{
+                    box.round(faceROI);
+                }
+
             }
             if (mTrackingOverlayView != null) {
                 FaceDetectorResult result = resultBundle.getResults().get(0);

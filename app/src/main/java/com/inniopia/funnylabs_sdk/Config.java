@@ -17,4 +17,8 @@ public class Config {
 
     public static final double MIN_FREQUENCY = 0.83f;
     public static final double MAX_FREQUENCY = 2.5f;
+
+    public static final boolean LARGE_FACE_MODE = false;
+
+    public static final int FACE_MODEL_SIZE = 72;
 }

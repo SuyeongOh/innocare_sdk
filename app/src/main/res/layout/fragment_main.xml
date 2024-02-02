@@ -19,7 +19,9 @@
         <FrameLayout
             android:id="@+id/container_surface"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
         <androidx.camera.view.PreviewView
             android:id="@+id/view_finder"
             android:layout_width="match_parent"
@@ -29,12 +31,12 @@
 
         <com.inniopia.funnylabs_sdk.OverlayView
             android:id="@+id/tracking_overlay"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintStart_toStartOf="@+id/container_surface"
+            app:layout_constraintEnd_toEndOf="@+id/container_surface"
+            app:layout_constraintTop_toTopOf="@+id/container_surface"
+            app:layout_constraintBottom_toBottomOf="@+id/container_surface" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -79,7 +81,6 @@
         android:id="@+id/vital_info_group"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="@drawable/vital_analysis_bottom_background"
         android:visibility="gone"
         app:layout_constraintHeight_percent="0.7"
         app:layout_constraintBottom_toBottomOf="parent"

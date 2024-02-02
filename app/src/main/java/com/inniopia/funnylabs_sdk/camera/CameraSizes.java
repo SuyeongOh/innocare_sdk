@@ -48,4 +48,8 @@ public class CameraSizes {
         return screenSize.size;
         //return validSizes.stream().findFirst().get().size;
     }
+
+    public static boolean isHdRatio(Size size){
+        return size.getWidth() == (((size.getWidth() + size.getHeight()) / 25) * 16);
+    }
 }

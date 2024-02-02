@@ -24,14 +24,12 @@ public class OverlayView extends View {
     private Paint boxPaint = new Paint();
     private Float scaleFactorWidth = 1f;
     private Float scaleFactorHeight = 1f;
-    private PointF centerPoint = new PointF(0f, 0f);
     private float radius;
     private Rect bounds;
     private static final int FULL_SIZE_OF_DETECTION = Config.FULL_SIZE_OF_WIDTH * Config.FULL_SIZE_OF_HEIGHT;
     //popup의 민감도를 바꾸려면 이부분을 바꾸세요.
 
     private float STANDARD_BIG_SIZE_OF_POPUP = 1f/2f;
-    private float STANDARD_SMALL_SIZE_OF_POPUP = 1f/9f;
 
     private boolean isClear = false;
     public OverlayView(Context context, @Nullable AttributeSet attrs) {
@@ -48,10 +46,6 @@ public class OverlayView extends View {
                 Detection person = result.detections().get(0);
                 RectF boundingBox = person.boundingBox();
 
-                List<NormalizedKeypoint> keypointList = person.keypoints().get();
-//                float left = getWidth() * (keypointList.get(0).x() + keypointList.get(4).x()) / 2;
-//                float right = getWidth() * (keypointList.get(1).x() + keypointList.get(5).x()) / 2;
-
                 float realTop = boundingBox.top * scaleFactorHeight;
                 float realBottom = boundingBox.bottom * scaleFactorHeight;
                 float realLeft = boundingBox.left * scaleFactorWidth;
@@ -61,43 +55,16 @@ public class OverlayView extends View {
                 RectF drawRect = new RectF(realLeft, realTop, realRight, realBottom);
                 canvas.drawRect(drawRect, boxPaint);
 
-                Path facePath = new Path();
-//                int width = getWidth();
-//                int height = getHeight();
-//                facePath.lineTo(keypointList.get(5).x() * width, keypointList.get(5).y() * height);
-//                facePath.lineTo(keypointList.get(3).x() * width, keypointList.get(3).y() * height);
-//                facePath.lineTo(keypointList.get(4).x() * width, keypointList.get(4).y() * height);
-//                facePath.lineTo(keypointList.get(5).x() * width, keypointList.get(5).y() * height);
-//
-//                canvas.clipPath(facePath);
-//                canvas.drawPath(facePath, boxPaint);
-
                 if(isClear){
                     isClear = false;
                 }
             }
             return;
         }
-        float realTop = (centerPoint.y - radius/2) * scaleFactorHeight;
-        float realBottom = (centerPoint.y + radius/2) * scaleFactorHeight;
-        float realLeft = (centerPoint.x - radius/2) ;
-        float realRight = (centerPoint.x + radius/2) ;
-        @SuppressLint("DrawAllocation")
-        RectF drawRect = new RectF(realLeft, realTop, realRight, realBottom);
-        canvas.drawRect(drawRect, boxPaint);
-
     }
 
     public void setResults(FaceDetectorResult detectResult, int imageWidth, int imageHeight) {
         result = detectResult;
-        scaleFactorWidth = getWidth()/ (float)imageWidth;
-        scaleFactorHeight = getHeight() / (float)imageHeight;
-        invalidate();
-    }
-
-    public void setResults(PointF nosePoint, float eyeDistance, int imageWidth, int imageHeight) {
-        centerPoint = nosePoint;
-        radius = eyeDistance;
         scaleFactorWidth = getWidth()/ (float)imageWidth;
         scaleFactorHeight = getHeight() / (float)imageHeight;
         invalidate();
@@ -120,13 +87,8 @@ public class OverlayView extends View {
         boxPaint.setStyle(Paint.Style.STROKE);
     }
 
-    public boolean isBigSize(RectF bBox){
-        //bBox는 현재 1280x720 기준으로 동작하기 때문에 해당 사이즈에 맞게 값을 설정해줘야함
-        return !(bBox.width() * bBox.height() < FULL_SIZE_OF_DETECTION * STANDARD_BIG_SIZE_OF_POPUP);
-    }
-
     public boolean isSmallSize(RectF bBox){
-        return !((bBox.width() > 50) && (bBox.height() > 50));
+        return (bBox.width() < Config.FACE_MODEL_SIZE) || (bBox.height() < Config.FACE_MODEL_SIZE);
     }
 
     public boolean isOutBoundary(RectF bBox){
