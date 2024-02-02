@@ -337,18 +337,12 @@ public class VitalLagacy {
         ArrayList<Double> hr_signal = new ArrayList<>();
         int max_index = 0;
         float max_val = 0;
-        float filter_interval = 1 / (float)VIDEO_FRAME_RATE;
+        float filter_interval = 2 / (float)VIDEO_FRAME_RATE;
         VitalChartData.FILTER_INTERVAL = filter_interval;
         VitalChartData.FRAME_RATE = VIDEO_FRAME_RATE;
         Log.d("Juptier", "frame rate : " + VIDEO_FRAME_RATE);
         for( int i =0 ; i < real_dft.length ; i++){
-            if( i * filter_interval < 0.75 )
-                continue;
-            else if( i * filter_interval > 2.5){
-                Log.d("Juptier", "last filter index : " + i);
-                break;
-            }
-            else{
+            if( i * filter_interval >= 0.75 && i * filter_interval <= 2.5 ){
                 if(VitalChartData.START_FILTER_INDEX == 0){
                     VitalChartData.START_FILTER_INDEX = i;
                     Log.d("Juptier", "start filter index : " + i);
