@@ -17,8 +17,10 @@ import androidx.fragment.app.Fragment;
 public class InitFragment extends Fragment {
 
     private EditText bmiInputView;
+    private EditText frameInputView;
     private Button applyBtn;
     private Switch cameraDirectionSwitch;
+    private Switch largeFaceSwitch;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -27,7 +29,8 @@ public class InitFragment extends Fragment {
         bmiInputView = view.findViewById(R.id.init_view_bmi_input);
         applyBtn = view.findViewById(R.id.init_btn_submit);
         cameraDirectionSwitch = view.findViewById(R.id.init_view_camera_switch);
-
+        frameInputView = view.findViewById(R.id.init_view_frame_input);
+        largeFaceSwitch = view.findViewById(R.id.init_view_large_face_switch);
         return view;
     }
 
@@ -37,13 +40,27 @@ public class InitFragment extends Fragment {
         applyBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 String bmi = bmiInputView.getText().toString();
-                Config.USER_BMI = Double.parseDouble(bmi);
+                String frame = frameInputView.getText().toString();
+                try{
+                    Config.USER_BMI = Double.parseDouble(bmi);
+                } catch (Exception e){
+                    Config.USER_BMI = 20.1f;
+                }
+                try{
+                    Config.TARGET_FRAME = Integer.parseInt(frame);
+                } catch (Exception e){
+                    Config.TARGET_FRAME = 30;
+                }
+
 
                 if(cameraDirectionSwitch.isChecked()){
                     Config.USE_CAMERA_DIRECTION = Constant.CAMERA_DIRECTION_BACK;
                 }
-
+                if(largeFaceSwitch.isChecked()){
+                    Config.LARGE_FACE_MODE = true;
+                }
                 bmiInputView.clearFocus();
                 MainActivity activity = (MainActivity) getActivity();
                 activity.replaceFragment(new MainFragment());

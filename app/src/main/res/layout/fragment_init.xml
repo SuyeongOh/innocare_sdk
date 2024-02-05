@@ -15,11 +15,32 @@
             android:id="@+id/init_view_bmi_input"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="4"
+            android:layout_weight="3"
             android:textAlignment="center"
             android:layout_gravity="center"
             android:autoSizeTextType="uniform"
             android:hint="Bmi를 입력하세요" />
+
+        <EditText
+            android:id="@+id/init_view_frame_input"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="3"
+            android:textAlignment="center"
+            android:layout_gravity="center"
+            android:autoSizeTextType="uniform"
+            android:hint="최대프레임을 입력하세요" />
+
+        <Switch
+            android:id="@+id/init_view_large_face_switch"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:autoSizeTextType="uniform"
+            android:textColor="@color/black"
+            android:checked="false"
+            android:maxLines="1"
+            android:text="얼굴 영역 확대기능을 사용하시겠습니까?" />
 
         <Switch
             android:id="@+id/init_view_camera_switch"
@@ -29,6 +50,7 @@
             android:autoSizeTextType="uniform"
             android:textColor="@color/black"
             android:checked="false"
+            android:maxLines="1"
             android:text="상대방을 찍으시겠습니까?" />
 
         <Button

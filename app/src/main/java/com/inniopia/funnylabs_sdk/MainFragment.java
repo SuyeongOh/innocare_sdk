@@ -149,7 +149,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private boolean isStopPredict = false;
     private boolean calibrationFinish = false;
     private boolean calibrationTimerStart = false;
-    private final Range<Integer> fpsRange = new Range<>(20,60);
+    private final Range<Integer> fpsRange = new Range<>(25,Config.TARGET_FRAME);
 
     private HandlerThread thread_g;
     private HandlerThread thread_hr;
