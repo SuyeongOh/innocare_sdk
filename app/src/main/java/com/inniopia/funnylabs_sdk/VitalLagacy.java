@@ -101,7 +101,7 @@ public class VitalLagacy {
             double[] pre_processed = preprocessing_omit(rPPG.f_pixel_buff);
             VitalChartData.FFT_SIGNAL = pre_processed;
             rPPG.lastHrSignal = pre_processed;
-            lastResult.HR_result = get_HR(pre_processed,BUFFER_SIZE);
+            lastResult.HR_result = get_HR(pre_processed);
             lastResult.RR_result = get_RR(pre_processed,BUFFER_SIZE);
             Log.d("BPM", "HR : " + lastResult.HR_result);
             Log.d("BPM", "RR : " + lastResult.RR_result);
@@ -121,7 +121,6 @@ public class VitalLagacy {
                 lastResult.spo2_result = 0;
             }
             lastResult.spo2_result = Math.round(lastResult.spo2_result);
-            Log.d("jupiter", Arrays.toString(rPPG.bpm_Buffer));
         }
         if ((pixelIndex % BP_CALCULATION_FREQUENCY) == (BP_CALCULATION_FREQUENCY - 1)) {
             double[] preprocessed_g = get_normG(rPPG.f_pixel_buff[1]);
@@ -239,16 +238,21 @@ public class VitalLagacy {
     }
 
 
-    public float get_HR(double[] real_dft, int buff_size) {
+    public float get_HR(double[] real_dft) {
         ArrayList<Double> hr_signal = new ArrayList<>();
         int max_index = 0;
         float max_val = 0;
-        float frequency_interval = 2 / (float)VIDEO_FRAME_RATE;
+        float frequency_interval = VIDEO_FRAME_RATE / (float)BUFFER_SIZE;
         VitalChartData.FREQUENCY_INTERVAL = frequency_interval;
         VitalChartData.FRAME_RATE = VIDEO_FRAME_RATE;
         Log.d("Juptier", "frame rate : " + VIDEO_FRAME_RATE);
         for( int i =0 ; i < real_dft.length ; i++){
-            if( i * frequency_interval >= 0.75 && i * frequency_interval <= 2.5 ){
+            if(i * frequency_interval < 0.75)
+                continue;
+            else if( i * frequency_interval > 2.5){
+                Log.d("Juptier", "last filter index : " + i);
+                break;
+            } else{
                 if(VitalChartData.START_FILTER_INDEX == 0){
                     VitalChartData.START_FILTER_INDEX = i;
                     Log.d("Juptier", "start filter index : " + i);
@@ -258,10 +262,6 @@ public class VitalLagacy {
                     max_val = (float) real_dft[i];
                     max_index = i;
                 }
-            }
-            else if( i * frequency_interval > 2.5){
-                Log.d("Juptier", "last filter index : " + i);
-                break;
             }
         }
 

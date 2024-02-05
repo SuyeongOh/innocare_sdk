@@ -28,7 +28,7 @@ public class MainActivity extends FragmentActivity {
         requestPermissions(LIST_NEW_SDK_PERMISSION, 1);
 
         if(Config.FLAG_INNER_TEST){
-            MainFragment fragment = new MainFragment();
+            InitFragment fragment = new InitFragment();
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.fragmentContainerView, fragment)
                     .commit();
