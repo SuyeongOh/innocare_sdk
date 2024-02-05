@@ -28,6 +28,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.util.Log;
+import android.util.Range;
 import android.util.Size;
 import android.view.LayoutInflater;
 import android.view.Surface;
@@ -148,6 +149,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private boolean isStopPredict = false;
     private boolean calibrationFinish = false;
     private boolean calibrationTimerStart = false;
+    private final Range<Integer> fpsRange = new Range<>(20,60);
 
     private HandlerThread thread_g;
     private HandlerThread thread_hr;
@@ -373,6 +375,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                         cameraCaptureSession = session;
                         CaptureRequest.Builder requestBuilder = null;
                         requestBuilder = Camera.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+                        requestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange);
                         requestBuilder.addTarget(autoFitSurfaceView.getHolder().getSurface());
                         requestBuilder.addTarget(imageReader.getSurface());
                         cameraCaptureSession.setRepeatingRequest(requestBuilder.build(), null, cameraHandler);

@@ -158,7 +158,7 @@ public class ResultActivity extends AppCompatActivity {
         List<Entry> entryList = new ArrayList<>();
         for (int i = 0; i < signal.length; i++) {
             entryList.add(
-                    new Entry(VitalChartData.FILTER_INTERVAL * 60 * (i + VitalChartData.START_FILTER_INDEX), (float) signal[i]));
+                    new Entry(VitalChartData.FREQUENCY_INTERVAL * 60 * (i + VitalChartData.START_FILTER_INDEX), (float) signal[i]));
         }
         LineDataSet dataset = new LineDataSet(entryList, "");
         dataset.setDrawCircles(false);
