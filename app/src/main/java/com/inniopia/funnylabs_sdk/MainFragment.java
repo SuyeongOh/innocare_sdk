@@ -51,7 +51,6 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mediapipe.framework.image.BitmapImageBuilder;
 import com.google.mediapipe.framework.image.MPImage;
-import com.google.mediapipe.tasks.components.containers.NormalizedKeypoint;
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetectorResult;
 import com.inniopia.funnylabs_sdk.camera.AutoFitSurfaceView;
 import com.inniopia.funnylabs_sdk.camera.CameraSizes;
@@ -450,7 +449,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                 sNthFrame ++;
                                 if(isFinishAnalysis){
                                     if(Config.FLAG_INNER_TEST){
-                                        if (sNthFrame % VitalLagacy.BPM_CALCULATION_FREQUENCY == 0) {
+                                        if (sNthFrame % VitalLagacy.BUFFER_SIZE == 0) {
                                             updateVitalSignValue();
                                         }
                                         new Handler(Looper.getMainLooper()).post(() -> mFinishPopup.show());
@@ -556,9 +555,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
     public void processImage(MPImage image, EnhanceFaceDetector.ResultBundle resultBundle){
         postInferenceCallback = image::close;
-        if(sNthFrame > Vital.BATCH_SIZE * Vital.FRAME_WINDOW_SIZE){
-            return;
-        }
         List<FaceDetectorResult> faceDetectorResults = resultBundle.getResults();
         try {
             if (faceDetectorResults.get(0).detections().size() >= 1) {
@@ -617,9 +613,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     public void onResults(MPImage input, Bitmap original, EnhanceFaceDetector.ResultBundle resultBundle) {
         lastFrameUtcTimeMs = System.currentTimeMillis();
         mOriginalBitmap = original;
-        if(sNthFrame <= 600){
-            processImage(input, resultBundle);
-        }
+        processImage(input, resultBundle);
     }
 
     private void stopPrediction(String type){

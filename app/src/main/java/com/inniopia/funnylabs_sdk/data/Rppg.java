@@ -20,4 +20,13 @@ public class Rppg {
         frameTimeArray = new long[BUFFER_SIZE];
         peakArray = new boolean[BUFFER_SIZE];
     }
+
+    public int timeToLen(double seconds){
+        for (int i = 0; i < frameTimeArray.length; i++) {
+            if (frameTimeArray[i] - frameTimeArray[0] > seconds) {
+                return i;
+            }
+        }
+        return 1;
+    }
 }

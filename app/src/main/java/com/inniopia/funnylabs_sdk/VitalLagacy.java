@@ -28,9 +28,8 @@ import uk.me.berndporr.iirj.Butterworth;
 import static java.lang.Math.abs;
 
 public class VitalLagacy {
-    public static final int BUFFER_SIZE = 512;
+    public static final int BUFFER_SIZE = Config.ANALYSIS_TIME * Config.TARGET_FRAME;
     public static final int BPM_BUFFER_SIZE = 1;
-    public static final int BPM_CALCULATION_FREQUENCY = 512;
     private static final int BP_CALCULATION_FREQUENCY = BUFFER_SIZE;
     public static int VIDEO_FRAME_RATE = 30;
 
@@ -71,7 +70,7 @@ public class VitalLagacy {
 
         rPPG.frameTimeArray[bufferIndex] = model.frameUtcTimeMs;
         Bitmap bitmap = model.bitmap;
-        Bitmap test_cropped = Bitmap.createScaledBitmap(bitmap, GAUSSIAN_W, GAUSSIAN_W, false); //Gaussian pyramid 2단계 50x50 resize
+        Bitmap test_cropped = Bitmap.createScaledBitmap(bitmap, GAUSSIAN_W, GAUSSIAN_W, false); // face frame input
 
         float totalR = 0, totalG = 0, totalB = 0;
         for(int i = 0 ; i < GAUSSIAN_W; i++) {
@@ -95,7 +94,7 @@ public class VitalLagacy {
         rPPG.f_pixel_buff[1][bufferIndex]= totalG;
         rPPG.f_pixel_buff[2][bufferIndex]= totalB;
 
-        if (bufferIndex % BPM_CALCULATION_FREQUENCY == BPM_CALCULATION_FREQUENCY - 1) {
+        if (bufferIndex == BUFFER_SIZE - 1) {
             lastFrameTime = model.frameUtcTimeMs;
             VIDEO_FRAME_RATE = (int)(1000 / ((float)((lastFrameTime - firstFrameTime) / (float)pixelIndex)));
             double[] pre_processed = preprocessing_omit(rPPG.f_pixel_buff);
@@ -134,11 +133,7 @@ public class VitalLagacy {
             //원래는 23.7889
             lastResult.SBP = 23.7889 + (95.4335 * peak_avg) + (4.5958 * bmi) - (5.109 * peak_avg * bmi);
             lastResult.DBP = -17.3772 - (115.1747 * valley_avg) + (4.0251 * bmi) + (5.2825 * valley_avg * bmi);
-
-                lastResult.BP = lastResult.SBP * 0.33 + lastResult.DBP * 0.66;
-
-//            lastResult.HR_result = FloatUtils.mean(bpm_Buffer);
-//            lastResult.RR_result = FloatUtils.mean(rr_Buffer);
+            lastResult.BP = lastResult.SBP * 0.33 + lastResult.DBP * 0.66;
         }
         bufferIndex = (bufferIndex + 1) % BUFFER_SIZE;
         pixelIndex++;

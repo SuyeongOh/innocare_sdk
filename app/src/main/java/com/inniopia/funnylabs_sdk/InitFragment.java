@@ -18,6 +18,7 @@ public class InitFragment extends Fragment {
 
     private EditText bmiInputView;
     private EditText frameInputView;
+    private EditText analysisTimeInputView;
     private Button applyBtn;
     private Switch cameraDirectionSwitch;
     private Switch largeFaceSwitch;
@@ -31,6 +32,8 @@ public class InitFragment extends Fragment {
         cameraDirectionSwitch = view.findViewById(R.id.init_view_camera_switch);
         frameInputView = view.findViewById(R.id.init_view_frame_input);
         largeFaceSwitch = view.findViewById(R.id.init_view_large_face_switch);
+        analysisTimeInputView = view.findViewById(R.id.init_view_analysis_time);
+
         return view;
     }
 
@@ -43,6 +46,8 @@ public class InitFragment extends Fragment {
 
                 String bmi = bmiInputView.getText().toString();
                 String frame = frameInputView.getText().toString();
+                String time = analysisTimeInputView.getText().toString();
+
                 try{
                     Config.USER_BMI = Double.parseDouble(bmi);
                 } catch (Exception e){
@@ -53,7 +58,11 @@ public class InitFragment extends Fragment {
                 } catch (Exception e){
                     Config.TARGET_FRAME = 30;
                 }
-
+                try{
+                    Config.ANALYSIS_TIME = Integer.parseInt(time);
+                } catch (Exception e){
+                    Config.ANALYSIS_TIME = 20;
+                }
 
                 if(cameraDirectionSwitch.isChecked()){
                     Config.USE_CAMERA_DIRECTION = Constant.CAMERA_DIRECTION_BACK;

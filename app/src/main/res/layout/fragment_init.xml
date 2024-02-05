@@ -20,6 +20,17 @@
             android:text="공백으로 입력완료 터치 시 기본값으로 세팅 됩니다.\n
             기본 bmi : 20.1, frame : 30"
             />
+
+        <EditText
+            android:id="@+id/init_view_analysis_time"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="3"
+            android:textAlignment="center"
+            android:layout_gravity="center"
+            android:autoSizeTextType="uniform"
+            android:hint="측정시간을 입력하세요" />
+
         <EditText
             android:id="@+id/init_view_bmi_input"
             android:layout_width="match_parent"
