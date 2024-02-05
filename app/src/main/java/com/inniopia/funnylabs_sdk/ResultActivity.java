@@ -36,6 +36,7 @@ public class ResultActivity extends AppCompatActivity {
     private LineChart hrChart;
 
     private Button restartBtn;
+    private Button analysisBtn;
     @SuppressLint("DefaultLocale")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -50,6 +51,13 @@ public class ResultActivity extends AppCompatActivity {
                 VitalChartData.START_FILTER_INDEX = 0;
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                 getApplicationContext().startActivity(intent);
+            }
+        });
+        analysisBtn = findViewById(R.id.result_analysis_btn);
+        analysisBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //분석 view로 넘어가기
             }
         });
         bindChart();
