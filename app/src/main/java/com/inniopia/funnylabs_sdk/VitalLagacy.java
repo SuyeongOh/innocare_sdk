@@ -13,10 +13,12 @@ import com.inniopia.funnylabs_sdk.bvp.BandPassFilter;
 import com.inniopia.funnylabs_sdk.data.ResultVitalSign;
 import com.inniopia.funnylabs_sdk.data.Rppg;
 import com.inniopia.funnylabs_sdk.data.VitalChartData;
+import com.inniopia.funnylabs_sdk.utils.RppgUtils;
 import com.paramsen.noise.Noise;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import jsat.linear.DenseMatrix;
@@ -95,6 +97,7 @@ public class VitalLagacy {
         rPPG.f_pixel_buff[2][bufferIndex]= totalB;
 
         if (bufferIndex == BUFFER_SIZE - 1) {
+            VitalChartData.frameTimeArray = rPPG.frameTimeArray;
             lastFrameTime = model.frameUtcTimeMs;
             VIDEO_FRAME_RATE = (int)(1000 / ((float)((lastFrameTime - firstFrameTime) / (float)pixelIndex)));
             double[] pre_processed = preprocessing_omit(rPPG.f_pixel_buff);
@@ -108,9 +111,8 @@ public class VitalLagacy {
 
 
             //--------SDNN --------------------//
-            //lastResult.sdnn_result = SDNN(bpm_Buffer, bpm_buffer_index);
-            //lastResult.sdnn_result = Math.round(lastResult.sdnn_result * 100) / 100.0;
-            //lastResult.sdnn_result = lastResult.sdnn_result * 100;
+            lastResult.sdnn_result = HRV_IBI(rPPG.f_pixel_buff[1], rPPG, lastResult.HR_result);
+            lastResult.sdnn_result = Math.round(lastResult.sdnn_result);
             //--------SDNN --------------------//
             lastResult.LF_HF_ratio = LF_HF_ratio(pre_processed,BUFFER_SIZE);
 
@@ -237,7 +239,7 @@ public class VitalLagacy {
         ArrayList<Double> hr_signal = new ArrayList<>();
         int max_index = 0;
         float max_val = 0;
-        float frequency_interval = VIDEO_FRAME_RATE / (float)BUFFER_SIZE;
+        float frequency_interval = VIDEO_FRAME_RATE / (float)(real_dft.length * 2);
         VitalChartData.FREQUENCY_INTERVAL = frequency_interval;
         VitalChartData.FRAME_RATE = VIDEO_FRAME_RATE;
         Log.d("Juptier", "frame rate : " + VIDEO_FRAME_RATE);
@@ -300,13 +302,49 @@ public class VitalLagacy {
         return LF/HF;
     }
 
-    public double HRV_IBI(double[] bvp){
+    public double HRV_IBI(double[] signalG, Rppg rppg, double hr){
         double hrv = 0;
-
         //peak detect
+        ArrayList<Long> peakTimes = new ArrayList<>();
+        int[] peakArray = RppgUtils.PeakDetect(signalG, rppg, hr);
+        for(int i = 0; i < peakArray.length; i++){
+            if(peakArray[i] == 1){
+                peakTimes.add(rppg.frameTimeArray[i]);
+                break;
+            }
+        }
 
-        //peaktime
-        return hrv;
+        ArrayList<Long> rrIntervals = new ArrayList<>();
+        if(peakTimes.size() > 6){
+            for(int i = 0; i < peakTimes.size() - 2; i++){
+                rrIntervals.add(peakTimes.get(i + 1) - peakTimes.get(i));
+            }
+        }
+
+        if(rrIntervals.size() == 0) return 0;
+
+        Collections.sort(rrIntervals);
+        double median;
+        int middle = rrIntervals.size() / 2;
+        if (rrIntervals.size() % 2 == 0) {
+            median = ((double)rrIntervals.get(middle - 1) + (double)rrIntervals.get(middle)) / 2.0;
+        } else {
+            median = (double)rrIntervals.get(middle);
+        }
+
+        double lowerBound = median - 0.1 * median;
+        double upperBound = median + 0.1 * median;
+        ArrayList<Double> filteredValues = new ArrayList<>();
+        for (Long rrInterval : rrIntervals) {
+            if (lowerBound <= rrInterval && rrInterval <= upperBound) {
+                filteredValues.add((double)rrInterval);
+            }
+        }
+
+        if (filteredValues.isEmpty()) return 0.0;
+        double mean = filteredValues.stream().mapToDouble(a -> a).average().orElse(0.0);
+        double sumOfSquaredDifferences = filteredValues.stream().mapToDouble(a -> a - mean).map(a -> a * a).sum();
+        return Math.sqrt(sumOfSquaredDifferences / filteredValues.size());
     }
 
     public double spo2(double[] spo2_pixel_buff_R, double[] spo2_pixel_buff_B, int VIDEO_FRAME_RATE) {

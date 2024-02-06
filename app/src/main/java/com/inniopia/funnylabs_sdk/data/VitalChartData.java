@@ -1,6 +1,7 @@
 package com.inniopia.funnylabs_sdk.data;
 
 public class VitalChartData {
+    public static long[] frameTimeArray;
     public static float FREQUENCY_INTERVAL;
     public static int FRAME_RATE;
     public static int START_FILTER_INDEX = 0;

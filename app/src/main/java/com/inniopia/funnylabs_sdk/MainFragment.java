@@ -443,8 +443,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                     });
                                 }
                                 Log.d("Result", "Nth Frame : " + sNthFrame);
-                                if(mProgressBar.getProgress() != (sNthFrame/(Vital.BATCH_SIZE * Vital.FRAME_WINDOW_SIZE / 100))){
-                                    updateProgressBar(sNthFrame/(Vital.BATCH_SIZE * Vital.FRAME_WINDOW_SIZE / 100));
+                                if(mProgressBar.getProgress() != (sNthFrame/(VitalLagacy.BUFFER_SIZE / 100))){
+                                    updateProgressBar(sNthFrame/(VitalLagacy.BUFFER_SIZE / 100));
                                 }
                                 sNthFrame ++;
                                 if(isFinishAnalysis){

@@ -7,7 +7,7 @@ public class Config {
     public static int CURRENT_DELEGATE = Constant.DELEGATE_CPU;
     public static int USE_CAMERA_DIRECTION = Constant.CAMERA_DIRECTION_FRONT;
     public static int TARGET_FRAME = 30;
-    public static int ANALYSIS_TIME = 30;
+    public static int ANALYSIS_TIME = 20;
     public static int SCREEN_WIDTH = 0;
     public static int SCREEN_HEIGHT = 0;
     public static double USER_BMI = 0f;
