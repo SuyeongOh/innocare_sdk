@@ -111,7 +111,7 @@ public class VitalLagacy {
 
 
             //--------SDNN --------------------//
-            lastResult.sdnn_result = HRV_IBI(rPPG.f_pixel_buff[1], rPPG, lastResult.HR_result);
+            lastResult.sdnn_result = HRV_IBI(rPPG.lastBvpSignal, rPPG, lastResult.HR_result);
             lastResult.sdnn_result = Math.round(lastResult.sdnn_result);
             //--------SDNN --------------------//
             lastResult.LF_HF_ratio = LF_HF_ratio(pre_processed,BUFFER_SIZE);
@@ -310,7 +310,6 @@ public class VitalLagacy {
         for(int i = 0; i < peakArray.length; i++){
             if(peakArray[i] == 1){
                 peakTimes.add(rppg.frameTimeArray[i]);
-                break;
             }
         }
 

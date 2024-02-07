@@ -9,13 +9,13 @@ public class RppgUtils {
             return 1; // Return 1 if the input list is null or empty
         }
 
-        double firstEventTime = eventTimes[0];
-        for (int i = 0; i < eventTimes.length; i++) {
-            if (eventTimes[i] - firstEventTime > seconds) {
-                return i;
+        long firstEventTime = eventTimes[0];
+        for (int index = 0; index < eventTimes.length; index++) {
+            if (eventTimes[index] - firstEventTime > 1000) { // 1.0 초 차이를 밀리초 단위로 계산
+                return index;
             }
         }
-        return 1; // Return 1 if no event meets the criteria
+        return 1;
     }
 
     public static int[] PeakDetect(double[] green_signal, Rppg rppg, double bpm) {
@@ -23,11 +23,10 @@ public class RppgUtils {
 
         windowSize = (windowSize * 60) / (int)bpm;
 
-        int[] peakArray = new int[green_signal.length - windowSize];
+        int[] peakArray = new int[green_signal.length];
 
         int peakIndex = 0;
-
-        while (peakIndex < (green_signal.length - windowSize)) {
+        while(peakIndex < (green_signal.length - windowSize)) {
             for (int i = peakIndex; i < Math.min(peakIndex + windowSize, green_signal.length); i++) {
                 if (green_signal[i] > green_signal[peakIndex]) {
                     peakIndex = i;

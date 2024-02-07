@@ -580,10 +580,10 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 if(Config.LARGE_FACE_MODE){
                     float width = box.width();
                     float height = box.height();
-                    box.left -= width/2;
-                    box.right += width/2;
-                    box.top -= height/2;
-                    box.bottom += height/2;
+                    box.left -= width/4;
+                    box.right += width/4;
+                    box.top -= height/4;
+                    box.bottom += height/4;
                     box.round(faceROI);
                 } else{
                     box.round(faceROI);
