@@ -3,6 +3,10 @@ package com.inniopia.funnylabs_sdk.utils;
 import com.inniopia.funnylabs_sdk.VitalLagacy;
 import com.inniopia.funnylabs_sdk.data.Rppg;
 
+import org.apache.commons.math3.transform.FastFourierTransformer;
+
+import java.util.List;
+
 public class RppgUtils {
     public static int TimeToLen(double seconds, long[] eventTimes) {
         if (eventTimes == null || eventTimes.length == 0) {
@@ -11,7 +15,7 @@ public class RppgUtils {
 
         long firstEventTime = eventTimes[0];
         for (int index = 0; index < eventTimes.length; index++) {
-            if (eventTimes[index] - firstEventTime > 1000) { // 1.0 초 차이를 밀리초 단위로 계산
+            if (eventTimes[index] - firstEventTime > seconds * 1000) { // 1.0 초 차이를 밀리초 단위로 계산
                 return index;
             }
         }
@@ -43,5 +47,4 @@ public class RppgUtils {
         }
         return peakArray;
     }
-
 }

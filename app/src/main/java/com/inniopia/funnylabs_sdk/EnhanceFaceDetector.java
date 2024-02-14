@@ -118,13 +118,13 @@ public class EnhanceFaceDetector {
         int top = (int)(midPoint.y - face[0].eyesDistance());
         int bottom = (int)(midPoint.y + face[0].eyesDistance());
 
-        for(int i = 0; i < 512; i++){
+        for(int i = 0; i < Config.ANALYSIS_TIME * Config.TARGET_FRAME; i++){
             Bitmap curFrame = retriever.getFrameAtIndex(frameIdx);
             originalBitmap = curFrame;
 
             Bitmap croppedFaceBitmap = Bitmap.createBitmap(curFrame, left, top, right-left, bottom-top);
 
-            faceImageModel = new FaceImageModel(croppedFaceBitmap, 0);
+            faceImageModel = new FaceImageModel(croppedFaceBitmap, i * 33);
             vital.calculatePOSVital(faceImageModel, true);
             frameIdx++;
         }

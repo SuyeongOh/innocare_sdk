@@ -122,11 +122,9 @@ public class VitalLagacy {
                 lastResult.spo2_result = 0;
             }
             lastResult.spo2_result = Math.round(lastResult.spo2_result);
-        }
-        if ((pixelIndex % BP_CALCULATION_FREQUENCY) == (BP_CALCULATION_FREQUENCY - 1)) {
-            double[] preprocessed_g = get_normG(rPPG.f_pixel_buff[1]);
-            double peak_avg = get_peak_avg(preprocessed_g,true);
-            double valley_avg = get_peak_avg(preprocessed_g,false);
+
+            double peak_avg = get_peak_avg(pre_processed,true);
+            double valley_avg = get_peak_avg(pre_processed,false);
             Log.d("BP",""+peak_avg+":"+valley_avg);
             double bmi = Config.USER_BMI;
 
@@ -306,7 +304,14 @@ public class VitalLagacy {
         double hrv = 0;
         //peak detect
         ArrayList<Long> peakTimes = new ArrayList<>();
-        int[] peakArray = RppgUtils.PeakDetect(signalG, rppg, hr);
+        Hilbert hilbert = new Hilbert(signalG);
+        hilbert.hilbertTransform();
+//        double[] phase = hilbert.getInstantaneousPhase();
+//        double[] amplitude = hilbert.getAmplitudeEnvelope();
+        double[] signalH = hilbert.getInstantaneousFrequency(VIDEO_FRAME_RATE);
+
+
+        int[] peakArray = RppgUtils.PeakDetect(signalH, rppg, hr);
         for(int i = 0; i < peakArray.length; i++){
             if(peakArray[i] == 1){
                 peakTimes.add(rppg.frameTimeArray[i]);

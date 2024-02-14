@@ -57,6 +57,7 @@ import com.inniopia.funnylabs_sdk.camera.CameraSizes;
 import com.inniopia.funnylabs_sdk.data.Constant;
 import com.inniopia.funnylabs_sdk.data.ResultVitalSign;
 import com.inniopia.funnylabs_sdk.ui.CommonPopupView;
+import com.inniopia.funnylabs_sdk.ui.OverlayView;
 import com.inniopia.funnylabs_sdk.utils.ImageUtils;
 import com.robinhood.ticker.TickerView;
 
@@ -594,7 +595,9 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 FaceDetectorResult result = resultBundle.getResults().get(0);
                 mTrackingOverlayView.setResults(result,
                         resultBundle.inputImageWidth,
-                        resultBundle.inputImageHeight);
+                        resultBundle.inputImageHeight,
+                        Config.USE_CAMERA_DIRECTION == Constant.CAMERA_DIRECTION_FRONT);
+
             }
 
         } catch (Exception e){
