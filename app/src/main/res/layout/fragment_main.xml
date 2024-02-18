@@ -29,7 +29,7 @@
             android:visibility="gone"
             android:background="#00000000"/>
 
-        <com.inniopia.innocare_sdk.ui.OverlayView
+        <com.innopia.innocare_sdk.ui.OverlayView
             android:id="@+id/tracking_overlay"
             android:layout_width="0dp"
             android:layout_height="0dp"

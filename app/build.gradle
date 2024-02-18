@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace 'com.inniopia.innocare_sdk'
+    namespace 'com.innopia.innocare_sdk'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.inniopia.innocare_sdk"
+        applicationId "com.innopia.innocare_sdk"
         minSdk 29
         targetSdk 33
         versionCode 1
