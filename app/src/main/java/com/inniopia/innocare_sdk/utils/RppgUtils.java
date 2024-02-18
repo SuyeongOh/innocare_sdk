@@ -1,5 +1,11 @@
 package com.inniopia.innocare_sdk.utils;
 
+import com.github.psambit9791.jdsp.signal.peaks.FindPeak;
+import com.github.psambit9791.jdsp.signal.peaks.Spike;
+import com.inniopia.funnylabs_sdk.VitalLagacy;
+import com.inniopia.funnylabs_sdk.data.Rppg;
+
+
 import com.inniopia.innocare_sdk.data.Rppg;
 
 public class RppgUtils {
@@ -17,29 +23,30 @@ public class RppgUtils {
         return 1;
     }
 
-    public static int[] PeakDetect(double[] green_signal, Rppg rppg, double bpm) {
+    public static int[] PeakDetect(double[] signal, Rppg rppg, double bpm) {
         int windowSize = TimeToLen(1.0, rppg.frameTimeArray);
 
         windowSize = (windowSize * 60) / (int)bpm;
 
-        int[] peakArray = new int[green_signal.length];
+        int[] peakArray = new int[signal.length];
 
         int peakIndex = 0;
-        while(peakIndex < (green_signal.length - windowSize)) {
-            for (int i = peakIndex; i < Math.min(peakIndex + windowSize, green_signal.length); i++) {
-                if (green_signal[i] > green_signal[peakIndex]) {
+        while(peakIndex < (signal.length - windowSize)) {
+            for (int i = peakIndex; i < Math.min(peakIndex + windowSize, signal.length); i++) {
+                if (signal[i] > signal[peakIndex]) {
                     peakIndex = i;
                 }
             }
             peakArray[peakIndex] = 1;
 
-            for (int i = peakIndex; i < Math.min(peakIndex + windowSize, green_signal.length); i++) {
-                if (green_signal[i] < green_signal[peakIndex]) {
+            for (int i = peakIndex; i < Math.min(peakIndex + windowSize, signal.length); i++) {
+                if (signal[i] < signal[peakIndex]) {
                     peakIndex = i;
                 }
             }
             peakArray[peakIndex] = 2;
         }
+
         return peakArray;
     }
 }

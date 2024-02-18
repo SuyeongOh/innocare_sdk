@@ -6,7 +6,7 @@
     <string name="respiratory_rate">호흡</string>
     <string name="respiratory_rate_unit">rpm</string>
     <string name="hrv_sdnn">HRV-SDNN</string>
-    <string name="hrv_sdnn_unit">sm</string>
+    <string name="hrv_sdnn_unit">ms</string>
     <string name="oxygen_saturation">산소포화도</string>
     <string name="oxygen_saturation_unit">sp</string>
     <string name="stress">스트레스</string>
@@ -24,7 +24,7 @@
     <string name="vital_respiratory_rate_unit">(rpm)</string>
     <string name="vital_stress">스트레스</string>
     <string name="vital_hrv_sdnn">HRV-SDNN</string>
-    <string name="vital_hrv_sdnn_unit">(sm)</string>
+    <string name="vital_hrv_sdnn_unit">(ms)</string>
     <string name="vital_blood_pressure">혈압</string>
     <string name="vital_blood_pressure_unit">(mmHg)</string>
     <string name="vital_analysis_progress">분석진행률</string>
