@@ -51,6 +51,7 @@
             android:autoSizeTextType="uniform"
             android:hint="최대프레임을 입력하세요" />
 
+
         <Switch
             android:id="@+id/init_view_large_face_switch"
             android:layout_width="match_parent"

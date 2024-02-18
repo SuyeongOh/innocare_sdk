@@ -68,8 +68,8 @@ dependencies {
     //Java Linear Algebra Library
     implementation 'com.github.paramsen:noise:2.0.0'
     implementation 'com.github.EdwardRaff:JSAT:0.0.9'
-    implementation group: 'uk.me.berndporr', name: 'iirj', version: '1.1'
-    implementation('com.github.psambit9791:jdsp:0.5.1') {
+    implementation group: 'uk.me.berndporr', name: 'iirj', version: '1.5'
+    implementation ('com.github.psambit9791:jdsp:3.0.0') {
         exclude group: 'org.apache.maven.surefire', module: 'surefire-api'
     }
 

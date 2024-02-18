@@ -17,9 +17,11 @@ public class Config {
     public static final int FULL_SIZE_OF_WIDTH = 2736;
     public static final int FULL_SIZE_OF_HEIGHT = 3648;
 
-    public static final double MIN_FREQUENCY = 0.83f;
-    public static final double MAX_FREQUENCY = 2.5f;
+    public static final double MIN_HR_FREQUENCY = 0.83f;
+    public static final double MAX_HR_FREQUENCY = 2.5f;
 
+    public static final double MIN_RR_FREQUENCY = 0.83f;
+    public static final double MAX_RR_FREQUENCY = 2.5f;
     public static boolean LARGE_FACE_MODE = false;
 
     public static final int FACE_MODEL_SIZE = 72;

@@ -134,7 +134,7 @@ public class AnalysisActivity extends AppCompatActivity {
         return det.detrendSignal();
     }
     public double[] dspBpf(double[] signal){
-        BandPassFilter bpf = new BandPassFilter(Config.MAX_FREQUENCY, Config.MIN_FREQUENCY);
+        BandPassFilter bpf = new BandPassFilter(Config.MAX_RR_FREQUENCY, Config.MIN_HR_FREQUENCY);
 
         double[] bpf_signal = new double[signal.length];
         for(int i = 1; i < signal.length; i++){
@@ -144,9 +144,9 @@ public class AnalysisActivity extends AppCompatActivity {
     }
     public double[] dspFft(double[] signal){
         DiscreteFourier fft_r = new DiscreteFourier(signal);
-        fft_r.dft();
+        fft_r.transform();
 
-        return fft_r.returnAbsolute(true);
+        return fft_r.getMagnitude(true);
     }
     public double getHr(double[] signalFFT){
         int frame = VitalLagacy.VIDEO_FRAME_RATE;

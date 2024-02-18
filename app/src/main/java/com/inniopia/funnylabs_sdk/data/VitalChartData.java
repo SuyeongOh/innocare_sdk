@@ -17,4 +17,5 @@ public class VitalChartData {
     public static double[] BVP_SIGNAL;
     public static double[] FFT_SIGNAL;
     public static double[] HR_SIGNAL;
+    public static int[] HRV_PEAK;
 }

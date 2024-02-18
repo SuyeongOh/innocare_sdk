@@ -2,6 +2,7 @@ package com.inniopia.funnylabs_sdk.data;
 
 public class Rppg {
     private int BUFFER_SIZE;
+    public double[] lastRrSignal;
     public double[] lastBvpSignal;
     public double[] lastHrSignal;
     public double[][]f_pixel_buff;

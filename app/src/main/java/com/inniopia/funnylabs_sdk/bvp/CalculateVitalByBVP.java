@@ -218,7 +218,7 @@ public class CalculateVitalByBVP {
         }
         //----ENVELOPE 신호 포락선(상부, 하부 포함) ------// --> 필터링 결과의 포락선 제거
         Hilbert hilbert_R = new Hilbert(R_result);
-        hilbert_R.hilbertTransform();
+        hilbert_R.transform();
         double[] analytical_signal_R = hilbert_R.getAmplitudeEnvelope(); //--> Hilbert transform이 각 신호의 othogonal한 성분을 뽑아줌으로 결과 값 자체가 envelope한 신호임
         double R_envelope_mean = 0.0d;
         for (int i = 0; i < analytical_signal_R.length; i++) {
@@ -228,7 +228,7 @@ public class CalculateVitalByBVP {
 
 
         Hilbert hilbert_B = new Hilbert(R_result);
-        hilbert_B.hilbertTransform();
+        hilbert_B.transform();
         double[] analytical_signal_B = hilbert_R.getAmplitudeEnvelope();
         Log.d("A", "AA");
         double B_envelope_mean = 0.0d;
@@ -273,14 +273,14 @@ public class CalculateVitalByBVP {
         //--- SpO2 estimate ---//
         //--- DFT ---//
         DiscreteFourier fft_r = new DiscreteFourier(banddy_r);
-        fft_r.dft();
-        double[] out_dft_r_real = fft_r.returnAbsolute(true);
-        double[][] out_dft_r = fft_r.returnFull(true);
+        fft_r.transform();
+        double[] out_dft_r_real = fft_r.getMagnitude(true);
+        double[][] out_dft_r = fft_r.getComplex2D(true);
 
         DiscreteFourier fft_b = new DiscreteFourier(banddy_b);
-        fft_b.dft();
-        double[] out_dft_b_real = fft_b.returnAbsolute(true);
-        double[][] out_dft_b = fft_b.returnFull(true);
+        fft_b.transform();
+        double[] out_dft_b_real = fft_b.getMagnitude(true);
+        double[][] out_dft_b = fft_b.getComplex2D(true);
 
         //--- Find Peak  & DEVIDED---//
         if (out_dft_r_real.length == 0) return 0.0;
