@@ -16,6 +16,7 @@ import com.innopia.innocare_sdk.data.ResultVitalSign;
 import com.innopia.innocare_sdk.data.Rppg;
 import com.innopia.innocare_sdk.data.VitalChartData;
 
+import com.innopia.innocare_sdk.utils.DoubleUtils;
 import com.paramsen.noise.Noise;
 
 import java.util.ArrayList;
