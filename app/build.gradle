@@ -40,6 +40,14 @@ android {
         exclude 'META-INF/notice.txt'
         exclude 'META-INF/ASL2.0'
     }
+    signingConfigs {
+        release {
+            storeFile file('keys/innocare-sdk-signkey.jks')
+            storePassword 'innocare123'
+            keyAlias 'innocare-sdk'
+            keyPassword 'innocare123'
+        }
+    }
 }
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
