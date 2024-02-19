@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">innocare_sdk</string>
+    <string name="app_name">vital_sync</string>
     <string name="heart_rate">심박수</string>
     <string name="heart_rate_unit">bpm</string>
     <string name="heart_rate_ews_unit">ews</string>

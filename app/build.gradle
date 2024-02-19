@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace 'com.innopia.innocare_sdk'
+    namespace 'com.innopia.vital_sync'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.innopia.innocare_sdk"
+        applicationId "com.innopia.vital_sync"
         minSdk 29
         targetSdk 33
         versionCode 1
@@ -42,10 +42,10 @@ android {
     }
     signingConfigs {
         release {
-            storeFile file('keys/innocare-sdk-signkey.jks')
-            storePassword 'innocare123'
-            keyAlias 'innocare-sdk'
-            keyPassword 'innocare123'
+            storeFile file('keys/vital_sync_signing.jks')
+            storePassword 'vitalsync123'
+            keyAlias 'vital_sync_signing'
+            keyPassword 'vitalsync123'
         }
     }
 }
