@@ -13,9 +13,8 @@ public class ResultVitalSign {
     public double BP = 0;
     public double SBP = 0;
     public double DBP = 0;
-    public float[] hr_array = new float[VitalLagacy.BPM_BUFFER_SIZE];
-    public float[] rr_array = new float[VitalLagacy.BPM_BUFFER_SIZE];
-
+    public double IBI_mean;
+    public double IBI_HR;
     public void init(){
         LF_HF_ratio = 0;
         HR_result = 0;
@@ -25,7 +24,7 @@ public class ResultVitalSign {
         BP = 0;
         SBP = 0;
         DBP = 0;
-        hr_array = new float[VitalLagacy.BPM_BUFFER_SIZE];
-        rr_array = new float[VitalLagacy.BPM_BUFFER_SIZE];
+        IBI_mean = 0;
+        IBI_HR = 0;
     }
 }

@@ -59,8 +59,6 @@ public class Vital {
     public boolean calculatePOSVital(@NonNull FaceImageModel faceImageModel, boolean activate_lagacy){
         if(activate_lagacy) {
             ResultVitalSign.vitalSignData = VitalLagacy.toResultVitalSign(mVitalLagacy.calculateVital(faceImageModel));
-            ResultVitalSign.vitalSignData.hr_array = mVitalLagacy.getBpmBuffer();
-            ResultVitalSign.vitalSignData.rr_array = mVitalLagacy.getRRBuffer();
             return ResultVitalSign.vitalSignData.SBP != 0;
         }
         Bitmap faceBitmap =

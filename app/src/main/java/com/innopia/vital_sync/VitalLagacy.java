@@ -361,24 +361,11 @@ public class VitalLagacy {
         double hrv = 0;
         //peak detect
         ArrayList<Long> peakTimes = new ArrayList<>();
-//        double[] sliceG = new double[512];
-//        System.arraycopy(signalG, 0, sliceG, 0, 512);
-
-//        Hilbert hilbert = new Hilbert(sliceG);
-//        hilbert.transform();
-//        double[][] signalH = hilbert.getOutput();
-//        double[] ampH = hilbert.getAmplitudeEnvelope();
-//        double[] normalArray = new double[ampH.length];
-//        for(int i = 0; i < ampH.length; i++){
-//            //signal[1][i] : imaginary
-//            normalArray[i] = signalH[i][1]/ampH[i];
-//        }
 
         int wSize = (int)(VIDEO_FRAME_RATE * 0.4);
         FindPeak peak = new FindPeak(signalG);
         Peak detect = peak.detectPeaks();
         int[] peakArray = detect.filterByPeakDistance(wSize);
-        //int[] peakArray = peak.detectRelativeMaxima();
 
         ArrayList<Integer> hrvArrayList = new ArrayList<>();
 
@@ -417,6 +404,8 @@ public class VitalLagacy {
 
         if (filteredValues.isEmpty()) return 0.0;
         double mean = filteredValues.stream().mapToDouble(a -> a).average().orElse(0.0);
+        ResultVitalSign.vitalSignData.IBI_mean = mean;
+        ResultVitalSign.vitalSignData.IBI_HR = 1000 / mean * 60;
         double sumOfSquaredDifferences = filteredValues.stream().mapToDouble(a -> a - mean).map(a -> a * a).sum();
         return Math.sqrt(sumOfSquaredDifferences / filteredValues.size());
     }
@@ -659,6 +648,8 @@ public class VitalLagacy {
         convert.LF_HF_ratio = result.LF_HF_ratio;
         convert.sdnn_result = result.sdnn_result;
         convert.spo2_result = result.spo2_result;
+        convert.IBI_HR = ResultVitalSign.vitalSignData.IBI_HR;
+        convert.IBI_mean = ResultVitalSign.vitalSignData.IBI_mean;
         return convert;
     }
 

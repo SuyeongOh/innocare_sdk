@@ -169,7 +169,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
         faceDetector = new EnhanceFaceDetector(requireContext(), this);
         faceDetector.setupFaceDetector();
-        //faceDetector.detectVideoFile();
     }
 
     @Nullable

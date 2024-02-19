@@ -18,5 +18,6 @@ public class Constant {
     public static final String TYPE_OF_SMALL = "small";
     public static final String TYPE_OF_OUT = "out";
 
+    public static final String CSV_FOOTER = ".csv";
 
 }
