@@ -2,6 +2,7 @@ package com.innopia.vital_sync;
 
 import android.graphics.Bitmap;
 import android.util.Log;
+import android.view.Window;
 
 import com.github.psambit9791.jdsp.misc.UtilMethods;
 import com.github.psambit9791.jdsp.signal.Detrend;
@@ -12,6 +13,7 @@ import com.github.psambit9791.jdsp.transform.DiscreteFourier;
 import com.github.psambit9791.jdsp.transform.FastFourier;
 import com.github.psambit9791.jdsp.transform.Hilbert;
 import com.innopia.vital_sync.bvp.BandPassFilter;
+import com.innopia.vital_sync.bvp.RppgToolBox;
 import com.innopia.vital_sync.data.ResultVitalSign;
 import com.innopia.vital_sync.data.Rppg;
 import com.innopia.vital_sync.data.VitalChartData;
@@ -19,10 +21,12 @@ import com.innopia.vital_sync.data.VitalChartData;
 import com.innopia.vital_sync.utils.DoubleUtils;
 import com.paramsen.noise.Noise;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.LongStream;
 
 import jsat.linear.DenseMatrix;
 import jsat.linear.DenseVector;
@@ -38,7 +42,7 @@ public class VitalLagacy {
     private static final int BP_CALCULATION_FREQUENCY = BUFFER_SIZE;
     public static int VIDEO_FRAME_RATE = 30;
 
-    private static final int GAUSSIAN_W = Config.FACE_MODEL_SIZE;
+    private static final float GAUSSIAN_W = Config.FACE_MODEL_SIZE;
     private static final int DETREND_POWER = 6;
 
     public static class Result {
@@ -71,12 +75,12 @@ public class VitalLagacy {
 
         rPPG.frameTimeArray[bufferIndex] = model.frameUtcTimeMs;
         Bitmap bitmap = model.bitmap;
-        Bitmap test_cropped = Bitmap.createScaledBitmap(bitmap, GAUSSIAN_W, GAUSSIAN_W, false); // face frame input
+        //Bitmap test_cropped = Bitmap.createScaledBitmap(bitmap, GAUSSIAN_W, GAUSSIAN_W, false); // face frame input
 
         float totalR = 0, totalG = 0, totalB = 0;
         for(int i = 0 ; i < GAUSSIAN_W; i++) {
             for (int j = 0; j < GAUSSIAN_W; j++) {
-                int pixels_buffer = test_cropped.getPixel(i, j);
+                int pixels_buffer = bitmap.getPixel(i, j);
 
                 int r = (pixels_buffer & 0xFF0000) >> 16;
                 int g = (pixels_buffer & 0x00FF00) >> 8;
@@ -87,9 +91,9 @@ public class VitalLagacy {
                 totalB += b;
             }
         }
-        totalR = totalR / (float)(GAUSSIAN_W * GAUSSIAN_W);
-        totalG = totalG / (float)(GAUSSIAN_W * GAUSSIAN_W);
-        totalB = totalB / (float)(GAUSSIAN_W * GAUSSIAN_W);
+        totalR = totalR / (GAUSSIAN_W * GAUSSIAN_W);
+        totalG = totalG / (GAUSSIAN_W * GAUSSIAN_W);
+        totalB = totalB / (GAUSSIAN_W * GAUSSIAN_W);
 
         rPPG.f_pixel_buff[0][bufferIndex]= totalR;
         rPPG.f_pixel_buff[1][bufferIndex]= totalG;
@@ -115,6 +119,10 @@ public class VitalLagacy {
             //--------SDNN --------------------//
             lastResult.LF_HF_ratio = LF_HF_ratio(pre_processed,BUFFER_SIZE);
 
+            Log.d("vital", String.format(
+                    "HR : %f, hrv : %f"
+            ,lastResult.HR_result, lastResult.sdnn_result));
+
             try {
                 lastResult.spo2_result = spo2(rPPG.f_pixel_buff[0], rPPG.f_pixel_buff[2], VIDEO_FRAME_RATE);
             } catch (Exception e) {
@@ -133,6 +141,8 @@ public class VitalLagacy {
             lastResult.SBP = 23.7889 + (95.4335 * peak_avg) + (4.5958 * bmi) - (5.109 * peak_avg * bmi);
             lastResult.DBP = -17.3772 - (115.1747 * valley_avg) + (4.0251 * bmi) + (5.2825 * valley_avg * bmi);
             lastResult.BP = lastResult.SBP * 0.33 + lastResult.DBP * 0.66;
+
+
         }
         bufferIndex = (bufferIndex + 1) % BUFFER_SIZE;
         pixelIndex++;
@@ -154,6 +164,12 @@ public class VitalLagacy {
         VitalChartData.SMOOTH_G_SIGNAL = smoothPixel[0];
         VitalChartData.SMOOTH_B_SIGNAL = smoothPixel[0];
 
+        //Time Smoothing
+        double[] timeToDouble = new double[rPPG.frameTimeArray.length];
+        for(int i = 0; i < timeToDouble.length; i++){
+            timeToDouble[i] = rPPG.frameTimeArray[i];
+        }
+        rPPG.frameDoubleTimeArray = new Smooth(timeToDouble, 4, "rectangular").smoothSignal();
         Vec v = new DenseVector(1);
         v.mutableAdd(1);
 
@@ -177,6 +193,7 @@ public class VitalLagacy {
 
         Detrend d2 = new Detrend(bvpVec.arrayCopy(), DETREND_POWER);
         double[] d_g = d2.detrendSignal();
+//        double[] d_g = RppgToolBox.detrend(bvpVec.arrayCopy(), 100);
 
         VitalChartData.DETREND_SIGNAL = d_g;
 
@@ -201,57 +218,58 @@ public class VitalLagacy {
         return fft.getMagnitude(true);
     }
 
-    public double[] preprocessing_pos(double[][] pixel){
-        //pixel = setRGB.setRGB();
-        VitalChartData.R_SIGNAL = pixel[0];
-        VitalChartData.G_SIGNAL = pixel[1];
-        VitalChartData.B_SIGNAL = pixel[2];
-
-        double[][] smoothPixel = new double[pixel.length][pixel[0].length];
-        smoothPixel[0] = new Smooth(pixel[0], 4, "rectangular").smoothSignal();
-        smoothPixel[1] = new Smooth(pixel[1], 4, "rectangular").smoothSignal();
-        smoothPixel[2] = new Smooth(pixel[2], 4, "rectangular").smoothSignal();
-
-        VitalChartData.SMOOTH_R_SIGNAL = smoothPixel[0];
-        VitalChartData.SMOOTH_G_SIGNAL = smoothPixel[0];
-        VitalChartData.SMOOTH_B_SIGNAL = smoothPixel[0];
-
-        double[][] posMatrix = new double[][]{
-                {0, 1, -1}
-                ,{-2, 1, 1}
-        };
-        double[][] matrixS = UtilMethods.matrixMultiply(posMatrix, smoothPixel);
-
-        double[] matrixH = DoubleUtils.calculateH(matrixS);
-        double meanH = DoubleUtils.calculateMean(matrixH);
-
-
-        //smoothTranspose
-        Detrend d2 = new Detrend(matrixH, DETREND_POWER);
-        double[] d_g = d2.detrendSignal();
-
-        VitalChartData.DETREND_SIGNAL = d_g;
-
-        BandPassFilter bpf_hr = new BandPassFilter(Config.MAX_HR_FREQUENCY, Config.MIN_HR_FREQUENCY);
-        BandPassFilter bpf_rr = new BandPassFilter(Config.MAX_RR_FREQUENCY, Config.MIN_RR_FREQUENCY);
-        double[] bpf_hr_signal = new double[d_g.length];
-        double[] bpf_rr_signal = new double[d_g.length];
-        for(int i = 1; i < d_g.length; i++){
-            bpf_hr_signal[i] = bpf_hr.filter(d_g[i], rPPG.frameTimeArray[i] - rPPG.frameTimeArray[i - 1]);
-            bpf_rr_signal[i] = bpf_rr.filter(d_g[i], rPPG.frameTimeArray[i] - rPPG.frameTimeArray[i - 1]);
-        }
-
-        VitalChartData.BPF_SIGNAL = bpf_hr_signal;
-        rPPG.lastBvpSignal = bpf_hr_signal;
-        rPPG.lastRrSignal = bpf_rr_signal;
-        VitalChartData.BVP_SIGNAL = rPPG.lastBvpSignal;
-
-        FastFourier fft = new FastFourier(bpf_hr_signal);
-        fft.transform();
-
-        fftArray = fft.getComplex2D(true);
-        return fft.getMagnitude(true);
-    }
+//    public double[] preprocessing_pos(double[][] pixel){
+//        //pixel = setRGB.setRGB();
+//        VitalChartData.R_SIGNAL = pixel[0];
+//        VitalChartData.G_SIGNAL = pixel[1];
+//        VitalChartData.B_SIGNAL = pixel[2];
+//
+//        double[][] smoothPixel = new double[pixel.length][pixel[0].length];
+//        smoothPixel[0] = new Smooth(pixel[0], 4, "rectangular").smoothSignal();
+//        smoothPixel[1] = new Smooth(pixel[1], 4, "rectangular").smoothSignal();
+//        smoothPixel[2] = new Smooth(pixel[2], 4, "rectangular").smoothSignal();
+//
+//        VitalChartData.SMOOTH_R_SIGNAL = smoothPixel[0];
+//        VitalChartData.SMOOTH_G_SIGNAL = smoothPixel[0];
+//        VitalChartData.SMOOTH_B_SIGNAL = smoothPixel[0];
+//
+//        double[][] posMatrix = new double[][]{
+//                {0, 1, -1}
+//                ,{-2, 1, 1}
+//        };
+//        double[][] matrixS = UtilMethods.matrixMultiply(posMatrix, smoothPixel);
+//
+//        double[] matrixH = DoubleUtils.calculateH(matrixS);
+//        double meanH = DoubleUtils.calculateMean(matrixH);
+//
+//
+//        //smoothTranspose
+////        Detrend d2 = new Detrend(matrixH, DETREND_POWER);
+////        double[] d_g = d2.detrendSignal();
+//        double[] d_g = RppgToolBox.detrend(matrixH, 100);
+//
+//        VitalChartData.DETREND_SIGNAL = d_g;
+//
+//        BandPassFilter bpf_hr = new BandPassFilter(Config.MAX_HR_FREQUENCY, Config.MIN_HR_FREQUENCY);
+//        BandPassFilter bpf_rr = new BandPassFilter(Config.MAX_RR_FREQUENCY, Config.MIN_RR_FREQUENCY);
+//        double[] bpf_hr_signal = new double[d_g.length];
+//        double[] bpf_rr_signal = new double[d_g.length];
+//        for(int i = 1; i < d_g.length; i++){
+//            bpf_hr_signal[i] = bpf_hr.filter(d_g[i], rPPG.frameTimeArray[i] - rPPG.frameTimeArray[i - 1]);
+//            bpf_rr_signal[i] = bpf_rr.filter(d_g[i], rPPG.frameTimeArray[i] - rPPG.frameTimeArray[i - 1]);
+//        }
+//
+//        VitalChartData.BPF_SIGNAL = bpf_hr_signal;
+//        rPPG.lastBvpSignal = bpf_hr_signal;
+//        rPPG.lastRrSignal = bpf_rr_signal;
+//        VitalChartData.BVP_SIGNAL = rPPG.lastBvpSignal;
+//
+//        FastFourier fft = new FastFourier(bpf_hr_signal);
+//        fft.transform();
+//
+//        fftArray = fft.getComplex2D(true);
+//        return fft.getMagnitude(true);
+//    }
 
     public double[] get_normG(double[] g_pixel){
         String mode = "rectangular";
@@ -362,18 +380,38 @@ public class VitalLagacy {
         //peak detect
         ArrayList<Long> peakTimes = new ArrayList<>();
 
-        int wSize = (int)(VIDEO_FRAME_RATE * 0.4);
-        FindPeak peak = new FindPeak(signalG);
-        Peak detect = peak.detectPeaks();
-        int[] peakArray = detect.filterByPeakDistance(wSize);
+        int minWindowSize = (int)(VIDEO_FRAME_RATE * 60 / hr * 0.8);
+        int maxWindowSize = (int)(VIDEO_FRAME_RATE * 60 / hr * 1.2);
+        ArrayList<Integer> peakArray = new ArrayList<>();
 
-        ArrayList<Integer> hrvArrayList = new ArrayList<>();
+        int firstIndex = 0;
+        double[] slice = Arrays.copyOfRange(signalG, 0, maxWindowSize);
+        FindPeak peak = new FindPeak(slice);
+        int[] WindowArray = peak.detectRelativeMaxima();
 
-        for (int j : peakArray) {
-            peakTimes.add(rppg.frameTimeArray[j]);
-            hrvArrayList.add(j);
+        for(int i = 0; i < WindowArray.length; i ++ ){
+            if(signalG[0] < signalG[WindowArray[i]]){
+                firstIndex = i;
+            }
         }
-        VitalChartData.HRV_PEAK = hrvArrayList.stream().mapToInt(e -> e).toArray();
+
+        peakArray.add(firstIndex);
+        peakTimes.add(rppg.frameTimeArray[firstIndex]);
+
+        if(!(firstIndex == 1 || firstIndex == 0)){
+            firstIndex = firstIndex - 2;
+        }
+        slice = Arrays.copyOfRange(signalG, firstIndex, signalG.length - 1);
+        peak = new FindPeak(slice);
+        WindowArray = peak.detectPeaks().filterByPeakDistance(minWindowSize);
+
+        for(int peakIndex : WindowArray){
+            int realIndex = peakIndex + firstIndex;
+            peakArray.add(realIndex);
+            peakTimes.add(rppg.frameTimeArray[realIndex]);
+        }
+
+        VitalChartData.HRV_PEAK = peakArray.stream().mapToInt(e -> e).toArray();
 
         ArrayList<Long> rrIntervals = new ArrayList<>();
         if(peakTimes.size() > 6){
@@ -384,30 +422,30 @@ public class VitalLagacy {
 
         if(rrIntervals.size() == 0) return 0;
 
-        Collections.sort(rrIntervals);
-        double median;
-        int middle = rrIntervals.size() / 2;
-        if (rrIntervals.size() % 2 == 0) {
-            median = ((double)rrIntervals.get(middle - 1) + (double)rrIntervals.get(middle)) / 2.0;
-        } else {
-            median = (double)rrIntervals.get(middle);
-        }
+        //rr_interval 0.4~1.3
+        ArrayList<Long> FilteredRRInterval = new ArrayList<>();
 
-        double lowerBound = median - 0.1 * median;
-        double upperBound = median + 0.1 * median;
-        ArrayList<Double> filteredValues = new ArrayList<>();
-        for (Long rrInterval : rrIntervals) {
-            if (lowerBound <= rrInterval && rrInterval <= upperBound) {
-                filteredValues.add((double)rrInterval);
+        int upperBound;
+        int lowerBound;
+        upperBound = Math.min(1300, (int)(1.2 * 60/hr * 1000));
+        lowerBound = Math.max(400, (int)(0.8 * 60/hr * 1000));
+        for(int i = 0; i < rrIntervals.size(); i++){
+            long interval = rrIntervals.get(i);
+            if(interval > lowerBound && interval < upperBound){
+                FilteredRRInterval.add(interval);
+                Log.d("vital", "interval :: " + interval);
             }
+
         }
 
-        if (filteredValues.isEmpty()) return 0.0;
-        double mean = filteredValues.stream().mapToDouble(a -> a).average().orElse(0.0);
+
+        if (FilteredRRInterval.isEmpty()) return 0.0;
+        double mean = FilteredRRInterval.stream().mapToDouble(a -> a).average().orElse(0.0);
         ResultVitalSign.vitalSignData.IBI_mean = mean;
         ResultVitalSign.vitalSignData.IBI_HR = 1000 / mean * 60;
-        double sumOfSquaredDifferences = filteredValues.stream().mapToDouble(a -> a - mean).map(a -> a * a).sum();
-        return Math.sqrt(sumOfSquaredDifferences / filteredValues.size());
+        double meanOfSquaredDifferences = FilteredRRInterval.stream().mapToDouble(a -> a - mean).map(a -> a * a).average().orElse(0.0);
+        Log.d("vital", "IBI : " + mean);
+        return Math.sqrt(meanOfSquaredDifferences);
     }
 
     public double spo2(double[] spo2_pixel_buff_R, double[] spo2_pixel_buff_B, int VIDEO_FRAME_RATE) {

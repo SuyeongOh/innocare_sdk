@@ -13,6 +13,7 @@ public class Config {
     public static double USER_BMI = 0f;
 
     public static final boolean FLAG_INNER_TEST = true;
+    public static final boolean FLAG_VIDEO_TEST = true;
 
     public static final int FULL_SIZE_OF_WIDTH = 2736;
     public static final int FULL_SIZE_OF_HEIGHT = 3648;

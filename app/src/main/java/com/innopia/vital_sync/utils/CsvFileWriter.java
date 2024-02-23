@@ -13,7 +13,13 @@ public class CsvFileWriter {
         FileWriter writer = null;
 
         try {
-            writer = new FileWriter(file, false);
+            if(file.exists()) {
+                writer = new FileWriter(file, true);
+            }
+            else {
+                writer = new FileWriter(file, false);
+            }
+
 
             for (String[] dataLine : dataLines) {
                 writer.append(String.join(",", dataLine));

@@ -10,15 +10,20 @@ public class CommonEvaluationMetrics {
     public double label_ibi_mean;
     public double label_ibi_hrv;
 
-    public static CommonEvaluationMetrics VitalSignToMetrics(){
-
-    }
-
     public void setId(String id){
         subject_id = id;
     }
 
     public void setSlice(String id){
         slice_id = id;
+    }
+
+    public String[] getValueStringArray(){
+        return new String[]{
+                Double.toString(label_fft_hr),
+                Double.toString(label_ibi_hr),
+                Double.toString(label_ibi_mean),
+                Double.toString(label_ibi_hrv),
+        };
     }
 }

@@ -9,6 +9,7 @@ public class Rppg {
     public float[] bpm_Buffer;
     public float[] rr_Buffer;
     public long[] frameTimeArray;
+    public double[] frameDoubleTimeArray;
     public boolean[] peakArray;
 
     public Rppg(int buffer_size){

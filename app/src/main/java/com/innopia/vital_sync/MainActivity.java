@@ -3,6 +3,8 @@ package com.innopia.vital_sync;
 import android.Manifest;
 import android.os.Bundle;
 
+import com.innopia.vital_sync.video.VitalTestDataset;
+
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -27,6 +29,11 @@ public class MainActivity extends FragmentActivity {
 
         requestPermissions(LIST_NEW_SDK_PERMISSION, 1);
 
+        if(Config.FLAG_VIDEO_TEST){
+            VitalTestDataset test = new VitalTestDataset(this);
+            test.runTest();
+            //finish();
+        }
         if(Config.FLAG_INNER_TEST){
             InitFragment fragment = new InitFragment();
             getSupportFragmentManager().beginTransaction()
