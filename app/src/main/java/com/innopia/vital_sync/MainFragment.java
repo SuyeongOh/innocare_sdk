@@ -666,8 +666,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 sdnnValueView.setText(String.valueOf(Math.round(ResultVitalSign.vitalSignData.sdnn_result)));
                 stressValueView.setText(String.valueOf(Math.round(ResultVitalSign.vitalSignData.LF_HF_ratio)));
                 spo2ValueView.setText(String.valueOf(Math.round(ResultVitalSign.vitalSignData.spo2_result)));
-                sbpValueView.setText(String.valueOf(Math.round(ResultVitalSign.vitalSignData.SBP)));
-                dbpValueView.setText(String.valueOf(Math.round(ResultVitalSign.vitalSignData.DBP)));
+//                sbpValueView.setText(String.valueOf(Math.round(ResultVitalSign.vitalSignData.SBP)));
+//                dbpValueView.setText(String.valueOf(Math.round(ResultVitalSign.vitalSignData.DBP)));
             }
         });
     }

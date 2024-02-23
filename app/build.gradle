@@ -3,6 +3,11 @@ plugins {
     id "io.freefair.lombok" version "6.4.3"
 }
 
+ext {
+    manufacture = "Innopia"
+    packageName = "VitalSync"
+}
+
 android {
     namespace 'com.innopia.vital_sync'
     compileSdk 33
@@ -11,8 +16,8 @@ android {
         applicationId "com.innopia.vital_sync"
         minSdk 29
         targetSdk 33
-        versionCode 1
-        versionName "1.0"
+        versionCode 00001
+        versionName "0.0.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -48,6 +53,12 @@ android {
             keyPassword 'vitalsync123'
         }
     }
+    applicationVariants.all { variant ->
+        variant.outputs.all {
+            outputFileName = getApkName(variant)
+        }
+    }
+
 }
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
@@ -82,4 +93,16 @@ dependencies {
     }
 
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
+}
+
+def getApkName(def variant){
+    return new StringBuilder()
+            .append(project.ext.packageName)
+            .append("-")
+            .append(variant.buildType.name)
+            .append("-")
+            .append(variant.versionCode)
+            .append(".apk")
+            .toString()
+            .replace(" ", "_")
 }

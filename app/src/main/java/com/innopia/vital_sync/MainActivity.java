@@ -29,6 +29,7 @@ public class MainActivity extends FragmentActivity {
 
         requestPermissions(LIST_NEW_SDK_PERMISSION, 1);
 
+        //반드시 상용빌드시 VIDEO_TEST false
         if(Config.FLAG_VIDEO_TEST){
             VitalTestDataset test = new VitalTestDataset(this);
             test.runTest();

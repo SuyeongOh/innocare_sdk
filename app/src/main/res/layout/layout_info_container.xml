@@ -537,7 +537,7 @@
             app:layout_constraintTop_toTopOf="@+id/blood_pressur_img"
             app:ticker_animationDuration="500"
             app:ticker_defaultCharacterList="number"
-            tools:text="132" />
+            tools:text="TBD" />
 
         <TextView
             android:id="@+id/late_BP_value_unit"
@@ -557,7 +557,7 @@
             app:layout_constraintTop_toBottomOf="@+id/highest_blood_pressure_value"
             app:ticker_animationDuration="500"
             app:ticker_defaultCharacterList="number"
-            tools:text="65" />
+            tools:text="TBD" />
 
         <TextView
             android:id="@+id/late_BP_value_unit2"
