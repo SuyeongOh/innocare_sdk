@@ -35,6 +35,7 @@ import jsat.linear.Vec;
 import uk.me.berndporr.iirj.Butterworth;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.min;
 
 public class VitalLagacy {
     public static final int BUFFER_SIZE = Config.ANALYSIS_TIME * Config.TARGET_FRAME;
@@ -130,8 +131,9 @@ public class VitalLagacy {
             }
             lastResult.spo2_result = Math.round(lastResult.spo2_result);
 
-            double peak_avg = get_peak_avg(pre_processed,true);
-            double valley_avg = get_peak_avg(pre_processed,false);
+            double[] avg = get_peak_avg(VitalChartData.DETREND_SIGNAL, lastResult.HR_result);
+            double peak_avg = avg[0];
+            double valley_avg = avg[1];
             Log.d("BP",""+peak_avg+":"+valley_avg);
             double bmi = Config.USER_BMI;
 
@@ -271,38 +273,67 @@ public class VitalLagacy {
 //        return fft.getMagnitude(true);
 //    }
 
-    public double[] get_normG(double[] g_pixel){
-        String mode = "rectangular";
-        int wsize = 5;
-        Smooth g = new Smooth(g_pixel, wsize, mode);
-        double[] s_g = g.smoothSignal();
-        Detrend d2 = new Detrend(s_g,DETREND_POWER);
-        double[] d_g = d2.detrendSignal();
-        Vec v_g = DenseVector.toDenseVec(d_g);
-        v_g = v_g.subtract(v_g.mean());
-        v_g = v_g.divide(v_g.standardDeviation());
-        return v_g.arrayCopy();
-    }
+    public double[] get_peak_avg(double[] signalG, double hr){ // flag 0 : vally 1 : peak
 
-    public double get_peak_avg(double[] arr, boolean flag){ // flag 0 : vally 1 : peak
-        List<Double> peak = new ArrayList<Double>();
-        if(flag)
-            for( int i = 1 ; i < arr.length-1 ; i++){
-                if( arr[i-1]< arr[i] && arr[i] > arr[i+1])
-                    peak.add(arr[i]);
-            }
-        else{
-            for( int i = 1 ; i < arr.length-1 ; i++){
-                if( arr[i-1] > arr[i] && arr[i] < arr[i+1])
-                    peak.add(arr[i]);
+        int minWindowSize = (int)(VIDEO_FRAME_RATE * 60 / hr * 0.8);
+        int maxWindowSize = (int)(VIDEO_FRAME_RATE * 60 / hr * 1.2);
+
+        ArrayList<Integer> peakArray = new ArrayList<>();
+        ArrayList<Double> peakPower = new ArrayList<>();
+        ArrayList<Integer> valleyArray = new ArrayList<>();
+        ArrayList<Double> valleyPower = new ArrayList<>();
+        //peak detect
+        int firstIndex = 0;
+        double[] slice = Arrays.copyOfRange(signalG, 0, maxWindowSize);
+        FindPeak peak = new FindPeak(slice);
+        int[] WindowArray = peak.detectRelativeMaxima();
+
+        for(int i = 0; i < WindowArray.length; i ++ ){
+            if(signalG[0] < signalG[WindowArray[i]]){
+                firstIndex = i;
             }
         }
 
-        double[] arrDouble = peak.stream() .mapToDouble(Double::doubleValue) .toArray();
+        peakArray.add(firstIndex);
 
-        Vec v_g = DenseVector.toDenseVec(arrDouble);
+        if(!(firstIndex == 1 || firstIndex == 0)){
+            firstIndex = firstIndex - 2;
+        }
+        slice = Arrays.copyOfRange(signalG, firstIndex, signalG.length - 1);
+        peak = new FindPeak(slice);
+        WindowArray = peak.detectPeaks().filterByPeakDistance(minWindowSize);
 
-        return v_g.mean();
+        for(int peakIndex : WindowArray){
+            int realIndex = peakIndex + firstIndex;
+            peakArray.add(realIndex);
+            peakPower.add(signalG[realIndex]);
+        }
+
+        //valley detect
+
+        for(int i = 1; i < peakArray.size(); i++){
+            double[] targetArray =
+                    Arrays.copyOfRange(signalG, peakArray.get(i - 1), peakArray.get(i));
+            FindPeak findValley = new FindPeak(targetArray);
+            int[] valleys = findValley.detectRelativeMinima();
+            if(valleys.length == 0) continue;
+            int minIndex = valleys[0];
+            for(int j = 0; j < valleys.length; j++){
+                if(targetArray[minIndex] > targetArray[valleys[j]]){
+                    minIndex = j;
+                }
+            }
+            valleyArray.add(peakArray.get(i - 1) + minIndex);
+            valleyPower.add(targetArray[minIndex]);
+        }
+
+        double[] resultArray = new double[2];
+
+        resultArray[0] = peakPower.stream().mapToDouble(e -> e).average().orElse(0.0);
+        resultArray[1] = valleyPower.stream().mapToDouble(e -> e).average().orElse(0.0);
+
+        //double[0] = peak, double[1] = valley
+        return resultArray;
     }
 
 
