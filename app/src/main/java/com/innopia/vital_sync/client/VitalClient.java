@@ -18,27 +18,28 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class VitalClient {
 
     private static VitalClient instance;
+    private static Retrofit retrofit;
+
 
     private VitalClient() {}
 
     public static VitalClient getInstance() {
         if (instance == null) {
             instance = new VitalClient();
-        }
-        return instance;
-    }
+            OkHttpClient.Builder builder = new OkHttpClient.Builder();
+            builder.interceptors().add(interceptor);
 
-    public void requestAnalysis(double[][] RGB){
-
-        OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        builder.interceptors().add(interceptor);
-
-        Retrofit retrofit = new Retrofit.Builder()
+            retrofit = new Retrofit.Builder()
                 .baseUrl(Config.LOCAL_SERVER_ADDRESS) // 여기에 서버의 base URL 입력
                 .client(builder.build())
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
+        }
 
+        return instance;
+    }
+
+    public void requestAnalysis(double[][] RGB){
         // 서비스 인터페이스 생성
         // 비동기적으로 POST 요청 보내기
         retrofit.create(VitalService.class)
@@ -49,8 +50,7 @@ public class VitalClient {
                         if (response.isSuccessful()) {
                             // 성공적으로 응답 받음
                             VitalResponse vitalResponse = response.body();
-                            System.out.println("Response received: " + vitalResponse.status);
-                            System.out.println("Response : " + vitalResponse.hr);
+
                         } else {
                             // 오류 응답 처리
                             System.out.println("Error: " + response.errorBody());
@@ -67,6 +67,168 @@ public class VitalClient {
         Log.d("vital", "Ready to Reqeust :: " + Config.LOCAL_SERVER_ADDRESS);
     }
 
-    private HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor()
+    public void requestHr(double[][] RGB, String mode){
+        // 서비스 인터페이스 생성
+        // 비동기적으로 POST 요청 보내기
+        retrofit.create(VitalService.class)
+                .postVitalHr(new VitalRequest(RGB, "innopiatech"))
+                .enqueue(new Callback<VitalResponse>() {
+                    @Override
+                    public void onResponse(Call<VitalResponse> call, Response<VitalResponse> response) {
+                        if (response.isSuccessful()) {
+                            // 성공적으로 응답 받음
+                            VitalResponse vitalResponse = response.body();
+
+                        } else {
+                            // 오류 응답 처리
+                            System.out.println("Error: " + response.errorBody());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<VitalResponse> call, Throwable t) {
+                        // 네트워크 오류 등의 이유로 요청 실패
+                        System.out.println("Failed to make request: " + t.getMessage());
+                    }
+                });
+
+        Log.d("vital", "Ready to Reqeust :: " + Config.LOCAL_SERVER_ADDRESS);
+    }
+
+    public void requestHrv(double[][] RGB, String mode){
+        // 서비스 인터페이스 생성
+        // 비동기적으로 POST 요청 보내기
+        retrofit.create(VitalService.class)
+                .postVitalHrv(new VitalRequest(RGB, "innopiatech"))
+                .enqueue(new Callback<VitalResponse>() {
+                    @Override
+                    public void onResponse(Call<VitalResponse> call, Response<VitalResponse> response) {
+                        if (response.isSuccessful()) {
+                            // 성공적으로 응답 받음
+                            VitalResponse vitalResponse = response.body();
+                        } else {
+                            // 오류 응답 처리
+                            System.out.println("Error: " + response.errorBody());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<VitalResponse> call, Throwable t) {
+                        // 네트워크 오류 등의 이유로 요청 실패
+                        System.out.println("Failed to make request: " + t.getMessage());
+                    }
+                });
+
+        Log.d("vital", "Ready to Reqeust :: " + Config.LOCAL_SERVER_ADDRESS);
+    }
+    public void requestRr(double[][] RGB, String mode){
+        // 서비스 인터페이스 생성
+        // 비동기적으로 POST 요청 보내기
+        retrofit.create(VitalService.class)
+                .postVitalRr(new VitalRequest(RGB, "innopiatech"))
+                .enqueue(new Callback<VitalResponse>() {
+                    @Override
+                    public void onResponse(Call<VitalResponse> call, Response<VitalResponse> response) {
+                        if (response.isSuccessful()) {
+                            // 성공적으로 응답 받음
+                            VitalResponse vitalResponse = response.body();
+
+                        } else {
+                            // 오류 응답 처리
+                            System.out.println("Error: " + response.errorBody());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<VitalResponse> call, Throwable t) {
+                        // 네트워크 오류 등의 이유로 요청 실패
+                        System.out.println("Failed to make request: " + t.getMessage());
+                    }
+                });
+
+        Log.d("vital", "Ready to Reqeust :: " + Config.LOCAL_SERVER_ADDRESS);
+    }
+    public void requestSpo2(double[][] RGB, String mode){
+        // 서비스 인터페이스 생성
+        // 비동기적으로 POST 요청 보내기
+        retrofit.create(VitalService.class)
+                .postVitalSpo2(new VitalRequest(RGB, "innopiatech"))
+                .enqueue(new Callback<VitalResponse>() {
+                    @Override
+                    public void onResponse(Call<VitalResponse> call, Response<VitalResponse> response) {
+                        if (response.isSuccessful()) {
+                            // 성공적으로 응답 받음
+                            VitalResponse vitalResponse = response.body();
+
+                        } else {
+                            // 오류 응답 처리
+                            System.out.println("Error: " + response.errorBody());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<VitalResponse> call, Throwable t) {
+                        // 네트워크 오류 등의 이유로 요청 실패
+                        System.out.println("Failed to make request: " + t.getMessage());
+                    }
+                });
+
+        Log.d("vital", "Ready to Reqeust :: " + Config.LOCAL_SERVER_ADDRESS);
+    }
+    public void requestStress(double[][] RGB, String mode){
+        // 서비스 인터페이스 생성
+        // 비동기적으로 POST 요청 보내기
+        retrofit.create(VitalService.class)
+                .postVitalStress(new VitalRequest(RGB, "innopiatech"))
+                .enqueue(new Callback<VitalResponse>() {
+                    @Override
+                    public void onResponse(Call<VitalResponse> call, Response<VitalResponse> response) {
+                        if (response.isSuccessful()) {
+                            // 성공적으로 응답 받음
+                            VitalResponse vitalResponse = response.body();
+
+                        } else {
+                            // 오류 응답 처리
+                            System.out.println("Error: " + response.errorBody());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<VitalResponse> call, Throwable t) {
+                        // 네트워크 오류 등의 이유로 요청 실패
+                        System.out.println("Failed to make request: " + t.getMessage());
+                    }
+                });
+
+        Log.d("vital", "Ready to Reqeust :: " + Config.LOCAL_SERVER_ADDRESS);
+    }
+    public void requestBp(double[][] RGB, String mode){
+        // 서비스 인터페이스 생성
+        // 비동기적으로 POST 요청 보내기
+        retrofit.create(VitalService.class)
+                .postVitalBp(new VitalRequest(RGB, "innopiatech"))
+                .enqueue(new Callback<VitalResponse>() {
+                    @Override
+                    public void onResponse(Call<VitalResponse> call, Response<VitalResponse> response) {
+                        if (response.isSuccessful()) {
+                            // 성공적으로 응답 받음
+                            VitalResponse vitalResponse = response.body();
+
+                        } else {
+                            // 오류 응답 처리
+                            System.out.println("Error: " + response.errorBody());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<VitalResponse> call, Throwable t) {
+                        // 네트워크 오류 등의 이유로 요청 실패
+                        System.out.println("Failed to make request: " + t.getMessage());
+                    }
+                });
+
+        Log.d("vital", "Ready to Reqeust :: " + Config.LOCAL_SERVER_ADDRESS);
+    }
+    private static final HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor()
             .setLevel(HttpLoggingInterceptor.Level.BODY);
 }
