@@ -39,6 +39,24 @@ public class VitalClient {
         return instance;
     }
 
+    public Response<VitalResponse> requestSyncAnalysis(double[][] RGB){
+        // 서비스 인터페이스 생성
+        // 비동기적으로 POST 요청 보내기
+        Response<VitalResponse> response = null;
+        try{
+            response = retrofit.create(VitalService.class)
+                    .postVitalAll(new VitalRequest(RGB, "innopiatech"))
+                    .execute();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        Log.d("vital", "Ready to Reqeust :: " + Config.LOCAL_SERVER_ADDRESS);
+
+        return response;
+    }
+
+
     public void requestAnalysis(double[][] RGB){
         // 서비스 인터페이스 생성
         // 비동기적으로 POST 요청 보내기

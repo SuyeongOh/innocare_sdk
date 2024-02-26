@@ -21,6 +21,7 @@ import com.innopia.vital_sync.data.ResultVitalSign;
 import com.innopia.vital_sync.data.Rppg;
 import com.innopia.vital_sync.data.VitalChartData;
 
+import com.innopia.vital_sync.service.VitalResponse;
 import com.innopia.vital_sync.utils.DoubleUtils;
 import com.paramsen.noise.Noise;
 
@@ -148,12 +149,30 @@ public class VitalLagacy {
             lastResult.BP = lastResult.SBP * 0.33 + lastResult.DBP * 0.66;
 
             //Web server prototype
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                @Override
-                public void run() {
-                    VitalClient.getInstance().requestAnalysis(rPPG.f_pixel_buff);
-                }
-            });
+           if(Config.SERVER_RESPONSE_MODE){
+               VitalClient.getInstance().requestAnalysis(rPPG.f_pixel_buff);
+           } else{
+               VitalResponse response = VitalClient.getInstance().requestSyncAnalysis(rPPG.f_pixel_buff).body();
+               if(response != null){
+                   lastResult.HR_result = response.hr;
+                   lastResult.RR_result = response.rr;
+                   lastResult.sdnn_result = response.hrv;
+                   lastResult.spo2_result = response.spo2;
+                   lastResult.LF_HF_ratio = (float)response.stress;
+                   lastResult.SBP = response.sbp;
+                   lastResult.DBP = response.dbp;
+                   lastResult.BP = response.bp;
+               } else{
+                   lastResult.HR_result = 0;
+                   lastResult.RR_result = 0;
+                   lastResult.sdnn_result = 0;
+                   lastResult.spo2_result = 0;
+                   lastResult.LF_HF_ratio = 0;
+                   lastResult.SBP = 0;
+                   lastResult.DBP = 0;
+                   lastResult.BP = 0;
+               }
+           }
         }
         bufferIndex = (bufferIndex + 1) % BUFFER_SIZE;
         pixelIndex++;

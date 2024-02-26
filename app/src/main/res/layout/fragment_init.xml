@@ -61,6 +61,17 @@
             android:autoSizeTextType="uniform"
             android:hint="로컬서버 ip를 입력하세요" />
 
+        <Switch
+            android:id="@+id/init_view_server_switch"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:autoSizeTextType="uniform"
+            android:textColor="@color/black"
+            android:checked="false"
+            android:maxLines="1"
+            android:text="결과 출력을 서버응답으로 하겠습니까?" />
+
 
         <Switch
             android:id="@+id/init_view_large_face_switch"

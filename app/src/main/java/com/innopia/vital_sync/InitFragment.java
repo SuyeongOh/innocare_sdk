@@ -21,6 +21,7 @@ public class InitFragment extends Fragment {
     private EditText analysisTimeInputView;
     private EditText localIpInputView;
     private Button applyBtn;
+    private Switch serverResponseSwitch;
     private Switch cameraDirectionSwitch;
     private Switch largeFaceSwitch;
     @Nullable
@@ -35,6 +36,7 @@ public class InitFragment extends Fragment {
         largeFaceSwitch = view.findViewById(R.id.init_view_large_face_switch);
         analysisTimeInputView = view.findViewById(R.id.init_view_analysis_time);
         localIpInputView = view.findViewById(R.id.init_view_ip_input);
+        serverResponseSwitch = view.findViewById(R.id.init_view_server_switch);
         return view;
     }
 
@@ -69,12 +71,12 @@ public class InitFragment extends Fragment {
                     Config.LOCAL_SERVER_ADDRESS = localIpInputView.getText().toString();
                 }
 
+                Config.SERVER_RESPONSE_MODE = serverResponseSwitch.isChecked();
+                Config.LARGE_FACE_MODE = largeFaceSwitch.isChecked();
                 if(cameraDirectionSwitch.isChecked()){
                     Config.USE_CAMERA_DIRECTION = Constant.CAMERA_DIRECTION_BACK;
                 }
-                if(largeFaceSwitch.isChecked()){
-                    Config.LARGE_FACE_MODE = true;
-                }
+
                 bmiInputView.clearFocus();
                 MainActivity activity = (MainActivity) getActivity();
                 activity.replaceFragment(new MainFragment());

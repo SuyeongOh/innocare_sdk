@@ -24,7 +24,7 @@ public class Config {
     public static final double MIN_RR_FREQUENCY = 0.83f;
     public static final double MAX_RR_FREQUENCY = 2.5f;
     public static boolean LARGE_FACE_MODE = false;
-
+    public static boolean SERVER_RESPONSE_MODE = false;
     public static final int FACE_MODEL_SIZE = 72;
 
     public static String LOCAL_SERVER_ADDRESS = "http://172.168.50.59:1004/";
