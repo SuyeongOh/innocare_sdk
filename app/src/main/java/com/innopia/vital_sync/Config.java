@@ -13,7 +13,7 @@ public class Config {
     public static double USER_BMI = 0f;
 
     public static final boolean FLAG_INNER_TEST = true;
-    public static final boolean FLAG_VIDEO_TEST = true;
+    public static final boolean FLAG_VIDEO_TEST = false;
 
     public static final int FULL_SIZE_OF_WIDTH = 2736;
     public static final int FULL_SIZE_OF_HEIGHT = 3648;
@@ -26,4 +26,6 @@ public class Config {
     public static boolean LARGE_FACE_MODE = false;
 
     public static final int FACE_MODEL_SIZE = 72;
+
+    public static String LOCAL_SERVER_ADDRESS = "http://172.168.50.59:1004/";
 }

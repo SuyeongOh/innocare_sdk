@@ -19,6 +19,7 @@ public class InitFragment extends Fragment {
     private EditText bmiInputView;
     private EditText frameInputView;
     private EditText analysisTimeInputView;
+    private EditText localIpInputView;
     private Button applyBtn;
     private Switch cameraDirectionSwitch;
     private Switch largeFaceSwitch;
@@ -33,7 +34,7 @@ public class InitFragment extends Fragment {
         frameInputView = view.findViewById(R.id.init_view_frame_input);
         largeFaceSwitch = view.findViewById(R.id.init_view_large_face_switch);
         analysisTimeInputView = view.findViewById(R.id.init_view_analysis_time);
-
+        localIpInputView = view.findViewById(R.id.init_view_ip_input);
         return view;
     }
 
@@ -62,6 +63,10 @@ public class InitFragment extends Fragment {
                     Config.ANALYSIS_TIME = Integer.parseInt(time);
                 } catch (Exception e){
                     Config.ANALYSIS_TIME = 20;
+                }
+
+                if(!localIpInputView.getText().toString().equals("")){
+                    Config.LOCAL_SERVER_ADDRESS = localIpInputView.getText().toString();
                 }
 
                 if(cameraDirectionSwitch.isChecked()){

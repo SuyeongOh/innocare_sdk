@@ -1,6 +1,8 @@
 package com.innopia.vital_sync;
 
 import android.graphics.Bitmap;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.Window;
 
@@ -14,6 +16,7 @@ import com.github.psambit9791.jdsp.transform.FastFourier;
 import com.github.psambit9791.jdsp.transform.Hilbert;
 import com.innopia.vital_sync.bvp.BandPassFilter;
 import com.innopia.vital_sync.bvp.RppgToolBox;
+import com.innopia.vital_sync.client.VitalClient;
 import com.innopia.vital_sync.data.ResultVitalSign;
 import com.innopia.vital_sync.data.Rppg;
 import com.innopia.vital_sync.data.VitalChartData;
@@ -144,7 +147,13 @@ public class VitalLagacy {
             lastResult.DBP = -17.3772 - (115.1747 * valley_avg) + (4.0251 * bmi) + (5.2825 * valley_avg * bmi);
             lastResult.BP = lastResult.SBP * 0.33 + lastResult.DBP * 0.66;
 
-
+            //Web server prototype
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    VitalClient.getInstance().requestAnalysis(rPPG.f_pixel_buff);
+                }
+            });
         }
         bufferIndex = (bufferIndex + 1) % BUFFER_SIZE;
         pixelIndex++;

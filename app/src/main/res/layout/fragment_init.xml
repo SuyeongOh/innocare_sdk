@@ -51,6 +51,16 @@
             android:autoSizeTextType="uniform"
             android:hint="최대프레임을 입력하세요" />
 
+        <EditText
+            android:id="@+id/init_view_ip_input"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="3"
+            android:textAlignment="center"
+            android:layout_gravity="center"
+            android:autoSizeTextType="uniform"
+            android:hint="로컬서버 ip를 입력하세요" />
+
 
         <Switch
             android:id="@+id/init_view_large_face_switch"
