@@ -10,7 +10,6 @@ import com.innopia.vital_sync.R;
 
 public class CustomCountdownView extends RelativeLayout {
     private TextView countdownTextView;
-    private OnCountdownFinishListener listener;
 
     public CustomCountdownView(Context context) {
         super(context);
@@ -36,13 +35,5 @@ public class CustomCountdownView extends RelativeLayout {
 
     public void setCountDownText(String seconds){
         countdownTextView.setText(seconds);
-    }
-
-    public void setOnCountdownFinishListener(OnCountdownFinishListener listener) {
-        this.listener = listener;
-    }
-
-    public interface OnCountdownFinishListener {
-        void onFinish();
     }
 }

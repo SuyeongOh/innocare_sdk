@@ -21,13 +21,6 @@ public class OverlayView extends View {
     private Paint boxPaint = new Paint();
     private Float scaleFactorWidth = 1f;
     private Float scaleFactorHeight = 1f;
-    private float radius;
-    private Rect bounds;
-    private static final int FULL_SIZE_OF_DETECTION = Config.FULL_SIZE_OF_WIDTH * Config.FULL_SIZE_OF_HEIGHT;
-    //popup의 민감도를 바꾸려면 이부분을 바꾸세요.
-
-    private float STANDARD_BIG_SIZE_OF_POPUP = 1f/2f;
-
     private boolean isClear = false;
     private boolean isPortrait = false;
     public OverlayView(Context context, @Nullable AttributeSet attrs) {

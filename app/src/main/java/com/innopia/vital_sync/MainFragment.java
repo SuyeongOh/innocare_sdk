@@ -884,11 +884,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private void startCalibrationTimer(){
         mCalibrationTimer.start();
     }
-    private String summaryResult(){
-        return String.format("HR : %f\nRR : %f",
-                ResultVitalSign.vitalSignData.HR_result,
-                ResultVitalSign.vitalSignData.RR_result);
-    }
+
     private void logCameraAccessException(Exception e){
         Log.e("Camera", "Can not accessed in Camera : " + e.getMessage());
     }
