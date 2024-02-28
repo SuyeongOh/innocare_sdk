@@ -665,32 +665,34 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
             @Override
             public void run() {
                 hrValueView.setText(
-                        Math.round(ResultVitalSign.vitalSignServerData.HR_result) + "/" +
-                        Math.round(ResultVitalSign.vitalSignData.HR_result)
+                        //Math.round(ResultVitalSign.vitalSignServerData.HR_result) + "/" +
+                        String.valueOf(Math.round(ResultVitalSign.vitalSignData.HR_result))
                 );
                 rrValueView.setText(
-                        Math.round(ResultVitalSign.vitalSignServerData.RR_result) + "/" +
-                        Math.round(ResultVitalSign.vitalSignData.RR_result)
+                        //Math.round(ResultVitalSign.vitalSignServerData.RR_result) + "/" +
+                        String.valueOf(Math.round(ResultVitalSign.vitalSignData.RR_result))
                 );
                 sdnnValueView.setText(
-                        Math.round(ResultVitalSign.vitalSignServerData.sdnn_result) + "/" +
-                        Math.round(ResultVitalSign.vitalSignData.sdnn_result)
+                        //Math.round(ResultVitalSign.vitalSignServerData.sdnn_result) + "/" +
+                        String.valueOf(Math.round(ResultVitalSign.vitalSignData.sdnn_result))
                 );
                 stressValueView.setText(
-                        Math.round(ResultVitalSign.vitalSignServerData.LF_HF_ratio) + "/" +
-                        Math.round(ResultVitalSign.vitalSignData.LF_HF_ratio)
+                        //Math.round(ResultVitalSign.vitalSignServerData.LF_HF_ratio) + "/" +
+                        String.valueOf(Math.round(ResultVitalSign.vitalSignData.LF_HF_ratio))
                 );
                 spo2ValueView.setText(
-                        Math.round(ResultVitalSign.vitalSignServerData.spo2_result) + "/" +
-                        Math.round(ResultVitalSign.vitalSignData.spo2_result)
+                        //Math.round(ResultVitalSign.vitalSignServerData.spo2_result) + "/" +
+                        String.valueOf(Math.round(ResultVitalSign.vitalSignData.spo2_result))
                 );
-                sbpValueView.setText(Math.round(ResultVitalSign.vitalSignServerData.SBP) + "/" +
-                        Math.round(ResultVitalSign.vitalSignData.SBP)
-                );
-                dbpValueView.setText(
-                        Math.round(ResultVitalSign.vitalSignServerData.DBP) + "/" +
-                        Math.round(ResultVitalSign.vitalSignData.DBP)
-                );
+//                sbpValueView.setText(Math.round(ResultVitalSign.vitalSignServerData.SBP) + "/" +
+//                        Math.round(ResultVitalSign.vitalSignData.SBP)
+//                );
+//                dbpValueView.setText(
+//                        Math.round(ResultVitalSign.vitalSignServerData.DBP) + "/" +
+//                        Math.round(ResultVitalSign.vitalSignData.DBP)
+//                );
+                sbpValueView.setText("TBD");
+                dbpValueView.setText("TBD");
             }
         });
     }

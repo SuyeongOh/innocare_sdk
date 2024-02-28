@@ -16,8 +16,8 @@ android {
         applicationId "com.innopia.vital_sync"
         minSdk 29
         targetSdk 33
-        versionCode 00001
-        versionName "0.0.1"
+        versionCode 00002
+        versionName "0.0.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

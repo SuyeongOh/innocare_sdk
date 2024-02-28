@@ -80,57 +80,6 @@ public class EnhanceFaceDetector {
         }
     }
 
-    public void detectVideoFile(){
-        Vital vital = new Vital(mContext);
-        Uri videoUri = Uri.EMPTY;
-        try{
-            videoUri = Uri.parse(FileUtils.assetFilePath(mContext, "ubfc_subject_1.mp4"));
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-
-        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        retriever.setDataSource(mContext, videoUri);
-
-        FaceImageModel faceImageModel = null;
-
-        int width = retriever.getFrameAtIndex(0).getWidth();
-        int height = retriever.getFrameAtIndex(0).getHeight();
-
-        detector = new android.media.FaceDetector(width, height, 1);
-        android.media.FaceDetector.Face[] face = new android.media.FaceDetector.Face[1];
-        //detector.findFaces(ImageUtils.convertARGB8888ToRGB565(bitmapImage), face);
-
-        int faceNum = 0;
-        int frameIdx = 0;
-        PointF midPoint = new PointF();
-
-        while(faceNum == 0){
-            Bitmap curFrame = retriever.getFrameAtIndex(frameIdx);
-            originalBitmap = curFrame;
-            Bitmap inputFrame = curFrame.copy(Bitmap.Config.RGB_565, false);
-            faceNum = detector.findFaces(inputFrame, face);
-            frameIdx++;
-        }
-        face[0].getMidPoint(midPoint);
-        int left = (int)(midPoint.x - face[0].eyesDistance());
-        int right = (int)(midPoint.x + face[0].eyesDistance());
-        int top = (int)(midPoint.y - face[0].eyesDistance());
-        int bottom = (int)(midPoint.y + face[0].eyesDistance());
-
-        for(int i = 0; i < Config.ANALYSIS_TIME * Config.TARGET_FRAME; i++){
-            Bitmap curFrame = retriever.getFrameAtIndex(frameIdx);
-            originalBitmap = curFrame;
-
-            Bitmap croppedFaceBitmap = Bitmap.createBitmap(curFrame, left, top, right-left, bottom-top);
-
-            faceImageModel = new FaceImageModel(croppedFaceBitmap, i * 33);
-            vital.calculatePOSVital(faceImageModel, true);
-            frameIdx++;
-        }
-        long time = faceImageModel.frameUtcTimeMs;
-    }
-
     public void detectLiveStreamFrame(ImageProxy imageProxy){
         long frametime = SystemClock.uptimeMillis();
 
