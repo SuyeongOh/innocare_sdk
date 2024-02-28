@@ -16,21 +16,28 @@ public class AutoFitSurfaceView extends SurfaceView {
         super(context, attrs, defStyleAttr);
     }
 
-    private double aspectRatio;
+    private Bitmap mBitmap;
+    private double aspectRatio = 0;
 
-    public void setAspectRatio(int x, int y) {
-        aspectRatio = x / (float)y;
-        requestLayout(); // View를 다시 레이아웃하는 것을 요청하여 크기를 조정합니다.
+    public void setBitmap(Bitmap bitmap) {
+        mBitmap = bitmap;
+        aspectRatio = getWidth()/(double)bitmap.getWidth();
+        requestLayout();
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        if (aspectRatio != 0) {
+        if (mBitmap != null) {
             int width = MeasureSpec.getSize(widthMeasureSpec);
             int height = MeasureSpec.getSize(heightMeasureSpec);
 
+            float bitmapWidth = mBitmap.getWidth();
+            float bitmapHeight = mBitmap.getHeight();
+
+            // 이미지의 비율을 계산합니다.
+            float aspectRatio = bitmapWidth / bitmapHeight;
 
             // 비율을 기반으로 View의 크기를 조정합니다.
             if (width > 0) {
@@ -40,6 +47,17 @@ public class AutoFitSurfaceView extends SurfaceView {
                 int newWidth = (int) (height * aspectRatio);
                 setMeasuredDimension(newWidth, height);
             }
+        }
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+
+        if (mBitmap != null) {
+            // 비트맵을 화면에 그립니다.
+            Bitmap resizeBitmap = Bitmap.createScaledBitmap(mBitmap, getWidth(), getHeight(), false);
+            canvas.drawBitmap(resizeBitmap, 0, 0, null);
         }
     }
 }

@@ -57,6 +57,7 @@ import com.innopia.vital_sync.camera.CameraSizes;
 import com.innopia.vital_sync.data.Constant;
 import com.innopia.vital_sync.data.ResultVitalSign;
 import com.innopia.vital_sync.ui.CommonPopupView;
+import com.innopia.vital_sync.ui.CustomCountdownView;
 import com.innopia.vital_sync.ui.OverlayView;
 import com.innopia.vital_sync.utils.ImageUtils;
 import com.robinhood.ticker.TickerView;
@@ -105,7 +106,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private BpmAnalysisViewModel mBpmAnalysisViewModel;
     private CommonPopupView mGuidePopupView;
     private AlertDialog mFinishPopup;
-    private AlertDialog mCountdownPopup;
+    private CustomCountdownView mCountDownView;
     private TextView mGuidePopupText;
     private LineChart mHrChart;
     private LineChart mBvpChart;
@@ -154,7 +155,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private HandlerThread thread_g;
     private HandlerThread thread_hr;
     private HandlerThread thread_bvp;
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -179,6 +179,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         View surfaceView = LayoutInflater.from(requireContext()).inflate(
                 R.layout.layout_surface_container, cameraContainer, false);
         cameraContainer.addView(surfaceView);
+
+        mCountDownView = view.findViewById(R.id.countdown);
 
         initThread();
 
@@ -269,7 +271,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 } else{ // portrait 16:9 >> 9:16 전환
                     displaySize.y = displaySize.x * imageReaderSize.getWidth() / imageReaderSize.getHeight();
                 }
-                autoFitSurfaceView.setAspectRatio(displaySize.x, displaySize.y);
                 view.post(() -> initCamera());
             }
 
@@ -300,7 +301,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     }
 
     private void initCamera() {
-        createCaptureSession(Camera, Arrays.asList(autoFitSurfaceView.getHolder().getSurface(), imageReader.getSurface()), cameraHandler);
+        createCaptureSession(Camera, Arrays.asList(imageReader.getSurface()), cameraHandler);
     }
 
     private String chooseCamera(){
@@ -373,7 +374,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                         CaptureRequest.Builder requestBuilder = null;
                         requestBuilder = Camera.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
                         requestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange);
-                        requestBuilder.addTarget(autoFitSurfaceView.getHolder().getSurface());
                         requestBuilder.addTarget(imageReader.getSurface());
                         cameraCaptureSession.setRepeatingRequest(requestBuilder.build(), null, cameraHandler);
                     } catch (CameraAccessException e) {
@@ -383,6 +383,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                         @Override
                         public void onImageAvailable(ImageReader reader) {
                             Image inputImage = reader.acquireLatestImage();
+
                             if(inputImage == null) {
                                 return;
                             }
@@ -391,20 +392,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                 return;
                             }
                             inputImage.getPlanes();
-                            Bitmap tempImage = ImageUtils.convertYUV420ToARGB8888(inputImage);
-                            if(sNthFrame == 0 && !calibrationTimerStart){
-                                startCalibrationTimer();
-                                calibrationTimerStart = true;
-                                inputImage.close();
-                                return;
-                            }
-                            if(!calibrationFinish) {
-                                inputImage.close();
-                                return;
-                            }
-                            inputImage.close();
-
-                            Bitmap bitmapImage = tempImage.copy(Bitmap.Config.ARGB_8888, false);
+                            Bitmap bitmapImage = ImageUtils.convertYUV420ToARGB8888(inputImage);
                             if(Config.USE_CAMERA_DIRECTION == Constant.CAMERA_DIRECTION_FRONT){
                                 Matrix rotateMatrix = new Matrix();
                                 Matrix flipMatrix = new Matrix();
@@ -415,6 +403,23 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                 bitmapImage = Bitmap.createBitmap(
                                         bitmapImage, 0, 0, bitmapImage.getWidth(), bitmapImage.getHeight(), flipMatrix, false);
                             }
+                            Bitmap finalBitmapImage = bitmapImage;
+                            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    autoFitSurfaceView.setBitmap(finalBitmapImage);
+                                }
+                            });
+                            if(sNthFrame == 0 && !calibrationTimerStart){
+                                startCalibrationTimer();
+                                calibrationTimerStart = true;
+                                calibrationFinish = false;
+                            }
+                            if(!calibrationFinish) {
+                                inputImage.close();
+                                return;
+                            }
+                            inputImage.close();
 
                             if(isFixedFace){
                                 Bitmap faceImage = Bitmap.createBitmap(bitmapImage, faceROI.left, faceROI.top, faceROI.width(), faceROI.height());
@@ -659,13 +664,33 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                hrValueView.setText(String.valueOf(Math.round(ResultVitalSign.vitalSignData.HR_result)));
-                rrValueView.setText(String.valueOf(Math.round(ResultVitalSign.vitalSignData.RR_result)));
-                sdnnValueView.setText(String.valueOf(Math.round(ResultVitalSign.vitalSignData.sdnn_result)));
-                stressValueView.setText(String.valueOf(Math.round(ResultVitalSign.vitalSignData.LF_HF_ratio)));
-                spo2ValueView.setText(String.valueOf(Math.round(ResultVitalSign.vitalSignData.spo2_result)));
-                sbpValueView.setText(String.valueOf(Math.round(ResultVitalSign.vitalSignData.SBP)));
-                dbpValueView.setText(String.valueOf(Math.round(ResultVitalSign.vitalSignData.DBP)));
+                hrValueView.setText(
+                        Math.round(ResultVitalSign.vitalSignServerData.HR_result) + "/" +
+                        Math.round(ResultVitalSign.vitalSignData.HR_result)
+                );
+                rrValueView.setText(
+                        Math.round(ResultVitalSign.vitalSignServerData.RR_result) + "/" +
+                        Math.round(ResultVitalSign.vitalSignData.RR_result)
+                );
+                sdnnValueView.setText(
+                        Math.round(ResultVitalSign.vitalSignServerData.sdnn_result) + "/" +
+                        Math.round(ResultVitalSign.vitalSignData.sdnn_result)
+                );
+                stressValueView.setText(
+                        Math.round(ResultVitalSign.vitalSignServerData.LF_HF_ratio) + "/" +
+                        Math.round(ResultVitalSign.vitalSignData.LF_HF_ratio)
+                );
+                spo2ValueView.setText(
+                        Math.round(ResultVitalSign.vitalSignServerData.spo2_result) + "/" +
+                        Math.round(ResultVitalSign.vitalSignData.spo2_result)
+                );
+                sbpValueView.setText(Math.round(ResultVitalSign.vitalSignServerData.SBP) + "/" +
+                        Math.round(ResultVitalSign.vitalSignData.SBP)
+                );
+                dbpValueView.setText(
+                        Math.round(ResultVitalSign.vitalSignServerData.DBP) + "/" +
+                        Math.round(ResultVitalSign.vitalSignData.DBP)
+                );
             }
         });
     }
@@ -837,39 +862,26 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     }
 
     private void initLoadingView(){
-        mCountdownTextView = new TextView(getContext());
-        mCountdownTextView.setLayoutParams(new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        mCountdownTextView.setPadding(40, 40, 40, 40);
-        mCountdownTextView.setTextSize(25);
-
-
+        mCountdownTextView = mCountDownView.findViewById(R.id.countdownTextView);
     }
 
     private void initCalibrationTimer(){
         mCalibrationTimer = new CountDownTimer(3999, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
-                mCountdownTextView.setText(String.valueOf(millisUntilFinished/1000));
+                Log.d("vital", "Timer :: " + millisUntilFinished);
+                mCountDownView.setCountDownText(String.valueOf(millisUntilFinished/1000));
             }
 
             @Override
             public void onFinish() {
                 calibrationFinish = true;
-                mCountdownPopup.dismiss();
+                mCountDownView.setVisibility(View.GONE);
             }
         };
     }
 
     private void startCalibrationTimer(){
-        if(mCountdownPopup == null) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-            mCountdownPopup = builder.setTitle("Countdown Timer")
-                    .setView(mCountdownTextView)
-                    .setCancelable(false)
-                    .create();
-        }
-        mCountdownPopup.show();
         mCalibrationTimer.start();
     }
     private String summaryResult(){

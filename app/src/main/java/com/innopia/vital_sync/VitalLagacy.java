@@ -154,23 +154,23 @@ public class VitalLagacy {
            } else{
                VitalResponse response = VitalClient.getInstance().requestSyncAnalysis(rPPG.f_pixel_buff).body();
                if(response != null){
-                   lastResult.HR_result = response.hr;
-                   lastResult.RR_result = response.rr;
-                   lastResult.sdnn_result = response.hrv;
-                   lastResult.spo2_result = response.spo2;
-                   lastResult.LF_HF_ratio = (float)response.stress;
-                   lastResult.SBP = response.sbp;
-                   lastResult.DBP = response.dbp;
-                   lastResult.BP = response.bp;
+                   ResultVitalSign.vitalSignServerData.HR_result = response.hr;
+                   ResultVitalSign.vitalSignServerData.RR_result = response.rr;
+                   ResultVitalSign.vitalSignServerData.sdnn_result = response.hrv;
+                   ResultVitalSign.vitalSignServerData.spo2_result = response.spo2;
+                   ResultVitalSign.vitalSignServerData.LF_HF_ratio = (float)response.stress;
+                   ResultVitalSign.vitalSignServerData.SBP = response.sbp;
+                   ResultVitalSign.vitalSignServerData.DBP = response.dbp;
+                   ResultVitalSign.vitalSignServerData.BP = response.bp;
                } else{
-                   lastResult.HR_result = 0;
-                   lastResult.RR_result = 0;
-                   lastResult.sdnn_result = 0;
-                   lastResult.spo2_result = 0;
-                   lastResult.LF_HF_ratio = 0;
-                   lastResult.SBP = 0;
-                   lastResult.DBP = 0;
-                   lastResult.BP = 0;
+                   ResultVitalSign.vitalSignServerData.HR_result = 0;
+                   ResultVitalSign.vitalSignServerData.RR_result = 0;
+                   ResultVitalSign.vitalSignServerData.sdnn_result = 0;
+                   ResultVitalSign.vitalSignServerData.spo2_result = 0;
+                   ResultVitalSign.vitalSignServerData.LF_HF_ratio = 0;
+                   ResultVitalSign.vitalSignServerData.SBP = 0;
+                   ResultVitalSign.vitalSignServerData.DBP = 0;
+                   ResultVitalSign.vitalSignServerData.BP = 0;
                }
            }
         }
