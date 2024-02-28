@@ -149,7 +149,7 @@ public class VitalLagacy {
             lastResult.BP = lastResult.SBP * 0.33 + lastResult.DBP * 0.66;
 
             //Web server prototype
-           if(Config.SERVER_RESPONSE_MODE){
+           if(!Config.SERVER_RESPONSE_MODE){
                VitalClient.getInstance().requestAnalysis(rPPG.f_pixel_buff);
            } else{
                VitalResponse response = VitalClient.getInstance().requestSyncAnalysis(rPPG.f_pixel_buff).body();

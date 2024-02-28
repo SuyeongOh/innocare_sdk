@@ -266,12 +266,10 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 int rotation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
                 if(rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270){ // landscape
                     displaySize.y = displaySize.x * imageReaderSize.getWidth() / imageReaderSize.getHeight();
-                    autoFitSurfaceView.setAspectRatio(displaySize.y, displaySize.x);
                 } else{ // portrait 16:9 >> 9:16 전환
                     displaySize.y = displaySize.x * imageReaderSize.getWidth() / imageReaderSize.getHeight();
-                    autoFitSurfaceView.setAspectRatio(displaySize.x, displaySize.y);
                 }
-
+                autoFitSurfaceView.setAspectRatio(displaySize.x, displaySize.y);
                 view.post(() -> initCamera());
             }
 

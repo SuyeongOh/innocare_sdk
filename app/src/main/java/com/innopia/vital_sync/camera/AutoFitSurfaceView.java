@@ -1,6 +1,8 @@
 package com.innopia.vital_sync.camera;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.view.SurfaceView;
 
@@ -14,35 +16,30 @@ public class AutoFitSurfaceView extends SurfaceView {
         super(context, attrs, defStyleAttr);
     }
 
-    private float aspectRatio = 0f;
+    private double aspectRatio;
 
-    public void setAspectRatio(int width, int height){
-        aspectRatio = (float)width / (float)height;
-        getHolder().setFixedSize(width, height);
-        requestLayout();
+    public void setAspectRatio(int x, int y) {
+        aspectRatio = x / (float)y;
+        requestLayout(); // View를 다시 레이아웃하는 것을 요청하여 크기를 조정합니다.
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        int width = MeasureSpec.getSize(widthMeasureSpec);
-        int height = MeasureSpec.getSize(heightMeasureSpec);
-//        if(aspectRatio == 0){
-//            setMeasuredDimension(width, height);
-//        } else{
-//            int newWidth;
-//            int newHeight;
-//
-//            float actualRatio = (width > height) ? aspectRatio : 1/aspectRatio;
-//            if(width < height * actualRatio){
-//                newHeight = height;
-//                newWidth = Math.round(height * actualRatio);
-//            } else{
-//                newWidth = width;
-//                newHeight = Math.round(width / actualRatio);
-//            }
-//
-//            setMeasuredDimension(newWidth, newHeight);
-//        }
+
+        if (aspectRatio != 0) {
+            int width = MeasureSpec.getSize(widthMeasureSpec);
+            int height = MeasureSpec.getSize(heightMeasureSpec);
+
+
+            // 비율을 기반으로 View의 크기를 조정합니다.
+            if (width > 0) {
+                int newHeight = (int) (width / aspectRatio);
+                setMeasuredDimension(width, newHeight);
+            } else if (height > 0) {
+                int newWidth = (int) (height * aspectRatio);
+                setMeasuredDimension(newWidth, height);
+            }
+        }
     }
 }
