@@ -231,13 +231,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         requireActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
-//        mCameraView.post(new Runnable() {
-//            @Override
-//            public void run() {
-//                setUpCamera(mCameraView.getSurfaceProvider());
-//            }
-//        });
         cameraId = chooseCamera();
         autoFitSurfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
@@ -455,7 +448,14 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                         if (sNthFrame % VitalLagacy.BUFFER_SIZE == 0) {
                                             updateVitalSignValue();
                                         }
-                                        new Handler(Looper.getMainLooper()).post(() -> mFinishPopup.show());
+                                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                reStartBtn.setVisibility(View.VISIBLE);
+                                                nextPageBtn.setVisibility(View.VISIBLE);
+                                                mFinishPopup.show();
+                                            }
+                                        });
                                     }else{
                                         Intent intent = new Intent(getContext(), ResultActivity.class);
                                         getContext().startActivity(intent);
@@ -684,15 +684,16 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                         //Math.round(ResultVitalSign.vitalSignServerData.spo2_result) + "/" +
                         String.valueOf(Math.round(ResultVitalSign.vitalSignData.spo2_result))
                 );
-//                sbpValueView.setText(Math.round(ResultVitalSign.vitalSignServerData.SBP) + "/" +
-//                        Math.round(ResultVitalSign.vitalSignData.SBP)
-//                );
-//                dbpValueView.setText(
+                sbpValueView.setText(
+//                        Math.round(ResultVitalSign.vitalSignServerData.SBP) + "/" +
+                        String.valueOf(Math.round(ResultVitalSign.vitalSignData.SBP))
+                );
+                dbpValueView.setText(
 //                        Math.round(ResultVitalSign.vitalSignServerData.DBP) + "/" +
-//                        Math.round(ResultVitalSign.vitalSignData.DBP)
-//                );
-                sbpValueView.setText("TBD");
-                dbpValueView.setText("TBD");
+                        String.valueOf(Math.round(ResultVitalSign.vitalSignData.DBP))
+                );
+//                sbpValueView.setText("TBD");
+//                dbpValueView.setText("TBD");
             }
         });
     }
@@ -833,8 +834,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 .setNegativeButton("아니오", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        reStartBtn.setVisibility(View.VISIBLE);
-                        nextPageBtn.setVisibility(View.VISIBLE);
                         dialog.dismiss();
                     }
                 }).create();
@@ -842,16 +841,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         reStartBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                isStopPredict = false;
-                sNthFrame = 0;
-                ResultVitalSign.vitalSignData.init();
-                mBpmAnalysisViewModel = new BpmAnalysisViewModel(new Application(), requireContext());
-                reStartBtn.setVisibility(View.INVISIBLE);
-                nextPageBtn.setVisibility(View.INVISIBLE);
-                calibrationFinish = false;
-                calibrationTimerStart = false;
-                isFinishAnalysis = false;
-                isFixedFace = false;
+                finishAnalysis();
             }
         });
         nextPageBtn.setOnClickListener(new View.OnClickListener() {
@@ -863,16 +853,39 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         });
     }
 
+    private void finishAnalysis(){
+        isStopPredict = false;
+        sNthFrame = 0;
+        ResultVitalSign.vitalSignData.init();
+        mBpmAnalysisViewModel = new BpmAnalysisViewModel(new Application(), requireContext());
+        reStartBtn.setVisibility(View.INVISIBLE);
+        nextPageBtn.setVisibility(View.INVISIBLE);
+        mCountDownView.reset();
+        mCountDownView.setVisibility(View.VISIBLE);
+        mTrackingOverlayView.clear();
+        calibrationFinish = false;
+        calibrationTimerStart = false;
+        isFinishAnalysis = false;
+        isFixedFace = false;
+    }
+
     private void initLoadingView(){
         mCountdownTextView = mCountDownView.findViewById(R.id.countdownTextView);
     }
 
     private void initCalibrationTimer(){
-        mCalibrationTimer = new CountDownTimer(3999, 1000) {
+        mCalibrationTimer = new CountDownTimer(3999, 1) {
             @Override
             public void onTick(long millisUntilFinished) {
                 Log.d("vital", "Timer :: " + millisUntilFinished);
-                mCountDownView.setCountDownText(String.valueOf(millisUntilFinished/1000));
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mCountDownView.setCountDownText(String.valueOf(millisUntilFinished/1000));
+                        getView().invalidate();
+                    }
+                });
+
             }
 
             @Override

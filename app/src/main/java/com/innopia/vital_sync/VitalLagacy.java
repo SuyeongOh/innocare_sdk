@@ -74,7 +74,7 @@ public class VitalLagacy {
     private int bpm_buffer_index = 0;
 
     public Rppg rPPG = new Rppg(BUFFER_SIZE);
-    public Result calculateVital(FaceImageModel model) {
+    public Result calculateVital(FaceImageModel model) throws IllegalArgumentException {
         //rescale: resizez + gaussian
         if(pixelIndex == 0) firstFrameTime = model.frameUtcTimeMs;
 

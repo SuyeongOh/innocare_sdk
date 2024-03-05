@@ -33,6 +33,9 @@ public class CustomCountdownView extends RelativeLayout {
         countdownTextView = findViewById(R.id.countdownTextView);
     }
 
+    public void reset(){
+        countdownTextView.setText("");
+    }
     public void setCountDownText(String seconds){
         countdownTextView.setText(seconds);
     }

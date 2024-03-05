@@ -14,18 +14,17 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="3"
+            android:layout_weight="6"
             android:autoSizeTextType="uniform"
             android:textColor="@color/black"
-            android:text="공백으로 두시면 기본값으로 셋팅됩니다. \n앱하단의 입력확인 버튼을 클릭하시고, \n안정적인 조명환경에서 움직이지 말아주세요.\n
-            기본 bmi : 20.1, frame : 30 / ver. 20240228"
+            android:text="-  공백으로 두시면 기본값으로 셋팅됩니다. \n- 앱하단의 입력확인 버튼을 클릭하시고, \n- 안정적인 조명환경에서 움직이지 말아주세요.\n- 기본 bmi : 20.1, frame : 30 \n- ver. 20240228"
             />
 
         <EditText
             android:id="@+id/init_view_analysis_time"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="3"
+            android:layout_weight="1"
             android:textAlignment="center"
             android:layout_gravity="center"
             android:autoSizeTextType="uniform"
@@ -35,7 +34,7 @@
             android:id="@+id/init_view_bmi_input"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="3"
+            android:layout_weight="1"
             android:textAlignment="center"
             android:layout_gravity="center"
             android:autoSizeTextType="uniform"
@@ -45,7 +44,7 @@
             android:id="@+id/init_view_frame_input"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="3"
+            android:layout_weight="1"
             android:textAlignment="center"
             android:layout_gravity="center"
             android:autoSizeTextType="uniform"
@@ -55,7 +54,7 @@
             android:id="@+id/init_view_ip_input"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="3"
+            android:layout_weight="1"
             android:textAlignment="center"
             android:layout_gravity="center"
             android:autoSizeTextType="uniform"
