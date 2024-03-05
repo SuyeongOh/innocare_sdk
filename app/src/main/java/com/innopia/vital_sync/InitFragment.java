@@ -24,6 +24,7 @@ public class InitFragment extends Fragment {
     private Switch serverResponseSwitch;
     private Switch cameraDirectionSwitch;
     private Switch largeFaceSwitch;
+    private Switch smallFaceSwitch;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -33,6 +34,7 @@ public class InitFragment extends Fragment {
         applyBtn = view.findViewById(R.id.init_btn_submit);
         cameraDirectionSwitch = view.findViewById(R.id.init_view_camera_switch);
         frameInputView = view.findViewById(R.id.init_view_frame_input);
+        smallFaceSwitch = view.findViewById(R.id.init_view_small_face_switch);
         largeFaceSwitch = view.findViewById(R.id.init_view_large_face_switch);
         analysisTimeInputView = view.findViewById(R.id.init_view_analysis_time);
         localIpInputView = view.findViewById(R.id.init_view_ip_input);
@@ -46,7 +48,6 @@ public class InitFragment extends Fragment {
         applyBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 String bmi = bmiInputView.getText().toString();
                 String frame = frameInputView.getText().toString();
                 String time = analysisTimeInputView.getText().toString();
@@ -73,6 +74,7 @@ public class InitFragment extends Fragment {
 
                 Config.SERVER_RESPONSE_MODE = serverResponseSwitch.isChecked();
                 Config.LARGE_FACE_MODE = largeFaceSwitch.isChecked();
+                Config.SMALL_FACE_MODE = smallFaceSwitch.isChecked();
                 if(cameraDirectionSwitch.isChecked()){
                     Config.USE_CAMERA_DIRECTION = Constant.CAMERA_DIRECTION_BACK;
                 }

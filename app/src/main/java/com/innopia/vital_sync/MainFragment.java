@@ -415,6 +415,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                             inputImage.close();
 
                             if(isFixedFace){
+                                //TODO : catch out of screen issue
                                 Bitmap faceImage = Bitmap.createBitmap(bitmapImage, faceROI.left, faceROI.top, faceROI.width(), faceROI.height());
                                 isFinishAnalysis = mBpmAnalysisViewModel.addFaceImageModel(new FaceImageModel(faceImage, System.currentTimeMillis()));
                                 if(Config.FLAG_INNER_TEST) {
@@ -588,7 +589,15 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                     box.top -= height/4;
                     box.bottom += height/4;
                     box.round(faceROI);
-                } else{
+                } else if (Config.SMALL_FACE_MODE){
+                    float width = box.width();
+                    float height = box.height();
+                    box.left += width/4;
+                    box.right -= width/4;
+                    box.top += height/4;
+                    box.bottom -= height/4;
+                    box.round(faceROI);
+                }else{
                     box.round(faceROI);
                 }
 
