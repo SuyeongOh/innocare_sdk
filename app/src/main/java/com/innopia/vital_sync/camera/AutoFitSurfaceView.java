@@ -22,7 +22,7 @@ public class AutoFitSurfaceView extends SurfaceView {
     public void setBitmap(Bitmap bitmap) {
         mBitmap = bitmap;
         aspectRatio = getWidth()/(double)bitmap.getWidth();
-        requestLayout();
+        invalidate();
     }
 
     @Override

@@ -13,18 +13,22 @@
 
         <TextView
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="6"
-            android:autoSizeTextType="uniform"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
             android:textColor="@color/black"
-            android:text="-  공백으로 두시면 기본값으로 셋팅됩니다. \n- 앱하단의 입력확인 버튼을 클릭하시고, \n- 안정적인 조명환경에서 움직이지 말아주세요.\n- 기본 bmi : 20.1, frame : 30 \n- ver. 20240305"
+            android:text="- 공백으로 두시면 기본값으로 셋팅됩니다. \n- 앱하단의 &quot;입력완료&quot; 버튼을 클릭하시고, \n- 안정적인 조명환경에서 움직이지 말아주세요.\n- 기본 bmi : 20.1, frame : 30 \n- ver. 20240305"
             />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
 
         <EditText
             android:id="@+id/init_view_analysis_time"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_weight="2"
             android:textAlignment="center"
             android:layout_gravity="center"
             android:autoSizeTextType="uniform"
@@ -34,7 +38,7 @@
             android:id="@+id/init_view_bmi_input"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_weight="2"
             android:textAlignment="center"
             android:layout_gravity="center"
             android:autoSizeTextType="uniform"
@@ -44,7 +48,7 @@
             android:id="@+id/init_view_frame_input"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_weight="2"
             android:textAlignment="center"
             android:layout_gravity="center"
             android:autoSizeTextType="uniform"
@@ -54,19 +58,24 @@
             android:id="@+id/init_view_ip_input"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_weight="2"
             android:textAlignment="center"
             android:layout_gravity="center"
             android:autoSizeTextType="uniform"
             android:hint="로컬서버 ip를 입력하세요" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
 
         <Switch
             android:id="@+id/init_view_server_switch"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:autoSizeTextType="uniform"
             android:textColor="@color/black"
+            android:textSize="20sp"
             android:checked="false"
             android:maxLines="1"
             android:text="결과 출력을 서버응답으로 하겠습니까?" />
@@ -77,8 +86,8 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:autoSizeTextType="uniform"
             android:textColor="@color/black"
+            android:textSize="20sp"
             android:checked="false"
             android:maxLines="1"
             android:text="얼굴 영역 확대 기능을 사용하시겠습니까?" />
@@ -88,8 +97,8 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:autoSizeTextType="uniform"
             android:textColor="@color/black"
+            android:textSize="20sp"
             android:checked="false"
             android:maxLines="1"
             android:text="얼굴 영역 축소 기능을 사용하시겠습니까?" />
@@ -99,17 +108,22 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:autoSizeTextType="uniform"
             android:textColor="@color/black"
+            android:textSize="20sp"
             android:checked="false"
             android:maxLines="1"
             android:text="상대방을 찍으시겠습니까?" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
 
         <Button
             android:id="@+id/init_btn_submit"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_weight="3"
             android:autoSizeTextType="uniform"
             android:text="입력 완료" />
 

@@ -36,6 +36,7 @@ import jsat.linear.DenseMatrix;
 import jsat.linear.DenseVector;
 import jsat.linear.Matrix;
 import jsat.linear.Vec;
+import retrofit2.Response;
 import uk.me.berndporr.iirj.Butterworth;
 
 import static java.lang.Math.abs;
@@ -80,7 +81,9 @@ public class VitalLagacy {
 
         rPPG.frameTimeArray[bufferIndex] = model.frameUtcTimeMs;
         Bitmap bitmap = model.bitmap;
-        //Bitmap test_cropped = Bitmap.createScaledBitmap(bitmap, GAUSSIAN_W, GAUSSIAN_W, false); // face frame input
+        if(bitmap.getWidth() < GAUSSIAN_W || bitmap.getHeight() < GAUSSIAN_W){
+            bitmap = Bitmap.createScaledBitmap(bitmap, (int)GAUSSIAN_W, (int)GAUSSIAN_W, false); // face frame input
+        }
 
         float totalR = 0, totalG = 0, totalB = 0;
         for(int i = 0 ; i < GAUSSIAN_W; i++) {
@@ -149,29 +152,24 @@ public class VitalLagacy {
             lastResult.BP = lastResult.SBP * 0.33 + lastResult.DBP * 0.66;
 
             //Web server prototype
-           if(!Config.SERVER_RESPONSE_MODE){
-               VitalClient.getInstance().requestAnalysis(rPPG.f_pixel_buff);
-           } else{
-               VitalResponse response = VitalClient.getInstance().requestSyncAnalysis(rPPG.f_pixel_buff).body();
-               if(response != null){
-                   ResultVitalSign.vitalSignServerData.HR_result = response.hr;
-                   ResultVitalSign.vitalSignServerData.RR_result = response.rr;
-                   ResultVitalSign.vitalSignServerData.sdnn_result = response.hrv;
-                   ResultVitalSign.vitalSignServerData.spo2_result = response.spo2;
-                   ResultVitalSign.vitalSignServerData.LF_HF_ratio = (float)response.stress;
-                   ResultVitalSign.vitalSignServerData.SBP = response.sbp;
-                   ResultVitalSign.vitalSignServerData.DBP = response.dbp;
-                   ResultVitalSign.vitalSignServerData.BP = response.bp;
-               } else{
-                   ResultVitalSign.vitalSignServerData.HR_result = 0;
-                   ResultVitalSign.vitalSignServerData.RR_result = 0;
-                   ResultVitalSign.vitalSignServerData.sdnn_result = 0;
-                   ResultVitalSign.vitalSignServerData.spo2_result = 0;
-                   ResultVitalSign.vitalSignServerData.LF_HF_ratio = 0;
-                   ResultVitalSign.vitalSignServerData.SBP = 0;
-                   ResultVitalSign.vitalSignServerData.DBP = 0;
-                   ResultVitalSign.vitalSignServerData.BP = 0;
+           if(Config.SERVER_RESPONSE_MODE){
+               Response<VitalResponse> callResponse = VitalClient.getInstance().requestSyncAnalysis(rPPG.f_pixel_buff);
+               if(callResponse != null){
+                   VitalResponse response = callResponse.body();
+                   if(response != null){
+                       ResultVitalSign.vitalSignServerData.HR_result = response.hr;
+                       ResultVitalSign.vitalSignServerData.RR_result = response.rr;
+                       ResultVitalSign.vitalSignServerData.sdnn_result = response.hrv;
+                       ResultVitalSign.vitalSignServerData.spo2_result = response.spo2;
+                       ResultVitalSign.vitalSignServerData.LF_HF_ratio = (float)response.stress;
+                       ResultVitalSign.vitalSignServerData.SBP = response.sbp;
+                       ResultVitalSign.vitalSignServerData.DBP = response.dbp;
+                       ResultVitalSign.vitalSignServerData.BP = response.bp;
+                   }
                }
+
+           } else{
+               VitalClient.getInstance().requestAnalysis(rPPG.f_pixel_buff);
            }
         }
         bufferIndex = (bufferIndex + 1) % BUFFER_SIZE;
