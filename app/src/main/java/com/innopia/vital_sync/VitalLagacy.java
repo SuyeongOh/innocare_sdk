@@ -47,7 +47,6 @@ public class VitalLagacy {
     private static final int BP_CALCULATION_FREQUENCY = BUFFER_SIZE;
     public static int VIDEO_FRAME_RATE = 30;
 
-    private static final float GAUSSIAN_W = Config.FACE_MODEL_SIZE;
     private static final int DETREND_POWER = 6;
 
     public static class Result {
@@ -75,18 +74,16 @@ public class VitalLagacy {
 
     public Rppg rPPG = new Rppg(BUFFER_SIZE);
     public Result calculateVital(FaceImageModel model) throws IllegalArgumentException {
-        //rescale: resizez + gaussian
         if(pixelIndex == 0) firstFrameTime = model.frameUtcTimeMs;
 
         rPPG.frameTimeArray[bufferIndex] = model.frameUtcTimeMs;
         Bitmap bitmap = model.bitmap;
-        if(bitmap.getWidth() < GAUSSIAN_W || bitmap.getHeight() < GAUSSIAN_W){
-            bitmap = Bitmap.createScaledBitmap(bitmap, (int)GAUSSIAN_W, (int)GAUSSIAN_W, false); // face frame input
-        }
-
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        float totalPixel = (float)width * height;
         float totalR = 0, totalG = 0, totalB = 0;
-        for(int i = 0 ; i < GAUSSIAN_W; i++) {
-            for (int j = 0; j < GAUSSIAN_W; j++) {
+        for(int i = 0 ; i < width; i++) {
+            for (int j = 0; j < height; j++) {
                 int pixels_buffer = bitmap.getPixel(i, j);
 
                 int r = (pixels_buffer & 0xFF0000) >> 16;
@@ -98,9 +95,9 @@ public class VitalLagacy {
                 totalB += b;
             }
         }
-        totalR = totalR / (GAUSSIAN_W * GAUSSIAN_W);
-        totalG = totalG / (GAUSSIAN_W * GAUSSIAN_W);
-        totalB = totalB / (GAUSSIAN_W * GAUSSIAN_W);
+        totalR = totalR / totalPixel;
+        totalG = totalG / totalPixel;
+        totalB = totalB / totalPixel;
 
         rPPG.f_pixel_buff[0][bufferIndex]= totalR;
         rPPG.f_pixel_buff[1][bufferIndex]= totalG;

@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Switch;
+import android.widget.TextView;
 
 import com.innopia.vital_sync.data.Constant;
 
@@ -16,6 +17,7 @@ import androidx.fragment.app.Fragment;
 
 public class InitFragment extends Fragment {
 
+    private TextView guideTextView;
     private EditText bmiInputView;
     private EditText frameInputView;
     private EditText analysisTimeInputView;
@@ -29,7 +31,7 @@ public class InitFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_init, container, false);
-
+        guideTextView = view.findViewById(R.id.init_view_guide);
         bmiInputView = view.findViewById(R.id.init_view_bmi_input);
         applyBtn = view.findViewById(R.id.init_btn_submit);
         cameraDirectionSwitch = view.findViewById(R.id.init_view_camera_switch);
@@ -39,6 +41,13 @@ public class InitFragment extends Fragment {
         analysisTimeInputView = view.findViewById(R.id.init_view_analysis_time);
         localIpInputView = view.findViewById(R.id.init_view_ip_input);
         serverResponseSwitch = view.findViewById(R.id.init_view_server_switch);
+
+        guideTextView.setText(String.format(
+                "-  공백으로 두시면 기본값으로 셋팅됩니다. " +
+                "\n- 앱하단의 입력확인 버튼을 클릭하시고, " +
+                "\n- 안정적인 조명환경에서 움직이지 말아주세요." +
+                "\n- 기본 bmi : 20.1, frame : 30 " +
+                "\n- ver. 20240306"));
         return view;
     }
 
