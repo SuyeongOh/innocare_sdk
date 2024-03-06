@@ -38,6 +38,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -92,6 +93,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private String cameraId;
     private CameraCaptureSession cameraCaptureSession;
     private AutoFitSurfaceView autoFitSurfaceView;
+    private ImageView previewImage;
     private Handler cameraHandler;
     private Handler imageReaderHandler;
     private ExecutorService cameraExecutor;
@@ -182,8 +184,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         initThread();
 
         //Camera2
-        autoFitSurfaceView = view.findViewById(R.id.view_finder_camera2);
-
+        autoFitSurfaceView = surfaceView.findViewById(R.id.view_finder_camera2);
+        previewImage = surfaceView.findViewById(R.id.view_preview_camera2);
         //Face Detection
         mTrackingOverlayView = view.findViewById(R.id.tracking_overlay);
         mProgressBar = view.findViewById(R.id.progress);
@@ -398,7 +400,9 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                             new Handler(Looper.getMainLooper()).post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    autoFitSurfaceView.setBitmap(finalBitmapImage);
+                                    //autoFitSurfaceView.setBitmap(finalBitmapImage);
+                                    previewImage.setImageBitmap(Bitmap.createScaledBitmap(
+                                            finalBitmapImage, autoFitSurfaceView.getWidth(), autoFitSurfaceView.getHeight(), false));
                                 }
                             });
                             if(sNthFrame == 0 && !calibrationTimerStart){
@@ -413,8 +417,14 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                             inputImage.close();
 
                             if(isFixedFace){
-                                //TODO : catch out of screen issue
-                                Bitmap faceImage = Bitmap.createBitmap(bitmapImage, faceROI.left, faceROI.top, faceROI.width(), faceROI.height());
+                                Bitmap faceImage;
+                                try{
+                                    faceImage = Bitmap.createBitmap(bitmapImage, faceROI.left, faceROI.top, faceROI.width(), faceROI.height());
+                                } catch (Exception e){
+                                    e.printStackTrace();
+                                    return;
+                                }
+
                                 isFinishAnalysis = mBpmAnalysisViewModel.addFaceImageModel(new FaceImageModel(faceImage, System.currentTimeMillis()));
                                 if(Config.FLAG_INNER_TEST) {
                                     Vital vital = mBpmAnalysisViewModel.getVital();
@@ -546,10 +556,10 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 } else if (Config.SMALL_FACE_MODE){
                     float width = box.width();
                     float height = box.height();
-                    box.left += width/4;
-                    box.right -= width/4;
-                    box.top += height/4;
-                    box.bottom -= height/4;
+                    box.left += width/10;
+                    box.right -= width/10;
+                    box.top += height/10 * 4;
+                    box.bottom -= height/10 * 4;
                     box.round(faceROI);
                 }else{
                     box.round(faceROI);

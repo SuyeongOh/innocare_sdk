@@ -80,7 +80,9 @@ public class VitalLagacy {
 
         rPPG.frameTimeArray[bufferIndex] = model.frameUtcTimeMs;
         Bitmap bitmap = model.bitmap;
-        //Bitmap test_cropped = Bitmap.createScaledBitmap(bitmap, GAUSSIAN_W, GAUSSIAN_W, false); // face frame input
+        if(bitmap.getWidth() < GAUSSIAN_W || bitmap.getHeight() < GAUSSIAN_W){
+            bitmap = Bitmap.createScaledBitmap(bitmap, (int)GAUSSIAN_W, (int)GAUSSIAN_W, false); // face frame input
+        }
 
         float totalR = 0, totalG = 0, totalB = 0;
         for(int i = 0 ; i < GAUSSIAN_W; i++) {
