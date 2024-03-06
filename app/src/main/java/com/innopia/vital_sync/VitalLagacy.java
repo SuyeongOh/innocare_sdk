@@ -340,8 +340,13 @@ public class VitalLagacy {
         //valley detect
 
         for(int i = 1; i < peakArray.size(); i++){
-            double[] targetArray =
-                    Arrays.copyOfRange(signalG, peakArray.get(i - 1), peakArray.get(i));
+            double[] targetArray;
+            try{
+                targetArray = Arrays.copyOfRange(signalG, peakArray.get(i - 1), peakArray.get(i));
+            } catch (Exception e){
+                continue;
+            }
+
             FindPeak findValley = new FindPeak(targetArray);
             int[] valleys = findValley.detectRelativeMinima();
             if(valleys.length == 0) continue;

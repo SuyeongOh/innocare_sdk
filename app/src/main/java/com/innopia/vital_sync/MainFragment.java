@@ -48,7 +48,6 @@ import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mediapipe.framework.image.BitmapImageBuilder;
 import com.google.mediapipe.framework.image.MPImage;
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetectorResult;
@@ -73,13 +72,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.camera.core.AspectRatio;
 import androidx.camera.core.Camera;
-import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 public class MainFragment extends Fragment implements EnhanceFaceDetector.DetectorListener {
@@ -188,10 +185,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         autoFitSurfaceView = view.findViewById(R.id.view_finder_camera2);
 
         //Face Detection
-        mCameraView = view.findViewById(R.id.view_finder);
         mTrackingOverlayView = view.findViewById(R.id.tracking_overlay);
         mProgressBar = view.findViewById(R.id.progress);
-
 
         if (Config.FLAG_INNER_TEST) {
             mVitalGroup = view.findViewById(R.id.vital_info_group);
@@ -250,7 +245,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 }
                 imageReader = ImageReader.newInstance(imageReaderSize.getWidth(), imageReaderSize.getHeight(), Constant.PIXEL_FORMAT, Constant.IMAGE_BUFFER_SIZE);
 
-
+                holder.setSizeFromLayout();
 
                 Point displaySize = new Point();
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -294,7 +289,9 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     }
 
     private void initCamera() {
-        createCaptureSession(Camera, Arrays.asList(imageReader.getSurface()), cameraHandler);
+        createCaptureSession(Camera, Arrays.asList(
+                //autoFitSurfaceView.getHolder().getSurface(),
+                imageReader.getSurface()), cameraHandler);
     }
 
     private String chooseCamera(){
@@ -367,6 +364,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                         CaptureRequest.Builder requestBuilder = null;
                         requestBuilder = Camera.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
                         requestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange);
+                        //requestBuilder.addTarget(autoFitSurfaceView.getHolder().getSurface());
                         requestBuilder.addTarget(imageReader.getSurface());
                         cameraCaptureSession.setRepeatingRequest(requestBuilder.build(), null, cameraHandler);
                     } catch (CameraAccessException e) {
@@ -480,50 +478,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
             logCameraAccessException(e);
         }
 
-    }
-    private void setUpCamera(Preview.SurfaceProvider surfaceProvider){
-        ListenableFuture<ProcessCameraProvider> cameraProvider
-                = ProcessCameraProvider.getInstance(requireContext());
-
-        cameraProvider.addListener(new Runnable() {
-            @Override
-            public void run() {
-                try{
-                    mCameraProvider = cameraProvider.get();
-                    bindCameraUseCases(surfaceProvider);
-                } catch (Exception e){
-                    e.printStackTrace();
-                }
-            }
-        }, ContextCompat.getMainExecutor(requireContext()));
-    }
-
-    private void bindCameraUseCases(Preview.SurfaceProvider surfaceProvider){
-        ProcessCameraProvider cameraProvider = mCameraProvider;
-        CameraSelector cameraSelector =
-                new CameraSelector.Builder().requireLensFacing(Config.USE_CAMERA_DIRECTION).build();
-
-        mPreview = new Preview.Builder()
-                .setTargetAspectRatio(CAMERA_RATIO)
-                .setTargetRotation(ROTATION)
-                .build();
-
-        mImageAnalysis = new ImageAnalysis.Builder().setTargetAspectRatio(CAMERA_RATIO)
-                 .setTargetRotation(ROTATION)
-                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
-                 .build();
-
-        mImageAnalysis.setAnalyzer(
-                mFrontCameraExecutor, faceDetector::detectLiveStreamFrame);
-        cameraProvider.unbindAll();
-
-        try{
-            mCamera = cameraProvider.bindToLifecycle(this, cameraSelector, mPreview, mImageAnalysis);
-            mPreview.setSurfaceProvider(surfaceProvider);
-        } catch (Exception e){
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -674,35 +628,35 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
             @Override
             public void run() {
                 hrValueView.setText(
-                        //Math.round(ResultVitalSign.vitalSignServerData.HR_result) + "/" +
+                        Math.round(ResultVitalSign.vitalSignServerData.HR_result) + "/" +
                         String.valueOf(Math.round(ResultVitalSign.vitalSignData.HR_result))
                 );
                 rrValueView.setText(
-                        //Math.round(ResultVitalSign.vitalSignServerData.RR_result) + "/" +
+                        Math.round(ResultVitalSign.vitalSignServerData.RR_result) + "/" +
                         String.valueOf(Math.round(ResultVitalSign.vitalSignData.RR_result))
                 );
                 sdnnValueView.setText(
-                        //Math.round(ResultVitalSign.vitalSignServerData.sdnn_result) + "/" +
+                        Math.round(ResultVitalSign.vitalSignServerData.sdnn_result) + "/" +
                         String.valueOf(Math.round(ResultVitalSign.vitalSignData.sdnn_result))
                 );
                 stressValueView.setText(
-                        //Math.round(ResultVitalSign.vitalSignServerData.LF_HF_ratio) + "/" +
+                        Math.round(ResultVitalSign.vitalSignServerData.LF_HF_ratio) + "/" +
                         String.valueOf(Math.round(ResultVitalSign.vitalSignData.LF_HF_ratio))
                 );
                 spo2ValueView.setText(
-                        //Math.round(ResultVitalSign.vitalSignServerData.spo2_result) + "/" +
+                        Math.round(ResultVitalSign.vitalSignServerData.spo2_result) + "/" +
                         String.valueOf(Math.round(ResultVitalSign.vitalSignData.spo2_result))
                 );
-                sbpValueView.setText(
+//                sbpValueView.setText(
 //                        Math.round(ResultVitalSign.vitalSignServerData.SBP) + "/" +
-                        String.valueOf(Math.round(ResultVitalSign.vitalSignData.SBP))
-                );
-                dbpValueView.setText(
+//                        String.valueOf(Math.round(ResultVitalSign.vitalSignData.SBP))
+//                );
+//                dbpValueView.setText(
 //                        Math.round(ResultVitalSign.vitalSignServerData.DBP) + "/" +
-                        String.valueOf(Math.round(ResultVitalSign.vitalSignData.DBP))
-                );
-//                sbpValueView.setText("TBD");
-//                dbpValueView.setText("TBD");
+//                        String.valueOf(Math.round(ResultVitalSign.vitalSignData.DBP))
+//                );
+                sbpValueView.setText("TBD");
+                dbpValueView.setText("TBD");
             }
         });
     }

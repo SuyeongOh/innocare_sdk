@@ -25,13 +25,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"/>
 
-        <androidx.camera.view.PreviewView
-            android:id="@+id/view_finder"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="gone"
-            android:background="#00000000"/>
-
         <com.innopia.vital_sync.ui.OverlayView
             android:id="@+id/tracking_overlay"
             android:layout_width="0dp"
