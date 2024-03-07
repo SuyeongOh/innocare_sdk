@@ -71,12 +71,6 @@ import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.camera.core.AspectRatio;
-import androidx.camera.core.Camera;
-import androidx.camera.core.ImageAnalysis;
-import androidx.camera.core.Preview;
-import androidx.camera.lifecycle.ProcessCameraProvider;
-import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
@@ -96,10 +90,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private ImageView previewImage;
     private Handler cameraHandler;
     private Handler imageReaderHandler;
-    private ExecutorService cameraExecutor;
-
-    //View Variable
-    private PreviewView mCameraView;
     private OverlayView mTrackingOverlayView;
     private ProgressBar mProgressBar;
     private BpmAnalysisViewModel mBpmAnalysisViewModel;
@@ -111,7 +101,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private LineChart mBvpChart;
     private LineChart mGreenChart;
     private View mVitalGroup;
-    private TextView mCountdownTextView;
     private CountDownTimer mCalibrationTimer;
     private TickerView hrValueView;
     private TickerView rrValueView;
@@ -122,24 +111,14 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private TickerView dbpValueView;
     private Button reStartBtn;
     private Button nextPageBtn;
-
     private View vitalValueLayout;
-    private LineDataSet mHrDataset;
-    private LineDataSet mBvpDataset;
     private LineDataSet mGreenData;
 
     //Camera Property variable
     private EnhanceFaceDetector faceDetector;
     private ExecutorService mFrontCameraExecutor;
-    private ProcessCameraProvider mCameraProvider;
-    private Preview mPreview;
-    private ImageAnalysis mImageAnalysis;
-    private Camera mCamera;
     public Bitmap mOriginalBitmap;
     private long lastFrameUtcTimeMs = -1;
-
-    private int CAMERA_RATIO = AspectRatio.RATIO_16_9;
-    private int ROTATION = Surface.ROTATION_0;
 
     private int sNthFrame = 0;
 
@@ -185,7 +164,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
         //Camera2
         autoFitSurfaceView = surfaceView.findViewById(R.id.view_finder_camera2);
-        previewImage = surfaceView.findViewById(R.id.view_preview_camera2);
         //Face Detection
         mTrackingOverlayView = view.findViewById(R.id.tracking_overlay);
         mProgressBar = view.findViewById(R.id.progress);
@@ -219,7 +197,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         reStartBtn.setVisibility(View.INVISIBLE);
         nextPageBtn.setVisibility(View.INVISIBLE);
         initListener();
-        initLoadingView();
         initCalibrationTimer();
         return view;
     }
@@ -292,7 +269,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
     private void initCamera() {
         createCaptureSession(Camera, Arrays.asList(
-                //autoFitSurfaceView.getHolder().getSurface(),
+                autoFitSurfaceView.getHolder().getSurface(),
                 imageReader.getSurface()), cameraHandler);
     }
 
@@ -366,7 +343,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                         CaptureRequest.Builder requestBuilder = null;
                         requestBuilder = Camera.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
                         requestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange);
-                        //requestBuilder.addTarget(autoFitSurfaceView.getHolder().getSurface());
+                        requestBuilder.addTarget(autoFitSurfaceView.getHolder().getSurface());
                         requestBuilder.addTarget(imageReader.getSurface());
                         cameraCaptureSession.setRepeatingRequest(requestBuilder.build(), null, cameraHandler);
                     } catch (CameraAccessException e) {
@@ -396,15 +373,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                 bitmapImage = Bitmap.createBitmap(
                                         bitmapImage, 0, 0, bitmapImage.getWidth(), bitmapImage.getHeight(), flipMatrix, false);
                             }
-                            Bitmap finalBitmapImage = bitmapImage;
-                            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    //autoFitSurfaceView.setBitmap(finalBitmapImage);
-                                    previewImage.setImageBitmap(Bitmap.createScaledBitmap(
-                                            finalBitmapImage, autoFitSurfaceView.getWidth(), autoFitSurfaceView.getHeight(), false));
-                                }
-                            });
+
                             if(sNthFrame == 0 && !calibrationTimerStart){
                                 startCalibrationTimer();
                                 calibrationTimerStart = true;
@@ -840,10 +809,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         calibrationTimerStart = false;
         isFinishAnalysis = false;
         isFixedFace = false;
-    }
-
-    private void initLoadingView(){
-        mCountdownTextView = mCountDownView.findViewById(R.id.countdownTextView);
     }
 
     private void initCalibrationTimer(){
