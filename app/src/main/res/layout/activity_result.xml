@@ -127,10 +127,13 @@
                 android:background="@color/white70"
                 android:visibility="visible"
                 tools:visibility="visible"/>
-
             <View
                 android:layout_width="match_parent"
-                android:layout_height="100dp"/>
+                android:layout_height="200dp"
+                android:layout_marginStart="@dimen/vital_analysis_start_margin"
+                android:layout_marginBottom="10dp"
+                android:layout_marginEnd="@dimen/vital_analysis_end_margin"
+                android:layout_marginTop="10dp"/>
         </LinearLayout>
     </ScrollView>
 

@@ -7,7 +7,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -42,13 +41,6 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.components.XAxis;
-import com.github.mikephil.charting.components.YAxis;
-import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
 import com.google.mediapipe.framework.image.BitmapImageBuilder;
 import com.google.mediapipe.framework.image.MPImage;
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetectorResult;
@@ -62,7 +54,6 @@ import com.innopia.vital_sync.ui.OverlayView;
 import com.innopia.vital_sync.utils.ImageUtils;
 import com.robinhood.ticker.TickerView;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -83,13 +74,16 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private ImageReader imageReader;
     private HandlerThread cameraThread;
     private HandlerThread imageReaderThread;
+    private HandlerThread thread_preview;
     private CameraDevice Camera;
     private String cameraId;
     private CameraCaptureSession cameraCaptureSession;
     private AutoFitSurfaceView autoFitSurfaceView;
-    private ImageView previewImage;
+    private ImageView imageSurfaceView;
     private Handler cameraHandler;
     private Handler imageReaderHandler;
+
+    //View Variable
     private OverlayView mTrackingOverlayView;
     private ProgressBar mProgressBar;
     private BpmAnalysisViewModel mBpmAnalysisViewModel;
@@ -97,9 +91,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private AlertDialog mFinishPopup;
     private CustomCountdownView mCountDownView;
     private TextView mGuidePopupText;
-    private LineChart mHrChart;
-    private LineChart mBvpChart;
-    private LineChart mGreenChart;
     private View mVitalGroup;
     private CountDownTimer mCalibrationTimer;
     private TickerView hrValueView;
@@ -111,14 +102,13 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private TickerView dbpValueView;
     private Button reStartBtn;
     private Button nextPageBtn;
+
     private View vitalValueLayout;
-    private LineDataSet mGreenData;
 
     //Camera Property variable
     private EnhanceFaceDetector faceDetector;
     private ExecutorService mFrontCameraExecutor;
     public Bitmap mOriginalBitmap;
-    private long lastFrameUtcTimeMs = -1;
 
     private int sNthFrame = 0;
 
@@ -130,9 +120,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private boolean calibrationTimerStart = false;
     private final Range<Integer> fpsRange = new Range<>(25,Config.TARGET_FRAME);
 
-    private HandlerThread thread_g;
-    private HandlerThread thread_hr;
-    private HandlerThread thread_bvp;
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -163,18 +150,15 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         initThread();
 
         //Camera2
-        autoFitSurfaceView = surfaceView.findViewById(R.id.view_finder_camera2);
-        //Face Detection
+        autoFitSurfaceView = view.findViewById(R.id.view_finder_camera2);
+        imageSurfaceView = view.findViewById(R.id.view_finder_image);
         mTrackingOverlayView = view.findViewById(R.id.tracking_overlay);
         mProgressBar = view.findViewById(R.id.progress);
+
 
         if (Config.FLAG_INNER_TEST) {
             mVitalGroup = view.findViewById(R.id.vital_info_group);
             mVitalGroup.setVisibility(View.VISIBLE);
-            mBvpChart = view.findViewById(R.id.bvp_chart);
-            mGreenChart = view.findViewById(R.id.green_chart);
-            mHrChart = view.findViewById(R.id.hr_chart);
-            initChart();
         }
 
         //Face Guide Popup
@@ -184,6 +168,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         mGuidePopupText.setText(R.string.face_no_detection);
 
         vitalValueLayout = view.findViewById(R.id.vital_info_layout);
+        vitalValueLayout.setClickable(false);
         hrValueView = view.findViewById(R.id.heart_rate_value);
         rrValueView = view.findViewById(R.id.respiratory_rate_value);
         sdnnValueView = view.findViewById(R.id.hrv_sdnn_value);
@@ -224,7 +209,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 }
                 imageReader = ImageReader.newInstance(imageReaderSize.getWidth(), imageReaderSize.getHeight(), Constant.PIXEL_FORMAT, Constant.IMAGE_BUFFER_SIZE);
 
-                holder.setSizeFromLayout();
+
 
                 Point displaySize = new Point();
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -252,12 +237,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     }
 
     private void initThread(){
-        thread_g = new HandlerThread("G signal Thread");
-        thread_hr = new HandlerThread("hr signal Thread");
-        thread_bvp = new HandlerThread("bvp signal Thread");
-        thread_g.start();
-        thread_bvp.start();
-        thread_hr.start();
+        thread_preview = new HandlerThread("preview Thread");
+        thread_preview.start();
 
         cameraThread = new HandlerThread("CameraThread");
         cameraThread.start();
@@ -268,9 +249,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     }
 
     private void initCamera() {
-        createCaptureSession(Camera, Arrays.asList(
-                autoFitSurfaceView.getHolder().getSurface(),
-                imageReader.getSurface()), cameraHandler);
+        createCaptureSession(Camera, Arrays.asList(imageReader.getSurface()), cameraHandler);
     }
 
     private String chooseCamera(){
@@ -343,7 +322,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                         CaptureRequest.Builder requestBuilder = null;
                         requestBuilder = Camera.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
                         requestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange);
-                        requestBuilder.addTarget(autoFitSurfaceView.getHolder().getSurface());
                         requestBuilder.addTarget(imageReader.getSurface());
                         cameraCaptureSession.setRepeatingRequest(requestBuilder.build(), null, cameraHandler);
                     } catch (CameraAccessException e) {
@@ -373,8 +351,23 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                 bitmapImage = Bitmap.createBitmap(
                                         bitmapImage, 0, 0, bitmapImage.getWidth(), bitmapImage.getHeight(), flipMatrix, false);
                             }
+                            Bitmap finalBitmapImage = bitmapImage;
+
+                            new Handler(thread_preview.getLooper()).post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    imageSurfaceView.setImageBitmap(Bitmap
+                                            .createScaledBitmap(finalBitmapImage, autoFitSurfaceView.getWidth(), autoFitSurfaceView.getHeight(), false));
+                                }
+                            });
 
                             if(sNthFrame == 0 && !calibrationTimerStart){
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        autoFitSurfaceView.requestLayout();
+                                    }
+                                });
                                 startCalibrationTimer();
                                 calibrationTimerStart = true;
                                 calibrationFinish = false;
@@ -384,6 +377,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                 return;
                             }
                             inputImage.close();
+
+                            updateProgressBar(sNthFrame/(VitalLagacy.BUFFER_SIZE / 100));
 
                             if(isFixedFace){
                                 Bitmap faceImage;
@@ -395,31 +390,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                 }
 
                                 isFinishAnalysis = mBpmAnalysisViewModel.addFaceImageModel(new FaceImageModel(faceImage, System.currentTimeMillis()));
-                                if(Config.FLAG_INNER_TEST) {
-                                    Vital vital = mBpmAnalysisViewModel.getVital();
-                                    VitalLagacy lagacy = vital.getVitalLagacy();
-                                    new Handler(thread_g.getLooper()).post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            List<Entry> entryList = new ArrayList<>();
-                                            double[] g_signal = lagacy.getGreenSignal();
-                                            for (int i = 0; i < g_signal.length; i++) {
-                                                entryList.add(new Entry(i, (float) g_signal[i]));
-                                            }
-                                            mGreenData = new LineDataSet(entryList, "");
-                                            mGreenData.setDrawCircles(false);
-                                            mGreenData.setColor(Color.GREEN);
-                                            LineData data = new LineData(mGreenData);
-                                            mGreenChart.setData(data);
-                                            mGreenChart.notifyDataSetChanged();
-                                            mGreenChart.invalidate();
-                                        }
-                                    });
-                                }
-                                Log.d("Result", "Nth Frame : " + sNthFrame);
-                                if(mProgressBar.getProgress() != (sNthFrame/(VitalLagacy.BUFFER_SIZE / 100))){
-                                    updateProgressBar(sNthFrame/(VitalLagacy.BUFFER_SIZE / 100));
-                                }
+
                                 sNthFrame ++;
                                 if(isFinishAnalysis){
                                     if(Config.FLAG_INNER_TEST){
@@ -471,11 +442,9 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     public void onDestroy() {
         super.onDestroy();
         Camera.close();
-        thread_g.quitSafely();
-        thread_bvp.quitSafely();
-        thread_hr.quitSafely();
         cameraThread.quitSafely();
         imageReaderThread.quitSafely();
+        thread_preview.quitSafely();
         mFrontCameraExecutor.shutdown();
         try{
             mFrontCameraExecutor.awaitTermination(
@@ -558,7 +527,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
     @Override
     public void onResults(MPImage input, Bitmap original, EnhanceFaceDetector.ResultBundle resultBundle) {
-        lastFrameUtcTimeMs = System.currentTimeMillis();
         mOriginalBitmap = original;
         processImage(input, resultBundle);
     }
@@ -582,17 +550,12 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         sNthFrame = 0;
         mBpmAnalysisViewModel.clearAnalysis();
         updateProgressBar(mProgressBar.getMin());
-        mGreenChart.clearValues();
         isStopPredict = true;
     }
 
     @Override
     public void onError(String error, int errorCode) {
 
-    }
-
-    public long getLastFrameUtcTimeMs(){
-        return lastFrameUtcTimeMs;
     }
 
     private void updateProgressBar(int progress){
@@ -638,128 +601,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 dbpValueView.setText("TBD");
             }
         });
-    }
-
-    private void initChart(){
-        //BVP chart
-        mBvpChart.getDescription().setText("BVP");
-        mBvpChart.getDescription().setEnabled(true);
-        Legend legend = mBvpChart.getLegend();
-        legend.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
-        legend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.LEFT);
-        legend.setForm(Legend.LegendForm.CIRCLE);
-        legend.setFormSize(10);
-        legend.setTextSize(13);
-        legend.setTextColor(Color.parseColor("#A3A3A3"));
-        legend.setOrientation(Legend.LegendOrientation.VERTICAL);
-        legend.setDrawInside(true);
-        legend.setYEntrySpace(3);
-
-        // XAxis (아래쪽) - 선 유무, 사이즈, 색상, 축 위치 설정
-        XAxis xAxis = mBvpChart.getXAxis();
-        xAxis.setDrawAxisLine(false);
-        xAxis.setDrawGridLines(false);
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM); // x축 데이터 표시 위치
-        xAxis.setGranularity(1f);
-        xAxis.setTextSize(14f);
-        xAxis.setTextColor(Color.BLACK);
-        xAxis.setSpaceMin(0.1f); // Chart 맨 왼쪽 간격 띄우기
-        xAxis.setSpaceMax(0.1f); // Chart 맨 오른쪽 간격 띄우기
-
-        // YAxis(Right) (왼쪽) - 선 유무, 데이터 최솟값/최댓값, 색상
-        YAxis yAxisLeft = mBvpChart.getAxisLeft();
-        yAxisLeft.setDrawAxisLine(false);
-        yAxisLeft.setTextColor(Color.BLACK);
-        yAxisLeft.setDrawAxisLine(false);
-        yAxisLeft.resetAxisMinimum();
-        yAxisLeft.setAxisLineWidth(2);
-
-        // YAxis(Left) (오른쪽) - 선 유무, 데이터 최솟값/최댓값, 색상
-        YAxis yAxis = mBvpChart.getAxisRight();
-        yAxis.setDrawLabels(false); // label 삭제
-        yAxis.setTextColor(Color.BLACK);
-        yAxis.setDrawAxisLine(false);
-        yAxis.setAxisLineWidth(2);
-        yAxisLeft.resetAxisMinimum();
-        yAxis.setAxisMaximum((float) 1); // 최댓값
-        yAxis.setGranularity((float) 0.1);
-
-        //G signal Chart
-        mGreenChart.getDescription().setText("G signal");
-        mGreenChart.getDescription().setEnabled(true);
-        Legend legend_g = mGreenChart.getLegend();
-        legend_g.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
-        legend_g.setForm(Legend.LegendForm.CIRCLE);
-        legend_g.setFormSize(10);
-        legend_g.setTextSize(13);
-        legend_g.setTextColor(Color.parseColor("#A3A3A3"));
-        legend_g.setOrientation(Legend.LegendOrientation.VERTICAL);
-        legend_g.setDrawInside(false);
-        legend_g.setYEntrySpace(5);
-
-        // XAxis (아래쪽) - 선 유무, 사이즈, 색상, 축 위치 설정
-        XAxis xAxis_g = mGreenChart.getXAxis();
-        xAxis_g.setDrawAxisLine(false);
-        xAxis_g.setDrawGridLines(false);
-        xAxis_g.setPosition(XAxis.XAxisPosition.BOTTOM); // x축 데이터 표시 위치
-        xAxis_g.setGranularity(1f);
-        xAxis_g.setTextSize(14f);
-        xAxis_g.setTextColor(Color.BLACK);
-        xAxis_g.setSpaceMin(0.1f); // Chart 맨 왼쪽 간격 띄우기
-        xAxis_g.setSpaceMax(0.1f); // Chart 맨 오른쪽 간격 띄우기
-
-        // YAxis(Right) (왼쪽) - 선 유무, 데이터 최솟값/최댓값, 색상
-        YAxis yAxisLeft_g = mGreenChart.getAxisLeft();
-        yAxisLeft_g.setDrawAxisLine(false);
-
-        // YAxis(Left) (오른쪽) - 선 유무, 데이터 최솟값/최댓값, 색상
-        YAxis yAxis_g = mGreenChart.getAxisRight();
-        yAxis_g.setDrawLabels(false); // label 삭제
-        yAxis_g.setTextColor(Color.BLACK);
-        yAxis_g.setDrawAxisLine(false);
-        yAxis_g.setAxisLineWidth(2);
-        yAxis_g.setAxisMinimum(0f); // 최솟값
-        yAxis_g.setAxisMaximum((float) 512); // 최댓값
-        yAxis_g.setGranularity((float) 512);
-
-        //HR chart
-        mHrChart.getDescription().setText("HR");
-        mHrChart.getDescription().setEnabled(true);
-        Legend legend_hr = mHrChart.getLegend();
-        legend_hr.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
-        legend_hr.setHorizontalAlignment(Legend.LegendHorizontalAlignment.LEFT);
-        legend_hr.setForm(Legend.LegendForm.CIRCLE);
-        legend_hr.setFormSize(10);
-        legend_hr.setTextSize(13);
-        legend_hr.setTextColor(Color.parseColor("#A3A3A3"));
-        legend_hr.setOrientation(Legend.LegendOrientation.VERTICAL);
-        legend_hr.setDrawInside(true);
-        legend_hr.setYEntrySpace(3);
-
-        // XAxis (아래쪽) - 선 유무, 사이즈, 색상, 축 위치 설정
-        XAxis xAxis_hr = mHrChart.getXAxis();
-        xAxis_hr.setDrawAxisLine(false);
-        xAxis_hr.setDrawGridLines(false);
-        xAxis_hr.setPosition(XAxis.XAxisPosition.BOTTOM); // x축 데이터 표시 위치
-        xAxis_hr.setGranularity(1f);
-        xAxis_hr.setTextSize(14f);
-        xAxis_hr.setTextColor(Color.BLACK);
-        xAxis_hr.setSpaceMin(0.1f); // Chart 맨 왼쪽 간격 띄우기
-        xAxis_hr.setSpaceMax(0.1f); // Chart 맨 오른쪽 간격 띄우기
-
-        // YAxis(Right) (왼쪽) - 선 유무, 데이터 최솟값/최댓값, 색상
-        YAxis yAxisLeft_hr = mHrChart.getAxisLeft();
-        yAxisLeft_hr.setDrawAxisLine(false);
-
-        // YAxis(Left) (오른쪽) - 선 유무, 데이터 최솟값/최댓값, 색상
-        YAxis yAxis_hr = mHrChart.getAxisRight();
-        yAxis_hr.setDrawLabels(false); // label 삭제
-        yAxis_hr.setTextColor(Color.BLACK);
-        yAxis_hr.setDrawAxisLine(false);
-        yAxis_hr.setAxisLineWidth(2);
-        yAxis_hr.setAxisMinimum(0f); // 최솟값
-        yAxis_hr.setAxisMaximum((float) 512); // 최댓값
-        yAxis_hr.setGranularity((float) 512);
     }
 
     private void initListener(){

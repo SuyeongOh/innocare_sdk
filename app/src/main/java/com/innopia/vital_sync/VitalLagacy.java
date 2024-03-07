@@ -36,6 +36,7 @@ import jsat.linear.DenseMatrix;
 import jsat.linear.DenseVector;
 import jsat.linear.Matrix;
 import jsat.linear.Vec;
+import retrofit2.Response;
 import uk.me.berndporr.iirj.Butterworth;
 
 import static java.lang.Math.abs;
