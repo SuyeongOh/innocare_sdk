@@ -28,5 +28,5 @@ public class Config {
     public static boolean SERVER_RESPONSE_MODE = false;
     public static final int FACE_MODEL_SIZE = 72;
 
-    public static String LOCAL_SERVER_ADDRESS = "http://35.220.206.239:3000/";
+    public static String LOCAL_SERVER_ADDRESS = "http://35.220.206.239:1024/";
 }

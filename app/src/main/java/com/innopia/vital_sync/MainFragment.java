@@ -209,8 +209,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 }
                 imageReader = ImageReader.newInstance(imageReaderSize.getWidth(), imageReaderSize.getHeight(), Constant.PIXEL_FORMAT, Constant.IMAGE_BUFFER_SIZE);
 
-
-
                 Point displaySize = new Point();
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     getActivity().getDisplay().getRealSize(displaySize);
@@ -353,9 +351,10 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                             }
                             Bitmap finalBitmapImage = bitmapImage;
 
-                            new Handler(thread_preview.getLooper()).post(new Runnable() {
+                            new Handler(Looper.getMainLooper()).post(new Runnable() {
                                 @Override
                                 public void run() {
+                                    Log.d("Vital", "Set Preview");
                                     imageSurfaceView.setImageBitmap(Bitmap
                                             .createScaledBitmap(finalBitmapImage, autoFitSurfaceView.getWidth(), autoFitSurfaceView.getHeight(), false));
                                 }
