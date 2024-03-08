@@ -581,8 +581,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                         String.valueOf(Math.round(ResultVitalSign.vitalSignData.sdnn_result))
                 );
                 stressValueView.setText(
-                        Math.round(ResultVitalSign.vitalSignServerData.LF_HF_ratio) + "/" +
-                        String.valueOf(Math.round(ResultVitalSign.vitalSignData.LF_HF_ratio))
+                        ResultVitalSign.vitalSignServerData.LF_HF_ratio + "/" +
+                        String.valueOf(ResultVitalSign.vitalSignData.LF_HF_ratio)
                 );
                 spo2ValueView.setText(
                         Math.round(ResultVitalSign.vitalSignServerData.spo2_result) + "/" +
