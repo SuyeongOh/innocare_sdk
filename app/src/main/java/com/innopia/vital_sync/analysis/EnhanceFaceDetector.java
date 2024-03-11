@@ -1,11 +1,8 @@
-package com.innopia.vital_sync;
+package com.innopia.vital_sync.analysis;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
-import android.graphics.PointF;
-import android.media.MediaMetadataRetriever;
-import android.net.Uri;
 import android.os.SystemClock;
 
 import com.google.mediapipe.framework.image.BitmapImageBuilder;
@@ -15,8 +12,8 @@ import com.google.mediapipe.tasks.core.Delegate;
 import com.google.mediapipe.tasks.vision.core.RunningMode;
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetector;
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetectorResult;
+import com.innopia.vital_sync.data.Config;
 import com.innopia.vital_sync.data.Constant;
-import com.innopia.vital_sync.utils.FileUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -143,8 +140,8 @@ public class EnhanceFaceDetector {
     public static class ResultBundle{
         List<FaceDetectorResult> results;
         long inferenceTime;
-        int inputImageHeight;
-        int inputImageWidth;
+        public int inputImageHeight;
+        public int inputImageWidth;
 
         public ResultBundle (
             List<FaceDetectorResult> results,

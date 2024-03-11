@@ -1,4 +1,4 @@
-package com.innopia.vital_sync;
+package com.innopia.vital_sync.analysis;
 
 import android.graphics.Bitmap;
 

@@ -2,7 +2,7 @@ package com.innopia.vital_sync.client;
 
 import android.util.Log;
 
-import com.innopia.vital_sync.Config;
+import com.innopia.vital_sync.data.Config;
 import com.innopia.vital_sync.service.VitalRequest;
 import com.innopia.vital_sync.service.VitalResponse;
 import com.innopia.vital_sync.service.VitalService;

@@ -1,4 +1,4 @@
-package com.innopia.vital_sync;
+package com.innopia.vital_sync.data;
 
 import com.innopia.vital_sync.data.Constant;
 
@@ -29,4 +29,5 @@ public class Config {
     public static final int FACE_MODEL_SIZE = 72;
 
     public static String LOCAL_SERVER_ADDRESS = "http://35.220.206.239:1024/";
+    public static String USER_ID = "Guest";
 }

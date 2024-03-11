@@ -1,4 +1,18 @@
 <resources>
+
+    <!--Login Fragment-->
+    <string name="user_id">ID</string>
+    <string name="user_id_guide">input your ID</string>
+    <string name="login">Login</string>
+    <string name="guest">Guest</string>
+    <string name="caution">Caution !!</string>
+    <string name="app_caution">
+\n1. This app is not intended for use for health care or medical purposes.
+\n2. This app aims to research and improve awareness of general wellness.
+\n3. This app does not collect any personally identifiable information.
+\n4. This app collects\/transmits\/stores data only with the user\'s consent.
+\n5. This app does not share any collected data with any third parties.</string>
+
     <string name="app_name">VitalSync</string>
     <string name="heart_rate">심박수</string>
     <string name="heart_rate_unit">bpm</string>

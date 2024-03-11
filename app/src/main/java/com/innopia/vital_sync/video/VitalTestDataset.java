@@ -2,22 +2,18 @@ package com.innopia.vital_sync.video;
 
 import android.app.Application;
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.util.Log;
 
-import com.innopia.vital_sync.BpmAnalysisViewModel;
-import com.innopia.vital_sync.Config;
-import com.innopia.vital_sync.FaceImageModel;
-import com.innopia.vital_sync.ResultActivity;
+import com.innopia.vital_sync.analysis.BpmAnalysisViewModel;
+import com.innopia.vital_sync.data.Config;
+import com.innopia.vital_sync.analysis.FaceImageModel;
 import com.innopia.vital_sync.utils.FileUtils;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.util.ArrayList;
 
 public class VitalTestDataset {
 

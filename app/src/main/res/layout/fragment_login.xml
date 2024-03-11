@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp"
+    android:layout_gravity="center"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ProgressBar
+        android:id="@+id/view_login_loading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:progressDrawable="@drawable/circle_progress"
+        android:indeterminate="true" />
+
+    <TextView
+        android:id="@+id/view_login_caution_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/caution"
+        android:textSize="30sp"
+        android:textAlignment="center"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/view_login_caution"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/app_caution"
+        android:textSize="20sp"
+        android:textAlignment="viewStart"
+        app:layout_constraintTop_toBottomOf="@id/view_login_caution_title"/>
+
+    <TextView
+        android:id="@+id/view_login_id_label"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:textAlignment="center"
+        android:gravity="center"
+        android:layout_marginLeft="20dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/view_login_id"
+        app:layout_constraintBottom_toBottomOf="@id/view_login_id"
+        android:text="@string/user_id"/>
+
+    <EditText
+        android:id="@+id/view_login_id"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="@string/user_id_guide"
+        android:background="@drawable/view_border"
+        android:padding="5dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/view_login_id_label"
+        app:layout_constraintTop_toBottomOf="@id/view_login_caution" />
+
+    <Button
+        android:id="@+id/view_login_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/login"
+        android:layout_marginTop="16dp"
+        android:layout_gravity="center_horizontal"
+        app:layout_constraintTop_toBottomOf="@id/view_login_id"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <Button
+        android:id="@+id/view_login_guest_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/guest"
+        android:layout_marginTop="16dp"
+        android:layout_gravity="center_horizontal"
+        app:layout_constraintTop_toBottomOf="@id/view_login_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,4 +1,4 @@
-package com.innopia.vital_sync;
+package com.innopia.vital_sync.activities;
 
 import android.graphics.Color;
 import android.os.Bundle;
@@ -18,6 +18,9 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.psambit9791.jdsp.signal.Detrend;
 import com.github.psambit9791.jdsp.signal.Smooth;
 import com.github.psambit9791.jdsp.transform.DiscreteFourier;
+import com.innopia.vital_sync.data.Config;
+import com.innopia.vital_sync.R;
+import com.innopia.vital_sync.analysis.VitalLagacy;
 import com.innopia.vital_sync.bvp.BandPassFilter;
 import com.innopia.vital_sync.bvp.ModuleName;
 import com.innopia.vital_sync.data.VitalChartData;

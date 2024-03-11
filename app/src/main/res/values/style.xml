@@ -39,4 +39,5 @@
         <item name="layout_constraintHeight_percent">0.25</item>
         <item name="layout_constraintWidth_percent">0.85</item>
     </style>
+
 </resources>

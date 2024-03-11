@@ -1,4 +1,4 @@
-package com.innopia.vital_sync;
+package com.innopia.vital_sync.activities;
 
 
 import android.annotation.SuppressLint;
@@ -20,6 +20,7 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.data.ScatterData;
 import com.github.mikephil.charting.data.ScatterDataSet;
+import com.innopia.vital_sync.R;
 import com.innopia.vital_sync.data.ResultVitalSign;
 import com.innopia.vital_sync.data.VitalChartData;
 
@@ -55,6 +56,7 @@ public class ResultActivity extends AppCompatActivity {
             public void onClick(View v) {
                 VitalChartData.START_FILTER_INDEX = 0;
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 getApplicationContext().startActivity(intent);
             }
         });

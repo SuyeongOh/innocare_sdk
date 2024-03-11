@@ -1,4 +1,4 @@
-package com.innopia.vital_sync;
+package com.innopia.vital_sync.analysis;
 
 import android.app.Application;
 import android.content.Context;

@@ -4,14 +4,13 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.View;
 
 import com.google.mediapipe.tasks.components.containers.Detection;
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetectorResult;
-import com.innopia.vital_sync.Config;
+import com.innopia.vital_sync.data.Config;
 import com.innopia.vital_sync.R;
 
 import androidx.annotation.Nullable;

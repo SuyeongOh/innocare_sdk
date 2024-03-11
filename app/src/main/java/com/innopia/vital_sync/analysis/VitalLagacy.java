@@ -1,12 +1,8 @@
-package com.innopia.vital_sync;
+package com.innopia.vital_sync.analysis;
 
 import android.graphics.Bitmap;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
-import android.view.Window;
 
-import com.github.psambit9791.jdsp.misc.UtilMethods;
 import com.github.psambit9791.jdsp.signal.Detrend;
 import com.github.psambit9791.jdsp.signal.Smooth;
 import com.github.psambit9791.jdsp.signal.peaks.FindPeak;
@@ -14,29 +10,23 @@ import com.github.psambit9791.jdsp.signal.peaks.Peak;
 import com.github.psambit9791.jdsp.transform.DiscreteFourier;
 import com.github.psambit9791.jdsp.transform.FastFourier;
 import com.github.psambit9791.jdsp.transform.Hilbert;
+import com.innopia.vital_sync.data.Config;
 import com.innopia.vital_sync.bvp.BandPassFilter;
-import com.innopia.vital_sync.bvp.RppgToolBox;
 import com.innopia.vital_sync.client.VitalClient;
 import com.innopia.vital_sync.data.ResultVitalSign;
 import com.innopia.vital_sync.data.Rppg;
 import com.innopia.vital_sync.data.VitalChartData;
 
 import com.innopia.vital_sync.service.VitalResponse;
-import com.innopia.vital_sync.utils.DoubleUtils;
 import com.paramsen.noise.Noise;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.LongStream;
 
 import jsat.linear.DenseMatrix;
 import jsat.linear.DenseVector;
 import jsat.linear.Matrix;
 import jsat.linear.Vec;
-import retrofit2.Response;
 import uk.me.berndporr.iirj.Butterworth;
 
 import static java.lang.Math.abs;

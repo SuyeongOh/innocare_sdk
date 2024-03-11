@@ -1,8 +1,13 @@
-package com.innopia.vital_sync;
+package com.innopia.vital_sync.activities;
 
 import android.Manifest;
 import android.os.Bundle;
+import android.util.Log;
 
+import com.innopia.vital_sync.data.Config;
+import com.innopia.vital_sync.R;
+import com.innopia.vital_sync.fragments.InitFragment;
+import com.innopia.vital_sync.fragments.LoginFragment;
 import com.innopia.vital_sync.video.VitalTestDataset;
 
 import androidx.annotation.Nullable;
@@ -11,6 +16,7 @@ import androidx.fragment.app.FragmentActivity;
 
 public class MainActivity extends FragmentActivity {
 
+    private Fragment currentFragment;
     private static final String[] LIST_NEW_SDK_PERMISSION = {
             android.Manifest.permission.CAMERA,
             android.Manifest.permission.RECORD_AUDIO,
@@ -35,24 +41,24 @@ public class MainActivity extends FragmentActivity {
             test.runTest();
             //finish();
         }
-        if(Config.FLAG_INNER_TEST){
-            InitFragment fragment = new InitFragment();
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragmentContainerView, fragment)
-                    .commit();
-        }else{
-            InitFragment fragment = new InitFragment();
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragmentContainerView, fragment)
-                    .commit();
-        }
 
+        LoginFragment fragment = new LoginFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragmentContainerView, fragment)
+                    .commit();
+        currentFragment = fragment;
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        getSupportFragmentManager().beginTransaction().remove(currentFragment).commitAllowingStateLoss();
     }
 
     public void replaceFragment(Fragment fragment){
-        getSupportFragmentManager().popBackStack();
+        currentFragment = fragment;
         getSupportFragmentManager().beginTransaction()
-                .add(R.id.fragmentContainerView, fragment)
+                .replace(R.id.fragmentContainerView, fragment)
                 .commit();
     }
     @Override

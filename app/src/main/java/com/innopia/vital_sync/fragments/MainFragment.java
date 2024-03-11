@@ -1,4 +1,4 @@
-package com.innopia.vital_sync;
+package com.innopia.vital_sync.fragments;
 
 import android.app.AlertDialog;
 import android.app.Application;
@@ -44,6 +44,13 @@ import android.widget.TextView;
 import com.google.mediapipe.framework.image.BitmapImageBuilder;
 import com.google.mediapipe.framework.image.MPImage;
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetectorResult;
+import com.innopia.vital_sync.analysis.BpmAnalysisViewModel;
+import com.innopia.vital_sync.data.Config;
+import com.innopia.vital_sync.analysis.EnhanceFaceDetector;
+import com.innopia.vital_sync.analysis.FaceImageModel;
+import com.innopia.vital_sync.R;
+import com.innopia.vital_sync.activities.ResultActivity;
+import com.innopia.vital_sync.analysis.VitalLagacy;
 import com.innopia.vital_sync.camera.AutoFitSurfaceView;
 import com.innopia.vital_sync.camera.CameraSizes;
 import com.innopia.vital_sync.data.Constant;
@@ -118,7 +125,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private boolean isStopPredict = false;
     private boolean calibrationFinish = false;
     private boolean calibrationTimerStart = false;
-    private final Range<Integer> fpsRange = new Range<>(25,Config.TARGET_FRAME);
+    private final Range<Integer> fpsRange = new Range<>(25, Config.TARGET_FRAME);
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -354,7 +361,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                             new Handler(Looper.getMainLooper()).post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Log.d("Vital", "Set Preview");
                                     imageSurfaceView.setImageBitmap(Bitmap
                                             .createScaledBitmap(finalBitmapImage, autoFitSurfaceView.getWidth(), autoFitSurfaceView.getHeight(), false));
                                 }

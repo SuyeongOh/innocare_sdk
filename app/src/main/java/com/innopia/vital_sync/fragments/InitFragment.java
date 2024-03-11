@@ -1,4 +1,4 @@
-package com.innopia.vital_sync;
+package com.innopia.vital_sync.fragments;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -10,6 +10,9 @@ import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.innopia.vital_sync.data.Config;
+import com.innopia.vital_sync.activities.MainActivity;
+import com.innopia.vital_sync.R;
 import com.innopia.vital_sync.data.Constant;
 
 import androidx.annotation.NonNull;
@@ -44,11 +47,12 @@ public class InitFragment extends Fragment {
         serverResponseSwitch = view.findViewById(R.id.init_view_server_switch);
 
         guideTextView.setText(String.format(
-                "-  공백으로 두시면 기본값으로 셋팅됩니다. " +
+                Config.USER_ID + "님 반갑습니다 !\n" +
+                "\n- 공백으로 두시면 기본값으로 셋팅됩니다. " +
                 "\n- 앱하단의 입력확인 버튼을 클릭하시고, " +
                 "\n- 안정적인 조명환경에서 움직이지 말아주세요." +
                 "\n- 기본 bmi : 20.1, frame : 30 " +
-                "\n- ver. 20240306"));
+                "\n- ver. 20240311"));
         return view;
     }
 

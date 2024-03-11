@@ -1,4 +1,4 @@
-package com.innopia.vital_sync;
+package com.innopia.vital_sync.analysis;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
@@ -6,6 +6,7 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.util.Log;
 
+import com.innopia.vital_sync.data.Config;
 import com.innopia.vital_sync.bvp.CalculateVitalByBVP;
 import com.innopia.vital_sync.data.ResultVitalSign;
 
