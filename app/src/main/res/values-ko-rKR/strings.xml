@@ -13,6 +13,7 @@
 \n3. 이 앱은 개인 식별 정보를 수집하지 않습니다.
 \n4. 이 앱은 사용자의 동의가 있는 경우에만 데이터를 수집/전송/저장합니다.
 \n5. 이 앱은 수집된 데이터를 제3자와 공유하지 않습니다.</string>
+    <string name="privacy_policy">개인정보 처리방침</string>
 
     <string name="app_name">VitalSync</string>
     <string name="heart_rate">심박수</string>

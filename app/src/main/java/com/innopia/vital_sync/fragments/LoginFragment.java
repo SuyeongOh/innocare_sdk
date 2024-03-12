@@ -1,12 +1,15 @@
 package com.innopia.vital_sync.fragments;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -18,15 +21,26 @@ import com.innopia.vital_sync.service.LoginRequest;
 import com.innopia.vital_sync.service.LoginResponse;
 import com.innopia.vital_sync.ui.CommonPopupView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
 public class LoginFragment extends Fragment implements LoginClient.LoginResponseListener {
 
+    private static final String USER_ID_KEY = "userID";
     private EditText userIdEditText;
     private Button loginButton;
     private Button guestButton;
     private ProgressBar loadingView;
     private CommonPopupView popupView;
+    private CommonPopupView webviewPopupView;
+    private TextView privacyPolicyView;
+    private WebView privacyWebView;
+    private ImageButton webviewCloseButton;
+    private SharedPreferences loginCookie;
+
     public LoginFragment() {
-        // Required empty public constructor
+
     }
 
     @Override
@@ -40,6 +54,14 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
         loginButton = view.findViewById(R.id.view_login_button);
         guestButton = view.findViewById(R.id.view_login_guest_button);
         loadingView = view.findViewById(R.id.view_login_loading);
+        privacyPolicyView = view.findViewById(R.id.view_login_policy);
+
+        View viewWebViewContainer = inflater.inflate(R.layout.view_webview_container,container, false);
+        privacyWebView = viewWebViewContainer.findViewById(R.id.view_webview);
+        privacyWebView.getSettings().setJavaScriptEnabled(true);
+        privacyWebView.loadUrl(Config.PRIVACY_POLICY);
+        webviewCloseButton = viewWebViewContainer.findViewById(R.id.view_webview_close);
+        webviewPopupView = new CommonPopupView(requireContext(), viewWebViewContainer);
 
         View viewNoDetectionPopup = inflater.inflate(R.layout.layout_detection_popup, container, false);
         TextView popupTextView = viewNoDetectionPopup.findViewById(R.id.text_face_popup);
@@ -66,7 +88,32 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
                 loginGuest();
             }
         });
+
+        privacyPolicyView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //개인정보 처리방침 webview
+                webviewPopupView.show();
+            }
+        });
+        webviewCloseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                webviewPopupView.dismiss();
+            }
+        });
         return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        loginCookie = getContext().getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+        String id = loginCookie.getString(USER_ID_KEY, "");
+        if(!id.equals("")){
+            userIdEditText.setHint("");
+            userIdEditText.setText(id);
+        }
     }
 
     private void login() {
@@ -83,9 +130,12 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
 
     @Override
     public void onSuccess(LoginResponse response) {
-        //Loading View Stop
         loadingView.setVisibility(View.GONE);
-        Config.USER_ID = userIdEditText.getText().toString();
+        String inputID = userIdEditText.getText().toString();
+        if(!Config.USER_ID.equals(inputID)){
+            saveID(Config.USER_ID);
+        }
+        Config.USER_ID = inputID;
         loginGuest();
     }
 
@@ -94,5 +144,11 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
         //Alert Dialog
         loadingView.setVisibility(View.GONE);
         popupView.show();
+    }
+
+    public void saveID(String ID){
+        SharedPreferences.Editor editor = loginCookie.edit();
+        editor.putString(USER_ID_KEY, ID);
+        editor.apply();
     }
 }

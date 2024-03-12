@@ -28,6 +28,7 @@ public class Config {
     public static boolean SERVER_RESPONSE_MODE = false;
     public static final int FACE_MODEL_SIZE = 72;
 
+    public static final String PRIVACY_POLICY = "https://sites.google.com/view/kwangkeelee-privacy/%ED%99%88";
     public static String LOCAL_SERVER_ADDRESS = "http://35.220.206.239:1024/";
     public static String USER_ID = "Guest";
 }

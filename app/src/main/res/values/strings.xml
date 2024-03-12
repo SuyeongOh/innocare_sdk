@@ -13,6 +13,7 @@
 \n3. This app does not collect any personally identifiable information.
 \n4. This app collects\/transmits\/stores data only with the user\'s consent.
 \n5. This app does not share any collected data with any third parties.</string>
+    <string name="privacy_policy">Privacy Policy</string>
 
     <string name="app_name">VitalSync</string>
     <string name="heart_rate">심박수</string>

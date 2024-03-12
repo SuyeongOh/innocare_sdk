@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="10dp"
@@ -79,5 +80,19 @@
         app:layout_constraintTop_toBottomOf="@id/view_login_button"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
+
+    <TextView
+        android:id="@+id/view_login_policy"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:textAlignment="center"
+        android:gravity="center"
+        android:layout_marginTop="20dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:textSize="20sp"
+        android:background="@drawable/text_selector_policy"
+        app:layout_constraintTop_toBottomOf="@id/view_login_guest_button"
+        android:text="@string/privacy_policy"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
