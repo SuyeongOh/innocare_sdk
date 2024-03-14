@@ -9,6 +9,7 @@ import android.widget.Button;
 import com.innopia.vital_sync.R;
 import com.innopia.vital_sync.activities.ResultActivity;
 import com.innopia.vital_sync.data.Config;
+import com.innopia.vital_sync.data.ResultVitalSign;
 import com.innopia.vital_sync.ui.GtAdapter;
 
 import java.util.Arrays;
@@ -43,10 +44,12 @@ public class GtinputFragment extends Fragment {
                 for(int i = 0; i < adapter.getItemCount(); i++){
                     HashMap<String, String> inputData = adapter.getDataMap();
 
+                    ResultVitalSign gtData = new ResultVitalSign();
+
+
                     for(String label : Config.GT_LABEL_LIST){
                         String data = inputData.get(label);
                         //TODO GT : label+data+measureTime
-
                     }
                 }
                 ResultActivity activity = (ResultActivity) getActivity();

@@ -40,8 +40,8 @@ public class PureDataset {
         analysis.subject_id = id;
         analysis.slice_id = slice;
         analysis.label_ibi_hr = ResultVitalSign.vitalSignData.IBI_HR;
-        analysis.label_fft_hr = ResultVitalSign.vitalSignData.HR_result;
-        analysis.label_ibi_hrv = ResultVitalSign.vitalSignData.sdnn_result;
+        analysis.label_fft_hr = ResultVitalSign.vitalSignData.HR;
+        analysis.label_ibi_hrv = ResultVitalSign.vitalSignData.HRV;
         analysis.label_ibi_mean = ResultVitalSign.vitalSignData.IBI_mean;
         calculateError(analysis);
     }

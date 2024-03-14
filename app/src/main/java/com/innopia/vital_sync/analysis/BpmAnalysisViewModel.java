@@ -6,13 +6,15 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 
+import com.innopia.vital_sync.data.ResultVitalSign;
+
 public class BpmAnalysisViewModel extends AndroidViewModel {
     private Vital vital;
     private Context mContext;
 
     public BpmAnalysisViewModel(@NonNull Application application, Context context) {
         super(application);
-        vital = new Vital(context);
+        vital = new Vital();
         mContext = context;
     }
 
@@ -21,13 +23,11 @@ public class BpmAnalysisViewModel extends AndroidViewModel {
     }
 
     private boolean calculateAnalysis(@NonNull FaceImageModel faceImageModel){
-        return vital.calculatePOSVital(faceImageModel, true);
+        ResultVitalSign.vitalSignData = Vital.toResultVitalSign(vital.calculateVital(faceImageModel));
+        return ResultVitalSign.vitalSignData.SBP != 0;
     }
 
     public void clearAnalysis(){
         vital.clearAnalysis();
-    }
-    public Vital getVital() {
-        return vital;
     }
 }

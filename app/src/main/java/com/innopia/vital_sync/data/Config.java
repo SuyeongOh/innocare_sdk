@@ -33,6 +33,6 @@ public class Config {
     public static String USER_ID = "Guest";
 
     public static final String[] GT_LABEL_LIST = new String[]{
-            "HR", "RR", "HRV", "SpO2", "LF/HF", "SBP", "DBP"
+            "HR", "RR", "HRV", "SpO2", "LF_HF_ratio", "SBP", "DBP"
     };
 }

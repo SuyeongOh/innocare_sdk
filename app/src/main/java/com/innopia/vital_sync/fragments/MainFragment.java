@@ -50,7 +50,7 @@ import com.innopia.vital_sync.analysis.EnhanceFaceDetector;
 import com.innopia.vital_sync.analysis.FaceImageModel;
 import com.innopia.vital_sync.R;
 import com.innopia.vital_sync.activities.ResultActivity;
-import com.innopia.vital_sync.analysis.VitalLagacy;
+import com.innopia.vital_sync.analysis.Vital;
 import com.innopia.vital_sync.camera.AutoFitSurfaceView;
 import com.innopia.vital_sync.camera.CameraSizes;
 import com.innopia.vital_sync.data.Constant;
@@ -383,7 +383,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                             }
                             inputImage.close();
 
-                            updateProgressBar(sNthFrame/(VitalLagacy.BUFFER_SIZE / 100));
+                            updateProgressBar(sNthFrame/(Vital.BUFFER_SIZE / 100));
 
                             if(isFixedFace){
                                 Bitmap faceImage;
@@ -399,7 +399,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                 sNthFrame ++;
                                 if(isFinishAnalysis){
                                     if(Config.FLAG_INNER_TEST){
-                                        if (sNthFrame % VitalLagacy.BUFFER_SIZE == 0) {
+                                        if (sNthFrame % Vital.BUFFER_SIZE == 0) {
                                             updateVitalSignValue();
                                         }
                                         new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -575,24 +575,24 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
             @Override
             public void run() {
                 hrValueView.setText(
-                        Math.round(ResultVitalSign.vitalSignServerData.HR_result) + "/" +
-                        String.valueOf(Math.round(ResultVitalSign.vitalSignData.HR_result))
+                        Math.round(ResultVitalSign.vitalSignServerData.HR) + "/" +
+                        String.valueOf(Math.round(ResultVitalSign.vitalSignData.HR))
                 );
                 rrValueView.setText(
-                        Math.round(ResultVitalSign.vitalSignServerData.RR_result) + "/" +
-                        String.valueOf(Math.round(ResultVitalSign.vitalSignData.RR_result))
+                        Math.round(ResultVitalSign.vitalSignServerData.RR) + "/" +
+                        String.valueOf(Math.round(ResultVitalSign.vitalSignData.RR))
                 );
                 sdnnValueView.setText(
-                        Math.round(ResultVitalSign.vitalSignServerData.sdnn_result) + "/" +
-                        String.valueOf(Math.round(ResultVitalSign.vitalSignData.sdnn_result))
+                        Math.round(ResultVitalSign.vitalSignServerData.HRV) + "/" +
+                        String.valueOf(Math.round(ResultVitalSign.vitalSignData.HRV))
                 );
                 stressValueView.setText(
-                        ResultVitalSign.vitalSignServerData.LF_HF_ratio + "/n" +
-                        String.valueOf(ResultVitalSign.vitalSignData.LF_HF_ratio)
+                        ResultVitalSign.vitalSignServerData.STRESS + "/n" +
+                        String.valueOf(ResultVitalSign.vitalSignData.STRESS)
                 );
                 spo2ValueView.setText(
-                        Math.round(ResultVitalSign.vitalSignServerData.spo2_result) + "/" +
-                        String.valueOf(Math.round(ResultVitalSign.vitalSignData.spo2_result))
+                        Math.round(ResultVitalSign.vitalSignServerData.SpO2) + "/" +
+                        String.valueOf(Math.round(ResultVitalSign.vitalSignData.SpO2))
                 );
 //                sbpValueView.setText(
 //                        Math.round(ResultVitalSign.vitalSignServerData.SBP) + "/" +

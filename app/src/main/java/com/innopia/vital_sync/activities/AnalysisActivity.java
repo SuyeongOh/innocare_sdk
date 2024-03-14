@@ -20,7 +20,7 @@ import com.github.psambit9791.jdsp.signal.Smooth;
 import com.github.psambit9791.jdsp.transform.DiscreteFourier;
 import com.innopia.vital_sync.data.Config;
 import com.innopia.vital_sync.R;
-import com.innopia.vital_sync.analysis.VitalLagacy;
+import com.innopia.vital_sync.analysis.Vital;
 import com.innopia.vital_sync.bvp.BandPassFilter;
 import com.innopia.vital_sync.bvp.ModuleName;
 import com.innopia.vital_sync.data.VitalChartData;
@@ -152,11 +152,11 @@ public class AnalysisActivity extends AppCompatActivity {
         return fft_r.getMagnitude(true);
     }
     public double getHr(double[] signalFFT){
-        int frame = VitalLagacy.VIDEO_FRAME_RATE;
+        int frame = Vital.VIDEO_FRAME_RATE;
         ArrayList<Double> hr_signal = new ArrayList<>();
         int max_index = 0;
         float max_val = 0;
-        float frequency_interval = VitalLagacy.VIDEO_FRAME_RATE / (float)(signalFFT.length * 2);
+        float frequency_interval = Vital.VIDEO_FRAME_RATE / (float)(signalFFT.length * 2);
         VitalChartData.FREQUENCY_INTERVAL = frequency_interval;
         VitalChartData.FRAME_RATE = frame;
         Log.d("Juptier", "frame rate : " + frame);
