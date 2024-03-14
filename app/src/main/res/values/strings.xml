@@ -15,6 +15,11 @@
 \n5. This app does not share any collected data with any third parties.</string>
     <string name="privacy_policy">Privacy Policy</string>
 
+    <!--ui text-->
+    <string name="enter">Input</string>
+    <string name="gt_header">Reference Result</string>
+
+    <!--Measure View -->
     <string name="app_name">VitalSync</string>
     <string name="heart_rate">심박수</string>
     <string name="heart_rate_unit">bpm</string>

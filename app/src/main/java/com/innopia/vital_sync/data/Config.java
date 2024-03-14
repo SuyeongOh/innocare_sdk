@@ -31,4 +31,8 @@ public class Config {
     public static final String PRIVACY_POLICY = "https://sites.google.com/view/kwangkeelee-privacy/%ED%99%88";
     public static String LOCAL_SERVER_ADDRESS = "http://35.220.206.239:1024/";
     public static String USER_ID = "Guest";
+
+    public static final String[] GT_LABEL_LIST = new String[]{
+            "HR", "RR", "HRV", "SpO2", "LF/HF", "SBP", "DBP"
+    };
 }

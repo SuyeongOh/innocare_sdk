@@ -2,6 +2,7 @@ package com.innopia.vital_sync.service;
 
 public class VitalResponse {
    public double hr;
+   public double ibi_hr;
    public double hrv;
    public double rr;
    public double spo2;
@@ -9,6 +10,7 @@ public class VitalResponse {
    public double bp;
    public double sbp;
    public double dbp;
+   public long time;
    public int status;
    public String message;
 }

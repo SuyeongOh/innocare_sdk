@@ -3,6 +3,7 @@ package com.innopia.vital_sync.client;
 import android.util.Log;
 
 import com.innopia.vital_sync.data.Config;
+import com.innopia.vital_sync.data.ResultVitalSign;
 import com.innopia.vital_sync.service.VitalRequest;
 import com.innopia.vital_sync.service.VitalResponse;
 import com.innopia.vital_sync.service.VitalService;
@@ -39,13 +40,13 @@ public class VitalClient {
         return instance;
     }
 
-    public Response<VitalResponse> requestSyncAnalysis(double[][] RGB){
+    public Response<VitalResponse> requestSyncAnalysis(double[][] RGB, long measureTime){
         // 서비스 인터페이스 생성
         // 비동기적으로 POST 요청 보내기
         Response<VitalResponse> response = null;
         try{
             response = retrofit.create(VitalService.class)
-                    .postVitalAll(new VitalRequest(RGB, "innopiatech"))
+                    .postVitalAll(new VitalRequest(RGB, measureTime, Config.USER_ID))
                     .execute();
         }catch (Exception e){
             e.printStackTrace();
@@ -57,11 +58,11 @@ public class VitalClient {
     }
 
 
-    public void requestAnalysis(double[][] RGB){
+    public void requestAnalysis(double[][] RGB, long measureTime){
         // 서비스 인터페이스 생성
         // 비동기적으로 POST 요청 보내기
         retrofit.create(VitalService.class)
-                .postVitalAll(new VitalRequest(RGB, "innopiatech"))
+                .postVitalAll(new VitalRequest(RGB, measureTime, Config.USER_ID))
                 .enqueue(new Callback<VitalResponse>() {
                     @Override
                     public void onResponse(Call<VitalResponse> call, Response<VitalResponse> response) {
@@ -85,11 +86,11 @@ public class VitalClient {
         Log.d("vital", "Ready to Reqeust :: " + Config.LOCAL_SERVER_ADDRESS);
     }
 
-    public void requestHr(double[][] RGB, String mode){
+    public void requestHr(double[][] RGB, long measureTime, String mode){
         // 서비스 인터페이스 생성
         // 비동기적으로 POST 요청 보내기
         retrofit.create(VitalService.class)
-                .postVitalHr(new VitalRequest(RGB, "innopiatech"))
+                .postVitalHr(new VitalRequest(RGB, measureTime, Config.USER_ID))
                 .enqueue(new Callback<VitalResponse>() {
                     @Override
                     public void onResponse(Call<VitalResponse> call, Response<VitalResponse> response) {
@@ -113,11 +114,11 @@ public class VitalClient {
         Log.d("vital", "Ready to Reqeust :: " + Config.LOCAL_SERVER_ADDRESS);
     }
 
-    public void requestHrv(double[][] RGB, String mode){
+    public void requestHrv(double[][] RGB, long measureTime, String mode){
         // 서비스 인터페이스 생성
         // 비동기적으로 POST 요청 보내기
         retrofit.create(VitalService.class)
-                .postVitalHrv(new VitalRequest(RGB, "innopiatech"))
+                .postVitalHrv(new VitalRequest(RGB, measureTime, Config.USER_ID))
                 .enqueue(new Callback<VitalResponse>() {
                     @Override
                     public void onResponse(Call<VitalResponse> call, Response<VitalResponse> response) {
@@ -139,38 +140,11 @@ public class VitalClient {
 
         Log.d("vital", "Ready to Reqeust :: " + Config.LOCAL_SERVER_ADDRESS);
     }
-    public void requestRr(double[][] RGB, String mode){
+    public void requestRr(double[][] RGB, long measureTime, String mode){
         // 서비스 인터페이스 생성
         // 비동기적으로 POST 요청 보내기
         retrofit.create(VitalService.class)
-                .postVitalRr(new VitalRequest(RGB, "innopiatech"))
-                .enqueue(new Callback<VitalResponse>() {
-                    @Override
-                    public void onResponse(Call<VitalResponse> call, Response<VitalResponse> response) {
-                        if (response.isSuccessful()) {
-                            // 성공적으로 응답 받음
-                            VitalResponse vitalResponse = response.body();
-
-                        } else {
-                            // 오류 응답 처리
-                            System.out.println("Error: " + response.errorBody());
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<VitalResponse> call, Throwable t) {
-                        // 네트워크 오류 등의 이유로 요청 실패
-                        System.out.println("Failed to make request: " + t.getMessage());
-                    }
-                });
-
-        Log.d("vital", "Ready to Reqeust :: " + Config.LOCAL_SERVER_ADDRESS);
-    }
-    public void requestSpo2(double[][] RGB, String mode){
-        // 서비스 인터페이스 생성
-        // 비동기적으로 POST 요청 보내기
-        retrofit.create(VitalService.class)
-                .postVitalSpo2(new VitalRequest(RGB, "innopiatech"))
+                .postVitalRr(new VitalRequest(RGB, measureTime, Config.USER_ID))
                 .enqueue(new Callback<VitalResponse>() {
                     @Override
                     public void onResponse(Call<VitalResponse> call, Response<VitalResponse> response) {
@@ -193,11 +167,11 @@ public class VitalClient {
 
         Log.d("vital", "Ready to Reqeust :: " + Config.LOCAL_SERVER_ADDRESS);
     }
-    public void requestStress(double[][] RGB, String mode){
+    public void requestSpo2(double[][] RGB, long measureTime, String mode){
         // 서비스 인터페이스 생성
         // 비동기적으로 POST 요청 보내기
         retrofit.create(VitalService.class)
-                .postVitalStress(new VitalRequest(RGB, "innopiatech"))
+                .postVitalSpo2(new VitalRequest(RGB, measureTime, Config.USER_ID))
                 .enqueue(new Callback<VitalResponse>() {
                     @Override
                     public void onResponse(Call<VitalResponse> call, Response<VitalResponse> response) {
@@ -220,11 +194,38 @@ public class VitalClient {
 
         Log.d("vital", "Ready to Reqeust :: " + Config.LOCAL_SERVER_ADDRESS);
     }
-    public void requestBp(double[][] RGB, String mode){
+    public void requestStress(double[][] RGB, long measureTime, String mode){
         // 서비스 인터페이스 생성
         // 비동기적으로 POST 요청 보내기
         retrofit.create(VitalService.class)
-                .postVitalBp(new VitalRequest(RGB, "innopiatech"))
+                .postVitalStress(new VitalRequest(RGB, measureTime, Config.USER_ID))
+                .enqueue(new Callback<VitalResponse>() {
+                    @Override
+                    public void onResponse(Call<VitalResponse> call, Response<VitalResponse> response) {
+                        if (response.isSuccessful()) {
+                            // 성공적으로 응답 받음
+                            VitalResponse vitalResponse = response.body();
+
+                        } else {
+                            // 오류 응답 처리
+                            System.out.println("Error: " + response.errorBody());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<VitalResponse> call, Throwable t) {
+                        // 네트워크 오류 등의 이유로 요청 실패
+                        System.out.println("Failed to make request: " + t.getMessage());
+                    }
+                });
+
+        Log.d("vital", "Ready to Reqeust :: " + Config.LOCAL_SERVER_ADDRESS);
+    }
+    public void requestBp(double[][] RGB, long measureTime, String mode){
+        // 서비스 인터페이스 생성
+        // 비동기적으로 POST 요청 보내기
+        retrofit.create(VitalService.class)
+                .postVitalBp(new VitalRequest(RGB, measureTime, Config.USER_ID))
                 .enqueue(new Callback<VitalResponse>() {
                     @Override
                     public void onResponse(Call<VitalResponse> call, Response<VitalResponse> response) {

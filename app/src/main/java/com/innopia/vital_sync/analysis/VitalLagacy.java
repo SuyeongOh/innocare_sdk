@@ -64,16 +64,17 @@ public class VitalLagacy {
     private int bpm_buffer_index = 0;
 
     public Rppg rPPG = new Rppg(BUFFER_SIZE);
+
     public Result calculateVital(FaceImageModel model) throws IllegalArgumentException {
-        if(pixelIndex == 0) firstFrameTime = model.frameUtcTimeMs;
+        if (pixelIndex == 0) firstFrameTime = model.frameUtcTimeMs;
 
         rPPG.frameTimeArray[bufferIndex] = model.frameUtcTimeMs;
         Bitmap bitmap = model.bitmap;
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
-        float totalPixel = (float)width * height;
+        float totalPixel = (float) width * height;
         float totalR = 0, totalG = 0, totalB = 0;
-        for(int i = 0 ; i < width; i++) {
+        for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
                 int pixels_buffer = bitmap.getPixel(i, j);
 
@@ -90,14 +91,14 @@ public class VitalLagacy {
         totalG = totalG / totalPixel;
         totalB = totalB / totalPixel;
 
-        rPPG.f_pixel_buff[0][bufferIndex]= totalR;
-        rPPG.f_pixel_buff[1][bufferIndex]= totalG;
-        rPPG.f_pixel_buff[2][bufferIndex]= totalB;
+        rPPG.f_pixel_buff[0][bufferIndex] = totalR;
+        rPPG.f_pixel_buff[1][bufferIndex] = totalG;
+        rPPG.f_pixel_buff[2][bufferIndex] = totalB;
 
         if (bufferIndex == BUFFER_SIZE - 1) {
             VitalChartData.frameTimeArray = rPPG.frameTimeArray;
             lastFrameTime = model.frameUtcTimeMs;
-            VIDEO_FRAME_RATE = (int)(1000 / ((float)((lastFrameTime - firstFrameTime) / (float)pixelIndex)));
+            VIDEO_FRAME_RATE = (int) (1000 / ((float) ((lastFrameTime - firstFrameTime) / (float) pixelIndex)));
             double[] pre_processed = preprocessing_omit(rPPG.f_pixel_buff);
             VitalChartData.FFT_SIGNAL = pre_processed;
             rPPG.lastHrSignal = pre_processed;
@@ -107,16 +108,15 @@ public class VitalLagacy {
             Log.d("BPM", "RR : " + lastResult.RR_result);
 
 
-
             //--------SDNN --------------------//
             lastResult.sdnn_result = HRV_IBI(rPPG.lastBvpSignal, rPPG, lastResult.HR_result);
             lastResult.sdnn_result = Math.round(lastResult.sdnn_result);
             //--------SDNN --------------------//
-            lastResult.LF_HF_ratio = LF_HF_ratio(pre_processed,BUFFER_SIZE);
+            lastResult.LF_HF_ratio = LF_HF_ratio(pre_processed, BUFFER_SIZE);
 
             Log.d("vital", String.format(
                     "HR : %f, hrv : %f"
-            ,lastResult.HR_result, lastResult.sdnn_result));
+                    , lastResult.HR_result, lastResult.sdnn_result));
 
             try {
                 lastResult.spo2_result = spo2(rPPG.f_pixel_buff[0], rPPG.f_pixel_buff[2], VIDEO_FRAME_RATE);
@@ -128,48 +128,49 @@ public class VitalLagacy {
             double[] avg = get_peak_avg(VitalChartData.DETREND_SIGNAL, lastResult.HR_result);
             double peak_avg = avg[0];
             double valley_avg = avg[1];
-            Log.d("BP",""+peak_avg+":"+valley_avg);
+            Log.d("BP", "" + peak_avg + ":" + valley_avg);
             double bmi = Config.USER_BMI;
 
-            if(bmi == 0) bmi = 20.1f;
+            if (bmi == 0) bmi = 20.1f;
 
             //원래는 23.7889
             lastResult.SBP = 23.7889 + (95.4335 * peak_avg) + (4.5958 * bmi) - (5.109 * peak_avg * bmi);
             lastResult.DBP = -17.3772 - (115.1747 * valley_avg) + (4.0251 * bmi) + (5.2825 * valley_avg * bmi);
             lastResult.BP = lastResult.SBP * 0.33 + lastResult.DBP * 0.66;
 
+            long measureTime = System.currentTimeMillis();
             //Web server prototype
-           if(!Config.SERVER_RESPONSE_MODE){
-               VitalClient.getInstance().requestAnalysis(rPPG.f_pixel_buff);
-           } else{
-               VitalResponse response = VitalClient.getInstance().requestSyncAnalysis(rPPG.f_pixel_buff).body();
-               if(response != null){
-                   ResultVitalSign.vitalSignServerData.HR_result = response.hr;
-                   ResultVitalSign.vitalSignServerData.RR_result = response.rr;
-                   ResultVitalSign.vitalSignServerData.sdnn_result = response.hrv;
-                   ResultVitalSign.vitalSignServerData.spo2_result = response.spo2;
-                   ResultVitalSign.vitalSignServerData.LF_HF_ratio = (float)response.stress;
-                   ResultVitalSign.vitalSignServerData.SBP = response.sbp;
-                   ResultVitalSign.vitalSignServerData.DBP = response.dbp;
-                   ResultVitalSign.vitalSignServerData.BP = response.bp;
-               } else{
-                   ResultVitalSign.vitalSignServerData.HR_result = 0;
-                   ResultVitalSign.vitalSignServerData.RR_result = 0;
-                   ResultVitalSign.vitalSignServerData.sdnn_result = 0;
-                   ResultVitalSign.vitalSignServerData.spo2_result = 0;
-                   ResultVitalSign.vitalSignServerData.LF_HF_ratio = 0;
-                   ResultVitalSign.vitalSignServerData.SBP = 0;
-                   ResultVitalSign.vitalSignServerData.DBP = 0;
-                   ResultVitalSign.vitalSignServerData.BP = 0;
-               }
-           }
+            if (!Config.SERVER_RESPONSE_MODE) {
+                VitalClient.getInstance().requestAnalysis(rPPG.f_pixel_buff, measureTime);
+            } else {
+                VitalResponse response = VitalClient.getInstance().requestSyncAnalysis(rPPG.f_pixel_buff, measureTime).body();
+                if (response != null) {
+                    ResultVitalSign.vitalSignServerData.HR_result = response.hr;
+                    ResultVitalSign.vitalSignServerData.RR_result = response.rr;
+                    ResultVitalSign.vitalSignServerData.sdnn_result = response.hrv;
+                    ResultVitalSign.vitalSignServerData.spo2_result = response.spo2;
+                    ResultVitalSign.vitalSignServerData.LF_HF_ratio = (float) response.stress;
+                    ResultVitalSign.vitalSignServerData.SBP = response.sbp;
+                    ResultVitalSign.vitalSignServerData.DBP = response.dbp;
+                    ResultVitalSign.vitalSignServerData.BP = response.bp;
+                } else {
+                    ResultVitalSign.vitalSignServerData.HR_result = 0;
+                    ResultVitalSign.vitalSignServerData.RR_result = 0;
+                    ResultVitalSign.vitalSignServerData.sdnn_result = 0;
+                    ResultVitalSign.vitalSignServerData.spo2_result = 0;
+                    ResultVitalSign.vitalSignServerData.LF_HF_ratio = 0;
+                    ResultVitalSign.vitalSignServerData.SBP = 0;
+                    ResultVitalSign.vitalSignServerData.DBP = 0;
+                    ResultVitalSign.vitalSignServerData.BP = 0;
+                }
+            }
         }
         bufferIndex = (bufferIndex + 1) % BUFFER_SIZE;
         pixelIndex++;
         return lastResult;
     }
 
-    public double[] preprocessing_omit(double[][] pixel){
+    public double[] preprocessing_omit(double[][] pixel) {
         //pixel = setRGB.setRGB();
         VitalChartData.R_SIGNAL = pixel[0];
         VitalChartData.G_SIGNAL = pixel[1];
@@ -186,7 +187,7 @@ public class VitalLagacy {
 
         //Time Smoothing
         double[] timeToDouble = new double[rPPG.frameTimeArray.length];
-        for(int i = 0; i < timeToDouble.length; i++){
+        for (int i = 0; i < timeToDouble.length; i++) {
             timeToDouble[i] = rPPG.frameTimeArray[i];
         }
         rPPG.frameDoubleTimeArray = new Smooth(timeToDouble, 4, "rectangular").smoothSignal();
@@ -221,7 +222,7 @@ public class VitalLagacy {
         BandPassFilter bpf_rr = new BandPassFilter(Config.MAX_RR_FREQUENCY, Config.MIN_RR_FREQUENCY);
         double[] bpf_hr_signal = new double[d_g.length];
         double[] bpf_rr_signal = new double[d_g.length];
-        for(int i = 1; i < d_g.length; i++){
+        for (int i = 1; i < d_g.length; i++) {
             bpf_hr_signal[i] = bpf_hr.filter(d_g[i], rPPG.frameTimeArray[i] - rPPG.frameTimeArray[i - 1]);
             bpf_rr_signal[i] = bpf_rr.filter(d_g[i], rPPG.frameTimeArray[i] - rPPG.frameTimeArray[i - 1]);
         }
@@ -291,10 +292,10 @@ public class VitalLagacy {
 //        return fft.getMagnitude(true);
 //    }
 
-    public double[] get_peak_avg(double[] signalG, double hr){ // flag 0 : vally 1 : peak
+    public double[] get_peak_avg(double[] signalG, double hr) { // flag 0 : vally 1 : peak
 
-        int minWindowSize = (int)(VIDEO_FRAME_RATE * 60 / hr * 0.8);
-        int maxWindowSize = (int)(VIDEO_FRAME_RATE * 60 / hr * 1.2);
+        int minWindowSize = (int) (VIDEO_FRAME_RATE * 60 / hr * 0.8);
+        int maxWindowSize = (int) (VIDEO_FRAME_RATE * 60 / hr * 1.2);
 
         ArrayList<Integer> peakArray = new ArrayList<>();
         ArrayList<Double> peakPower = new ArrayList<>();
@@ -306,22 +307,22 @@ public class VitalLagacy {
         FindPeak peak = new FindPeak(slice);
         int[] WindowArray = peak.detectRelativeMaxima();
 
-        for(int i = 0; i < WindowArray.length; i ++ ){
-            if(signalG[0] < signalG[WindowArray[i]]){
+        for (int i = 0; i < WindowArray.length; i++) {
+            if (signalG[0] < signalG[WindowArray[i]]) {
                 firstIndex = i;
             }
         }
 
         peakArray.add(firstIndex);
 
-        if(!(firstIndex == 1 || firstIndex == 0)){
+        if (!(firstIndex == 1 || firstIndex == 0)) {
             firstIndex = firstIndex - 2;
         }
         slice = Arrays.copyOfRange(signalG, firstIndex, signalG.length - 1);
         peak = new FindPeak(slice);
         WindowArray = peak.detectPeaks().filterByPeakDistance(minWindowSize);
 
-        for(int peakIndex : WindowArray){
+        for (int peakIndex : WindowArray) {
             int realIndex = peakIndex + firstIndex;
             peakArray.add(realIndex);
             peakPower.add(signalG[realIndex]);
@@ -329,20 +330,20 @@ public class VitalLagacy {
 
         //valley detect
 
-        for(int i = 1; i < peakArray.size(); i++){
+        for (int i = 1; i < peakArray.size(); i++) {
             double[] targetArray;
-            try{
+            try {
                 targetArray = Arrays.copyOfRange(signalG, peakArray.get(i - 1), peakArray.get(i));
-            } catch (Exception e){
+            } catch (Exception e) {
                 continue;
             }
 
             FindPeak findValley = new FindPeak(targetArray);
             int[] valleys = findValley.detectRelativeMinima();
-            if(valleys.length == 0) continue;
+            if (valleys.length == 0) continue;
             int minIndex = valleys[0];
-            for(int j = 0; j < valleys.length; j++){
-                if(targetArray[minIndex] > targetArray[valleys[j]]){
+            for (int j = 0; j < valleys.length; j++) {
+                if (targetArray[minIndex] > targetArray[valleys[j]]) {
                     minIndex = j;
                 }
             }
@@ -364,20 +365,20 @@ public class VitalLagacy {
         ArrayList<Double> hr_signal = new ArrayList<>();
         int max_index = 0;
         float max_val = 0;
-        float frequency_interval = VIDEO_FRAME_RATE / (float)(real_dft.length * 2);
+        float frequency_interval = VIDEO_FRAME_RATE / (float) (real_dft.length * 2);
         VitalChartData.FREQUENCY_INTERVAL = frequency_interval;
         VitalChartData.FRAME_RATE = VIDEO_FRAME_RATE;
-        for( int i =0 ; i < real_dft.length ; i++){
-            if(i * frequency_interval < 0.75)
+        for (int i = 0; i < real_dft.length; i++) {
+            if (i * frequency_interval < 0.75)
                 continue;
-            else if( i * frequency_interval > 2.5){
+            else if (i * frequency_interval > 2.5) {
                 break;
-            } else{
-                if(VitalChartData.START_FILTER_INDEX == 0){
+            } else {
+                if (VitalChartData.START_FILTER_INDEX == 0) {
                     VitalChartData.START_FILTER_INDEX = i;
                 }
                 hr_signal.add(real_dft[i]);
-                if( real_dft[i] > max_val ) {
+                if (real_dft[i] > max_val) {
                     max_val = (float) real_dft[i];
                     max_index = i;
                 }
@@ -385,11 +386,12 @@ public class VitalLagacy {
         }
 
         VitalChartData.HR_SIGNAL = new double[hr_signal.size()];
-        for(int i = 0; i < hr_signal.size(); i++){
+        for (int i = 0; i < hr_signal.size(); i++) {
             VitalChartData.HR_SIGNAL[i] = hr_signal.get(i);
         }
         return max_index * frequency_interval * 60;
     }
+
     public float get_RR(double[] rrSignal) {
         int max_index = 0;
         float max_val = 0;
@@ -398,15 +400,14 @@ public class VitalLagacy {
         fft.transform();
         double[] rrFFT = fft.getMagnitude(true);
 
-        float frequency_interval = 10 / (float)rrFFT.length;
-        for( int i =0 ; i < rrFFT.length ; i++){
-            if( i * frequency_interval < 0.18 )
+        float frequency_interval = 10 / (float) rrFFT.length;
+        for (int i = 0; i < rrFFT.length; i++) {
+            if (i * frequency_interval < 0.18)
                 continue;
-            else if( i * frequency_interval > 0.5){
+            else if (i * frequency_interval > 0.5) {
                 break;
-            }
-            else{
-                if( rrFFT[i] > max_val ) {
+            } else {
+                if (rrFFT[i] > max_val) {
                     max_val = (float) rrFFT[i];
                     max_index = i;
                 }
@@ -415,27 +416,27 @@ public class VitalLagacy {
         return max_index * frequency_interval * 48;
     }
 
-    public float LF_HF_ratio(double[] real_dft,int buff_size){
+    public float LF_HF_ratio(double[] real_dft, int buff_size) {
 
         float LF = 0.0f;
         float HF = 0.0f;
-        float filter_interval = VIDEO_FRAME_RATE / (float)buff_size;
-        for( int i =0 ; i < real_dft.length ; i++){
-            if( 0.8<= i * filter_interval && i * filter_interval < 1.5)
+        float filter_interval = VIDEO_FRAME_RATE / (float) buff_size;
+        for (int i = 0; i < real_dft.length; i++) {
+            if (0.8 <= i * filter_interval && i * filter_interval < 1.5)
                 LF += real_dft[i]; //1을 저장공간으로 사용
-            else if( 1.5<= i * filter_interval && i * filter_interval <=4.0)
+            else if (1.5 <= i * filter_interval && i * filter_interval <= 4.0)
                 HF += real_dft[i]; //1을 저장공간으로 사용
         }
-        return LF/HF;
+        return LF / HF;
     }
 
-    public double HRV_IBI(double[] signalG, Rppg rppg, double hr){
+    public double HRV_IBI(double[] signalG, Rppg rppg, double hr) {
         double hrv = 0;
         //peak detect
         ArrayList<Long> peakTimes = new ArrayList<>();
 
-        int minWindowSize = (int)(VIDEO_FRAME_RATE * 60 / hr * 0.8);
-        int maxWindowSize = (int)(VIDEO_FRAME_RATE * 60 / hr * 1.2);
+        int minWindowSize = (int) (VIDEO_FRAME_RATE * 60 / hr * 0.8);
+        int maxWindowSize = (int) (VIDEO_FRAME_RATE * 60 / hr * 1.2);
         ArrayList<Integer> peakArray = new ArrayList<>();
 
         int firstIndex = 0;
@@ -443,8 +444,8 @@ public class VitalLagacy {
         FindPeak peak = new FindPeak(slice);
         int[] WindowArray = peak.detectRelativeMaxima();
 
-        for(int i = 0; i < WindowArray.length; i ++ ){
-            if(signalG[0] < signalG[WindowArray[i]]){
+        for (int i = 0; i < WindowArray.length; i++) {
+            if (signalG[0] < signalG[WindowArray[i]]) {
                 firstIndex = i;
             }
         }
@@ -452,14 +453,14 @@ public class VitalLagacy {
         peakArray.add(firstIndex);
         peakTimes.add(rppg.frameTimeArray[firstIndex]);
 
-        if(!(firstIndex == 1 || firstIndex == 0)){
+        if (!(firstIndex == 1 || firstIndex == 0)) {
             firstIndex = firstIndex - 2;
         }
         slice = Arrays.copyOfRange(signalG, firstIndex, signalG.length - 1);
         peak = new FindPeak(slice);
         WindowArray = peak.detectPeaks().filterByPeakDistance(minWindowSize);
 
-        for(int peakIndex : WindowArray){
+        for (int peakIndex : WindowArray) {
             int realIndex = peakIndex + firstIndex;
             peakArray.add(realIndex);
             peakTimes.add(rppg.frameTimeArray[realIndex]);
@@ -468,24 +469,24 @@ public class VitalLagacy {
         VitalChartData.HRV_PEAK = peakArray.stream().mapToInt(e -> e).toArray();
 
         ArrayList<Long> rrIntervals = new ArrayList<>();
-        if(peakTimes.size() > 6){
-            for(int i = 0; i < peakTimes.size() - 2; i++){
+        if (peakTimes.size() > 6) {
+            for (int i = 0; i < peakTimes.size() - 2; i++) {
                 rrIntervals.add(peakTimes.get(i + 1) - peakTimes.get(i));
             }
         }
 
-        if(rrIntervals.size() == 0) return 0;
+        if (rrIntervals.size() == 0) return 0;
 
         //rr_interval 0.4~1.3
         ArrayList<Long> FilteredRRInterval = new ArrayList<>();
 
         int upperBound;
         int lowerBound;
-        upperBound = Math.min(1300, (int)(1.2 * 60/hr * 1000));
-        lowerBound = Math.max(400, (int)(0.8 * 60/hr * 1000));
-        for(int i = 0; i < rrIntervals.size(); i++){
+        upperBound = Math.min(1300, (int) (1.2 * 60 / hr * 1000));
+        lowerBound = Math.max(400, (int) (0.8 * 60 / hr * 1000));
+        for (int i = 0; i < rrIntervals.size(); i++) {
             long interval = rrIntervals.get(i);
-            if(interval > lowerBound && interval < upperBound){
+            if (interval > lowerBound && interval < upperBound) {
                 FilteredRRInterval.add(interval);
                 Log.d("vital", "interval :: " + interval);
             }
@@ -707,7 +708,7 @@ public class VitalLagacy {
         return res;
     }
 
-    public int HSV_fft(Noise noise2, float[] frame_hue_avg, float[] fft_hue, int HUE_FRAME, boolean[] hue_filter){
+    public int HSV_fft(Noise noise2, float[] frame_hue_avg, float[] fft_hue, int HUE_FRAME, boolean[] hue_filter) {
 
         noise2.fft(frame_hue_avg, fft_hue);
 
@@ -730,7 +731,7 @@ public class VitalLagacy {
         return hue_hr_index;
     }
 
-    public static ResultVitalSign toResultVitalSign(Result result){
+    public static ResultVitalSign toResultVitalSign(Result result) {
         ResultVitalSign convert = new ResultVitalSign();
         convert.HR_result = result.HR_result;
         convert.RR_result = result.RR_result;
@@ -745,10 +746,10 @@ public class VitalLagacy {
         return convert;
     }
 
-    private int[] getAdjustPixel(Bitmap bitmap, int x, int y){
+    private int[] getAdjustPixel(Bitmap bitmap, int x, int y) {
         int[] adjustPixel = new int[9];
-        if(x >= 1){
-            if(y >= 1){
+        if (x >= 1) {
+            if (y >= 1) {
                 adjustPixel[0] = bitmap.getPixel(x - 1, y - 1);
                 adjustPixel[6] = bitmap.getPixel(x - 1, y + 1);
                 adjustPixel[3] = bitmap.getPixel(x - 1, y);
@@ -763,7 +764,7 @@ public class VitalLagacy {
         return adjustPixel;
     }
 
-    public void clearAnalysis(){
+    public void clearAnalysis() {
         firstFrameTime = 0;
         lastFrameTime = 0;
         rPPG = new Rppg(BUFFER_SIZE);
@@ -771,21 +772,25 @@ public class VitalLagacy {
         pixelIndex = 0;
         bpm_buffer_index = 0;
     }
-    public float[] getBpmBuffer(){
+
+    public float[] getBpmBuffer() {
         return rPPG.bpm_Buffer;
     }
-    public float[] getRRBuffer(){
+
+    public float[] getRRBuffer() {
         return rPPG.rr_Buffer;
     }
-    public double[] getGreenSignal(){
+
+    public double[] getGreenSignal() {
         return rPPG.f_pixel_buff[1];
     }
-    public double[] getHrSignal(){
-        float filter_interval = VIDEO_FRAME_RATE / (float)BUFFER_SIZE;
-        return Arrays.copyOfRange(rPPG.lastHrSignal, (int)(0.83/filter_interval), (int)(2.5/filter_interval));
+
+    public double[] getHrSignal() {
+        float filter_interval = VIDEO_FRAME_RATE / (float) BUFFER_SIZE;
+        return Arrays.copyOfRange(rPPG.lastHrSignal, (int) (0.83 / filter_interval), (int) (2.5 / filter_interval));
     }
 
-    public double[] getBvpSignal(){
+    public double[] getBvpSignal() {
         return rPPG.lastBvpSignal;
     }
 }
