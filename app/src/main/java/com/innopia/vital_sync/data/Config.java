@@ -4,12 +4,9 @@ import com.innopia.vital_sync.data.Constant;
 
 public class Config {
     public static final float THRESHOLD_DEFAULT = 0.5F;
-    public static int CURRENT_DELEGATE = Constant.DELEGATE_CPU;
     public static int USE_CAMERA_DIRECTION = Constant.CAMERA_DIRECTION_FRONT;
     public static int TARGET_FRAME = 30;
     public static int ANALYSIS_TIME = 20;
-    public static int SCREEN_WIDTH = 0;
-    public static int SCREEN_HEIGHT = 0;
     public static double USER_BMI = 0f;
 
     public static final boolean FLAG_INNER_TEST = true;
@@ -29,7 +26,13 @@ public class Config {
     public static final int FACE_MODEL_SIZE = 72;
 
     public static final String PRIVACY_POLICY = "https://sites.google.com/view/kwangkeelee-privacy/%ED%99%88";
-    public static String LOCAL_SERVER_ADDRESS = "http://35.220.206.239:1024/";
+    public static String LOCAL_SERVER_ADDRESS = "";
+    public static final String CLOUD_SERVER_ADDRESS = "http://35.220.206.239";
+    public static final String SERVER_PORT_HEADER = ":";
+    public static final String SERVER_LOGIN_PORT = "1025";
+    public static final String SERVER_VITAL_PORT = "1024";
+    public static final String SERVER_PORT_FOOTER = "/";
+
     public static String USER_ID = "Guest";
 
     public static String Measure_Time;

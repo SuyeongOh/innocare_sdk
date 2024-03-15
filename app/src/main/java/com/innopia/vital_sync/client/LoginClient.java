@@ -23,11 +23,20 @@ public class LoginClient {
             OkHttpClient.Builder builder = new OkHttpClient.Builder();
             builder.interceptors().add(interceptor);
 
-            retrofit = new Retrofit.Builder()
-                    .baseUrl(Config.LOCAL_SERVER_ADDRESS) // 여기에 서버의 base URL 입력
-                    .client(builder.build())
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build();
+            if(Config.LOCAL_SERVER_ADDRESS.equals("")){
+                retrofit = new Retrofit.Builder()
+                        .baseUrl(Config.CLOUD_SERVER_ADDRESS + Config.SERVER_PORT_HEADER
+                                + Config.SERVER_LOGIN_PORT + Config.SERVER_PORT_FOOTER)
+                        .client(builder.build())
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .build();
+            } else{
+                retrofit = new Retrofit.Builder()
+                        .baseUrl(Config.LOCAL_SERVER_ADDRESS)
+                        .client(builder.build())
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .build();
+            }
         }
 
         return instance;

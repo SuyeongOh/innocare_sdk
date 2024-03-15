@@ -20,7 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 public class GtAdapter extends RecyclerView.Adapter<GtAdapter.ViewHolder> {
 
     private List<String> mData;
-    private HashMap<String, String> mDataMap;
+    private final HashMap<String, String> mDataMap = new HashMap<>();
     private LayoutInflater mInflater;
     public GtAdapter(Context context, List<String> data) {
         this.mInflater = LayoutInflater.from(context);
@@ -39,7 +39,7 @@ public class GtAdapter extends RecyclerView.Adapter<GtAdapter.ViewHolder> {
         String label = mData.get(position);
         TextView textView = holder.textView;
         textView.setText(String.format("%s ", label));
-        holder.inputView.setHint(String.format("input ground truth - %s", label));
+        holder.inputView.setHint(String.format("input %s result", label));
 
         mDataMap.put(textView.getText().toString(), "");
         holder.inputView.addTextChangedListener(new TextWatcher() {
