@@ -44,7 +44,7 @@ public class LoginClient {
 
     public void login(LoginRequest request, final LoginResponseListener listener) {
         LoginService service = retrofit.create(LoginService.class);
-        Call<LoginResponse> call = service.postLogin(request);
+        Call<LoginResponse> call = service.Login(request.id);
 
         call.enqueue(new Callback<LoginResponse>() {
             @Override

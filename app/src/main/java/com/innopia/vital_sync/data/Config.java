@@ -29,7 +29,7 @@ public class Config {
     public static String LOCAL_SERVER_ADDRESS = "";
     public static final String CLOUD_SERVER_ADDRESS = "http://35.220.206.239";
     public static final String SERVER_PORT_HEADER = ":";
-    public static final String SERVER_LOGIN_PORT = "1025";
+    public static final String SERVER_LOGIN_PORT = "3000";
     public static final String SERVER_VITAL_PORT = "1024";
     public static final String SERVER_PORT_FOOTER = "/";
 

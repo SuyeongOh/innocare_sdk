@@ -133,7 +133,7 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
         loadingView.setVisibility(View.GONE);
         String inputID = userIdEditText.getText().toString();
         if(!Config.USER_ID.equals(inputID)){
-            saveID(Config.USER_ID);
+            saveID(inputID);
         }
         Config.USER_ID = inputID;
         loginGuest();

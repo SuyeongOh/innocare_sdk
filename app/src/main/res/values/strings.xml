@@ -12,7 +12,8 @@
 \n2. This app aims to research and improve awareness of general wellness.
 \n3. This app does not collect any personally identifiable information.
 \n4. This app collects\/transmits\/stores data only with the user\'s consent.
-\n5. This app does not share any collected data with any third parties.</string>
+\n5. This app does not share any collected data with any third parties.
+\n6. If not have ID, using Guest.</string>
     <string name="privacy_policy">Privacy Policy</string>
 
     <!--ui text-->

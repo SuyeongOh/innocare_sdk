@@ -140,11 +140,9 @@ public class Vital {
             String measureTime = sdf.format(currentDate);
             Config.Measure_Time = measureTime;
             //Web server prototype
-            if (!Config.SERVER_RESPONSE_MODE) {
-                VitalClient.getInstance().requestAnalysis(rPPG.f_pixel_buff, measureTime);
-            } else {
-                VitalResponse response = VitalClient.getInstance().requestSyncAnalysis(rPPG.f_pixel_buff, measureTime).body();
-                if (response != null) {
+            if (Config.SERVER_RESPONSE_MODE) {
+                try{
+                    VitalResponse response = VitalClient.getInstance().requestSyncAnalysis(rPPG.f_pixel_buff, measureTime).body();
                     ResultVitalSign.vitalSignServerData.HR = response.hr;
                     ResultVitalSign.vitalSignServerData.RR = response.rr;
                     ResultVitalSign.vitalSignServerData.HRV = response.hrv;
@@ -153,7 +151,7 @@ public class Vital {
                     ResultVitalSign.vitalSignServerData.SBP = response.sbp;
                     ResultVitalSign.vitalSignServerData.DBP = response.dbp;
                     ResultVitalSign.vitalSignServerData.BP = response.bp;
-                } else {
+                } catch (Exception e){
                     ResultVitalSign.vitalSignServerData.HR = 0;
                     ResultVitalSign.vitalSignServerData.RR = 0;
                     ResultVitalSign.vitalSignServerData.HRV = 0;
@@ -163,6 +161,15 @@ public class Vital {
                     ResultVitalSign.vitalSignServerData.DBP = 0;
                     ResultVitalSign.vitalSignServerData.BP = 0;
                 }
+            } else{
+                ResultVitalSign.vitalSignServerData.HR = 0;
+                ResultVitalSign.vitalSignServerData.RR = 0;
+                ResultVitalSign.vitalSignServerData.HRV = 0;
+                ResultVitalSign.vitalSignServerData.SpO2 = 0;
+                ResultVitalSign.vitalSignServerData.STRESS = 0;
+                ResultVitalSign.vitalSignServerData.SBP = 0;
+                ResultVitalSign.vitalSignServerData.DBP = 0;
+                ResultVitalSign.vitalSignServerData.BP = 0;
             }
         }
         bufferIndex = (bufferIndex + 1) % BUFFER_SIZE;

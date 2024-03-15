@@ -2,11 +2,14 @@ package com.innopia.vital_sync.service;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface LoginService {
-    @POST("/login")
-    Call<LoginResponse> postLogin(@Body LoginRequest body);
+    @GET("/login")
+    Call<LoginResponse> Login(@Query("user_id") String user_id);
     @POST("/register")
     Call<LoginResponse> postRegister(@Body LoginRequest body);
 }
