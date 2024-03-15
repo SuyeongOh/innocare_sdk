@@ -52,7 +52,7 @@ public class InitFragment extends Fragment {
                 "\n- 앱하단의 입력확인 버튼을 클릭하시고, " +
                 "\n- 안정적인 조명환경에서 움직이지 말아주세요." +
                 "\n- 기본 bmi : 20.1, frame : 30 " +
-                "\n- ver. 20240311"));
+                "\n- ver. 20240315"));
         return view;
     }
 
@@ -105,7 +105,7 @@ public class InitFragment extends Fragment {
                 }
 
                 Config.SERVER_RESPONSE_MODE = serverResponseSwitch.isChecked();
-                Config.LARGE_FACE_MODE = largeFaceSwitch.isChecked();
+                //Config.LARGE_FACE_MODE = largeFaceSwitch.isChecked();
                 Config.SMALL_FACE_MODE = smallFaceSwitch.isChecked();
                 if(cameraDirectionSwitch.isChecked()){
                     Config.USE_CAMERA_DIRECTION = Constant.CAMERA_DIRECTION_BACK;

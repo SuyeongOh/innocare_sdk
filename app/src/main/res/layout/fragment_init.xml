@@ -93,6 +93,7 @@
             android:textSize="20sp"
             android:checked="false"
             android:maxLines="1"
+            android:visibility="gone"
             android:text="얼굴 영역 확대 기능을 사용하시겠습니까?" />
 
         <Switch
