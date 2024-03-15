@@ -6,14 +6,14 @@ public class GtRequest {
     public double hr = 0;
     public double rr = 0;
     public double spo2 = 0;
-    public float stress = 0;
+    public double stress = 0;
     public double hrv = 0;
     public double sbp = 0;
     public double dbp = 0;
-    public long measureTime;
+    public String measureTime;
     public String id;
 
-    public GtRequest(ResultVitalSign gt, long measureTime, String id) {
+    public GtRequest(ResultVitalSign gt, String measureTime, String id) {
         this.hr = gt.HR;
         this.rr = gt.RR;
         this.spo2 = gt.SpO2;

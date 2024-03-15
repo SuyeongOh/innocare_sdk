@@ -40,7 +40,7 @@ public class VitalClient {
         return instance;
     }
 
-    public Response<VitalResponse> requestSyncAnalysis(double[][] RGB, long measureTime){
+    public Response<VitalResponse> requestSyncAnalysis(double[][] RGB, String measureTime){
         // 서비스 인터페이스 생성
         // 비동기적으로 POST 요청 보내기
         Response<VitalResponse> response = null;
@@ -58,7 +58,7 @@ public class VitalClient {
     }
 
 
-    public void requestAnalysis(double[][] RGB, long measureTime){
+    public void requestAnalysis(double[][] RGB, String measureTime){
         // 서비스 인터페이스 생성
         // 비동기적으로 POST 요청 보내기
         retrofit.create(VitalService.class)
@@ -86,7 +86,7 @@ public class VitalClient {
         Log.d("vital", "Ready to Reqeust :: " + Config.LOCAL_SERVER_ADDRESS);
     }
 
-    public void requestHr(double[][] RGB, long measureTime, String mode){
+    public void requestHr(double[][] RGB, String measureTime, String mode){
         // 서비스 인터페이스 생성
         // 비동기적으로 POST 요청 보내기
         retrofit.create(VitalService.class)
@@ -114,7 +114,7 @@ public class VitalClient {
         Log.d("vital", "Ready to Reqeust :: " + Config.LOCAL_SERVER_ADDRESS);
     }
 
-    public void requestHrv(double[][] RGB, long measureTime, String mode){
+    public void requestHrv(double[][] RGB, String measureTime, String mode){
         // 서비스 인터페이스 생성
         // 비동기적으로 POST 요청 보내기
         retrofit.create(VitalService.class)
@@ -140,7 +140,7 @@ public class VitalClient {
 
         Log.d("vital", "Ready to Reqeust :: " + Config.LOCAL_SERVER_ADDRESS);
     }
-    public void requestRr(double[][] RGB, long measureTime, String mode){
+    public void requestRr(double[][] RGB, String measureTime, String mode){
         // 서비스 인터페이스 생성
         // 비동기적으로 POST 요청 보내기
         retrofit.create(VitalService.class)
@@ -167,7 +167,7 @@ public class VitalClient {
 
         Log.d("vital", "Ready to Reqeust :: " + Config.LOCAL_SERVER_ADDRESS);
     }
-    public void requestSpo2(double[][] RGB, long measureTime, String mode){
+    public void requestSpo2(double[][] RGB, String measureTime, String mode){
         // 서비스 인터페이스 생성
         // 비동기적으로 POST 요청 보내기
         retrofit.create(VitalService.class)
@@ -194,7 +194,7 @@ public class VitalClient {
 
         Log.d("vital", "Ready to Reqeust :: " + Config.LOCAL_SERVER_ADDRESS);
     }
-    public void requestStress(double[][] RGB, long measureTime, String mode){
+    public void requestStress(double[][] RGB, String measureTime, String mode){
         // 서비스 인터페이스 생성
         // 비동기적으로 POST 요청 보내기
         retrofit.create(VitalService.class)
@@ -221,7 +221,7 @@ public class VitalClient {
 
         Log.d("vital", "Ready to Reqeust :: " + Config.LOCAL_SERVER_ADDRESS);
     }
-    public void requestBp(double[][] RGB, long measureTime, String mode){
+    public void requestBp(double[][] RGB, String measureTime, String mode){
         // 서비스 인터페이스 생성
         // 비동기적으로 POST 요청 보내기
         retrofit.create(VitalService.class)

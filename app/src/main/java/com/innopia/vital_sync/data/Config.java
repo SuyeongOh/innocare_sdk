@@ -32,7 +32,9 @@ public class Config {
     public static String LOCAL_SERVER_ADDRESS = "http://35.220.206.239:1024/";
     public static String USER_ID = "Guest";
 
+    public static String Measure_Time;
     public static final String[] GT_LABEL_LIST = new String[]{
-            "HR", "RR", "HRV", "SpO2", "LF_HF_ratio", "SBP", "DBP"
+            "HR", "RR", "HRV", "SpO2", "STRESS", "SBP", "DBP"
     };
 }
+

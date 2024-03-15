@@ -4,7 +4,7 @@ public class ResultVitalSign {
     //LF_HF_ratio는 stress 판별 value입니다. 3.0을 넘으면 스트레스가 많음/ 안넘으면 적절 지표로 저희 내부에선 생각하고 있습니다.
     public static ResultVitalSign vitalSignData = new ResultVitalSign();
     public static ResultVitalSign vitalSignServerData = new ResultVitalSign();
-    public float STRESS = 0;
+    public double STRESS = 0;
     public double HR = 0;
     public double RR = 0;
     public double SpO2 = 0;

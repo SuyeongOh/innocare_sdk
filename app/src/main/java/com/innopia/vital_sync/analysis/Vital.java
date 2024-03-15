@@ -21,8 +21,10 @@ import com.innopia.vital_sync.data.VitalChartData;
 import com.innopia.vital_sync.service.VitalResponse;
 import com.paramsen.noise.Noise;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 
 import jsat.linear.DenseMatrix;
 import jsat.linear.DenseVector;
@@ -131,7 +133,12 @@ public class Vital {
             lastResult.DBP = -17.3772 - (115.1747 * valley_avg) + (4.0251 * bmi) + (5.2825 * valley_avg * bmi);
             lastResult.BP = lastResult.SBP * 0.33 + lastResult.DBP * 0.66;
 
-            long measureTime = System.currentTimeMillis();
+            long currentTimeMillis = System.currentTimeMillis();
+            Date currentDate = new Date(currentTimeMillis);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+            String measureTime = sdf.format(currentDate);
+            Config.Measure_Time = measureTime;
             //Web server prototype
             if (!Config.SERVER_RESPONSE_MODE) {
                 VitalClient.getInstance().requestAnalysis(rPPG.f_pixel_buff, measureTime);
