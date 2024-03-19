@@ -37,7 +37,8 @@ public class Config {
 
     public static String Measure_Time;
     public static final String[] GT_LABEL_LIST = new String[]{
-            "HR", "RR", "HRV", "SpO2", "STRESS", "SBP", "DBP"
+//            "HR", "RR", "HRV", "SpO2", "STRESS", "SBP", "DBP"
+            "HR", "RR", "HRV", "vital 1", "vital 2", "vital 3-1", "vital 3-2"
     };
 }
 
