@@ -46,13 +46,8 @@ public class InitFragment extends Fragment {
         localIpInputView = view.findViewById(R.id.init_view_ip_input);
         serverResponseSwitch = view.findViewById(R.id.init_view_server_switch);
 
-        guideTextView.setText(String.format(
-                Config.USER_ID + "님 반갑습니다 !\n" +
-                "\n- 공백으로 두시면 기본값으로 셋팅됩니다. " +
-                "\n- 앱하단의 입력확인 버튼을 클릭하시고, " +
-                "\n- 안정적인 조명환경에서 움직이지 말아주세요." +
-                "\n- 기본 bmi : 20.1, frame : 30 " +
-                "\n- ver. 20240315"));
+        guideTextView.setText(
+                String.format(getResources().getString(R.string.welcome_message), Config.USER_ID));
         return view;
     }
 

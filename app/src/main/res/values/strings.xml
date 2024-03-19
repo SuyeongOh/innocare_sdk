@@ -19,6 +19,14 @@
     <!--ui text-->
     <string name="enter">Input</string>
     <string name="gt_header">Reference Result</string>
+    <string name="welcome_message">
+Welcome, %1$s!\n
+\n- Leave blank to set defaults.
+\n- Tap the confirm button at the bottom of the app.
+\n- Please avoid moving in an unstable lighting environment.
+\n- Default BMI: 20.1, frame: 30
+\n- ver. 20240315</string>
+
 
     <!--Measure View -->
     <string name="app_name">VitalSync</string>
@@ -29,10 +37,10 @@
     <string name="respiratory_rate_unit">rpm</string>
     <string name="hrv_sdnn">HRV-SDNN</string>
     <string name="hrv_sdnn_unit">ms</string>
-    <string name="oxygen_saturation">산소포화도</string>
-    <string name="oxygen_saturation_unit">sp</string>
-    <string name="stress">스트레스</string>
-    <string name="blood_pressure">혈압</string>
+    <string name="oxygen_saturation">signal 1</string>
+    <string name="oxygen_saturation_unit">pt</string>
+    <string name="stress">signal 2</string>
+    <string name="blood_pressure">signal 3</string>
     <string name="blood_pressure_unit">mmHg</string>
 
     <!--Vital Analysis-->
