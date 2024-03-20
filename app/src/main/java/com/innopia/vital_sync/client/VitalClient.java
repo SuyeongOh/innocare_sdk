@@ -55,7 +55,7 @@ public class VitalClient {
         Response<VitalResponse> response = null;
         try{
             response = retrofit.create(VitalService.class)
-                    .postVitalAll(new VitalRequest(RGB, Config.USER_BMI, Config.USER_AGE, Config.USER_GENDER, measureTime, Config.USER_ID))
+                    .postVitalAll(new VitalRequest(RGB, measureTime, Config.USER_ID))
                     .execute();
         }catch (Exception e){
             e.printStackTrace();
@@ -71,7 +71,7 @@ public class VitalClient {
         // 서비스 인터페이스 생성
         // 비동기적으로 POST 요청 보내기
         retrofit.create(VitalService.class)
-                .postVitalAll(new VitalRequest(RGB, Config.USER_BMI, Config.USER_AGE, Config.USER_GENDER, measureTime, Config.USER_ID))
+                .postVitalAll(new VitalRequest(RGB, measureTime, Config.USER_ID))
                 .enqueue(new Callback<VitalResponse>() {
                     @Override
                     public void onResponse(Call<VitalResponse> call, Response<VitalResponse> response) {
@@ -99,7 +99,7 @@ public class VitalClient {
         // 서비스 인터페이스 생성
         // 비동기적으로 POST 요청 보내기
         retrofit.create(VitalService.class)
-                .postVitalHr(new VitalRequest(RGB, Config.USER_BMI, Config.USER_AGE, Config.USER_GENDER, measureTime, Config.USER_ID))
+                .postVitalHr(new VitalRequest(RGB, measureTime, Config.USER_ID))
                 .enqueue(new Callback<VitalResponse>() {
                     @Override
                     public void onResponse(Call<VitalResponse> call, Response<VitalResponse> response) {
@@ -127,7 +127,7 @@ public class VitalClient {
         // 서비스 인터페이스 생성
         // 비동기적으로 POST 요청 보내기
         retrofit.create(VitalService.class)
-                .postVitalHrv(new VitalRequest(RGB, Config.USER_BMI, Config.USER_AGE, Config.USER_GENDER, measureTime, Config.USER_ID))
+                .postVitalHrv(new VitalRequest(RGB, measureTime, Config.USER_ID))
                 .enqueue(new Callback<VitalResponse>() {
                     @Override
                     public void onResponse(Call<VitalResponse> call, Response<VitalResponse> response) {
@@ -153,7 +153,7 @@ public class VitalClient {
         // 서비스 인터페이스 생성
         // 비동기적으로 POST 요청 보내기
         retrofit.create(VitalService.class)
-                .postVitalRr(new VitalRequest(RGB, Config.USER_BMI, Config.USER_AGE, Config.USER_GENDER, measureTime, Config.USER_ID))
+                .postVitalRr(new VitalRequest(RGB, measureTime, Config.USER_ID))
                 .enqueue(new Callback<VitalResponse>() {
                     @Override
                     public void onResponse(Call<VitalResponse> call, Response<VitalResponse> response) {
@@ -180,7 +180,7 @@ public class VitalClient {
         // 서비스 인터페이스 생성
         // 비동기적으로 POST 요청 보내기
         retrofit.create(VitalService.class)
-                .postVitalSpo2(new VitalRequest(RGB, Config.USER_BMI, Config.USER_AGE, Config.USER_GENDER, measureTime, Config.USER_ID))
+                .postVitalSpo2(new VitalRequest(RGB, measureTime, Config.USER_ID))
                 .enqueue(new Callback<VitalResponse>() {
                     @Override
                     public void onResponse(Call<VitalResponse> call, Response<VitalResponse> response) {
@@ -207,7 +207,7 @@ public class VitalClient {
         // 서비스 인터페이스 생성
         // 비동기적으로 POST 요청 보내기
         retrofit.create(VitalService.class)
-                .postVitalStress(new VitalRequest(RGB, Config.USER_BMI, Config.USER_AGE, Config.USER_GENDER, measureTime, Config.USER_ID))
+                .postVitalStress(new VitalRequest(RGB, measureTime, Config.USER_ID))
                 .enqueue(new Callback<VitalResponse>() {
                     @Override
                     public void onResponse(Call<VitalResponse> call, Response<VitalResponse> response) {
@@ -234,7 +234,7 @@ public class VitalClient {
         // 서비스 인터페이스 생성
         // 비동기적으로 POST 요청 보내기
         retrofit.create(VitalService.class)
-                .postVitalBp(new VitalRequest(RGB, Config.USER_BMI, Config.USER_AGE, Config.USER_GENDER, measureTime, Config.USER_ID))
+                .postVitalBp(new VitalRequest(RGB, measureTime, Config.USER_ID))
                 .enqueue(new Callback<VitalResponse>() {
                     @Override
                     public void onResponse(Call<VitalResponse> call, Response<VitalResponse> response) {

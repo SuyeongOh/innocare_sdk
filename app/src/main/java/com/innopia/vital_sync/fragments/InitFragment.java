@@ -26,7 +26,8 @@ public class InitFragment extends Fragment {
     private TextView guideTextView;
     private EditText bmiInputView;
     private EditText ageInputView;
-
+    private EditText heightInputView;
+    private EditText weightInputView;
     private RadioGroup radioGroupGender;
     private RadioButton radioButtonMale;
     private RadioButton radioButtonFemale;
@@ -48,6 +49,8 @@ public class InitFragment extends Fragment {
 
         bmiInputView = view.findViewById(R.id.init_view_bmi_input);
         ageInputView = view.findViewById(R.id.init_view_age_input);
+        heightInputView = view.findViewById(R.id.init_view_height_input);
+        weightInputView = view.findViewById(R.id.init_view_weight_input);
         radioGroupGender = view.findViewById(R.id.init_view_gender_group);
         radioButtonMale = view.findViewById(R.id.init_view_gender_male);
         radioButtonFemale = view.findViewById(R.id.init_view_gender_female);
@@ -107,6 +110,9 @@ public class InitFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 String bmi = bmiInputView.getText().toString();
+                String age = ageInputView.getText().toString();
+                String weight = weightInputView.getText().toString();
+                String height = heightInputView.getText().toString();
                 String frame = frameInputView.getText().toString();
                 String time = analysisTimeInputView.getText().toString();
 
@@ -114,6 +120,21 @@ public class InitFragment extends Fragment {
                     Config.USER_BMI = Double.parseDouble(bmi);
                 } catch (Exception e){
                     Config.USER_BMI = 20.1f;
+                }
+                try{
+                    Config.USER_AGE = Integer.parseInt(age);
+                } catch (Exception e){
+                    Config.USER_AGE = 0;
+                }
+                try{
+                    Config.USER_WEIGHT = Double.parseDouble(weight);
+                } catch (Exception e){
+                    Config.USER_WEIGHT = 0;
+                }
+                try{
+                    Config.USER_HEIGHT= Double.parseDouble(height);
+                } catch (Exception e){
+                    Config.USER_HEIGHT = 0;
                 }
                 try{
                     Config.TARGET_FRAME = Integer.parseInt(frame);
