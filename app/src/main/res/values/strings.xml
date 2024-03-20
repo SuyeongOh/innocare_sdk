@@ -26,6 +26,8 @@ Welcome, %1$s!\n
 \n- Please avoid moving in an unstable lighting environment.
 \n- Default BMI: 20.1, frame: 30
 \n- ver. 20240319</string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
 
 
     <!--Measure View -->

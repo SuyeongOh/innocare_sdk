@@ -7,7 +7,7 @@ public class Config {
     public static int USE_CAMERA_DIRECTION = Constant.CAMERA_DIRECTION_FRONT;
     public static int TARGET_FRAME = 30;
     public static int ANALYSIS_TIME = 20;
-    public static double USER_BMI = 0f;
+
 
     public static final boolean FLAG_INNER_TEST = true;
     public static final boolean FLAG_VIDEO_TEST = false;
@@ -40,5 +40,13 @@ public class Config {
 //            "HR", "RR", "HRV", "SpO2", "STRESS", "SBP", "DBP"
             "HR", "RR", "HRV", "vital 1", "vital 2", "vital 3-1", "vital 3-2"
     };
+
+    public static final String[] RECORD_LABEL_LIST = new String[]{
+            "HR", "RR", "HRV", "vital 1", "vital 2", "vital 3"
+    };
+
+    public static String USER_GENDER = "male";
+    public static double USER_BMI = 0f;
+    public static int USER_AGE = 0;
 }
 

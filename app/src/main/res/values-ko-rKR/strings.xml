@@ -65,4 +65,6 @@
     <string name="face_big_detection">\n얼굴이 너무 가깝습니다.\n조금 떨어져 주세요.\n</string>
     <string name="face_out_detection">\n얼굴이 범위를 벗어났습니다.\n화면 중앙을 향해주세요.\n</string>
     <string name="gt_header">비교 기기 결과</string>
+    <string name="male">남성</string>
+    <string name="female">여성</string>
 </resources>

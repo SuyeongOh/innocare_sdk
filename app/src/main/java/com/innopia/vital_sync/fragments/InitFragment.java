@@ -7,6 +7,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -23,10 +25,17 @@ public class InitFragment extends Fragment {
 
     private TextView guideTextView;
     private EditText bmiInputView;
+    private EditText ageInputView;
+
+    private RadioGroup radioGroupGender;
+    private RadioButton radioButtonMale;
+    private RadioButton radioButtonFemale;
+
     private EditText frameInputView;
     private EditText analysisTimeInputView;
     private EditText localIpInputView;
     private Button applyBtn;
+    private Button recordBtn;
     private Switch serverResponseSwitch;
     private Switch cameraDirectionSwitch;
     private Switch largeFaceSwitch;
@@ -36,8 +45,17 @@ public class InitFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_init, container, false);
         guideTextView = view.findViewById(R.id.init_view_guide);
+
         bmiInputView = view.findViewById(R.id.init_view_bmi_input);
+        ageInputView = view.findViewById(R.id.init_view_age_input);
+        radioGroupGender = view.findViewById(R.id.init_view_gender_group);
+        radioButtonMale = view.findViewById(R.id.init_view_gender_male);
+        radioButtonFemale = view.findViewById(R.id.init_view_gender_female);
+
+        radioGroupGender.check(R.id.init_view_gender_male);
+
         applyBtn = view.findViewById(R.id.init_btn_submit);
+        recordBtn = view.findViewById(R.id.init_btn_record);
         cameraDirectionSwitch = view.findViewById(R.id.init_view_camera_switch);
         frameInputView = view.findViewById(R.id.init_view_frame_input);
         smallFaceSwitch = view.findViewById(R.id.init_view_small_face_switch);
@@ -48,6 +66,11 @@ public class InitFragment extends Fragment {
 
         guideTextView.setText(
                 String.format(getResources().getString(R.string.welcome_message), Config.USER_ID));
+
+        recordBtn.setVisibility(View.GONE);
+        if(Config.USER_ID.equals(getContext().getString(R.string.guest))){
+            recordBtn.setVisibility(View.GONE);
+        }
         return view;
     }
 
@@ -69,6 +92,14 @@ public class InitFragment extends Fragment {
                 if(isChecked && largeFaceSwitch.isChecked()){
                     largeFaceSwitch.setChecked(false);
                 }
+            }
+        });
+
+        recordBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MainActivity activity = (MainActivity) getActivity();
+                activity.replaceFragment(new RecordFragment());
             }
         });
 
@@ -99,6 +130,12 @@ public class InitFragment extends Fragment {
                     Config.LOCAL_SERVER_ADDRESS = localIpInputView.getText().toString();
                 }
 
+
+                if(radioGroupGender.getCheckedRadioButtonId() == R.id.init_view_gender_female){
+                    Config.USER_GENDER = "female";
+                }else if(radioGroupGender.getCheckedRadioButtonId() == R.id.init_view_gender_male){
+                    Config.USER_GENDER = "male";
+                }
                 Config.SERVER_RESPONSE_MODE = serverResponseSwitch.isChecked();
                 //Config.LARGE_FACE_MODE = largeFaceSwitch.isChecked();
                 Config.SMALL_FACE_MODE = smallFaceSwitch.isChecked();
