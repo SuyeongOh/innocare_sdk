@@ -205,10 +205,18 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 Size[] sizeArray = (characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(Constant.PIXEL_FORMAT));
                 Size imageReaderSize = null;
                 for(int i = sizeArray.length - 1; i > 0; i--){
-
-                    if(CameraSizes.isHdRatio(sizeArray[i]) && (sizeArray[i].getWidth() >= 640)){
+                    if(CameraSizes.isHdRatio(sizeArray[i]) && (sizeArray[i].getWidth() == 640)){
                         imageReaderSize = sizeArray[i];
                         break;
+                    }
+                }
+                //640x360비율이 없을경우 낮은곳에서 찾기, TODO 640 밑으로 16:9가 없는 카메라 생기면 그때 또 handling
+                if(imageReaderSize == null){
+                    for(int i = sizeArray.length - 1; i > 0; i--){
+                        if(CameraSizes.isHdRatio(sizeArray[i]) && (sizeArray[i].getWidth() <= 640)){
+                            imageReaderSize = sizeArray[i];
+                            break;
+                        }
                     }
                 }
                 if(imageReaderSize == null){
