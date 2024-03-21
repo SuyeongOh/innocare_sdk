@@ -70,7 +70,6 @@ public class InitFragment extends Fragment {
         guideTextView.setText(
                 String.format(getResources().getString(R.string.welcome_message), Config.USER_ID));
 
-        recordBtn.setVisibility(View.GONE);
         if(Config.USER_ID.equals(getContext().getString(R.string.guest))){
             recordBtn.setVisibility(View.GONE);
         }

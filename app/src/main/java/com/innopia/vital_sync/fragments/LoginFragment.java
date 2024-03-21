@@ -3,9 +3,15 @@ package com.innopia.vital_sync.fragments;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.TextWatcher;
+import android.text.method.KeyListener;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -102,6 +108,7 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
                 webviewPopupView.dismiss();
             }
         });
+
         return view;
     }
 
@@ -151,4 +158,6 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
         editor.putString(USER_ID_KEY, ID);
         editor.apply();
     }
+
+
 }
