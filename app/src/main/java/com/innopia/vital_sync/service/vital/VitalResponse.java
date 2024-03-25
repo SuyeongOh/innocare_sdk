@@ -1,4 +1,4 @@
-package com.innopia.vital_sync.service;
+package com.innopia.vital_sync.service.vital;
 
 public class VitalResponse {
    public double hr;

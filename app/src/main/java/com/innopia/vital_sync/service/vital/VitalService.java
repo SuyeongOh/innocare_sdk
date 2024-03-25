@@ -1,4 +1,4 @@
-package com.innopia.vital_sync.service;
+package com.innopia.vital_sync.service.vital;
 
 import retrofit2.Call;
 import retrofit2.http.Body;

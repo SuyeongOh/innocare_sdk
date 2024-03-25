@@ -1,4 +1,4 @@
-package com.innopia.vital_sync.service;
+package com.innopia.vital_sync.service.login;
 
 public class LoginRequest {
     public String id;

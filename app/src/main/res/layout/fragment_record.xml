@@ -18,18 +18,46 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="@color/black10"
+        android:background="@drawable/view_border"
         android:layout_gravity="center"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         android:orientation="horizontal"
-        android:paddingLeft="10dp"
-        android:paddingRight="20dp" />
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp" />
 
-    <com.github.mikephil.charting.charts.LineChart
-        android:id="@+id/record_chart_view"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="10"
         android:background="@drawable/view_border"
-        android:layout_margin="20dp"/>
+        android:layout_margin="20dp">
+
+        <ProgressBar
+            android:id="@+id/record_chart_loading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="@id/record_chart_view"
+            app:layout_constraintBottom_toBottomOf="@id/record_chart_view"
+            app:layout_constraintStart_toStartOf="@id/record_chart_view"
+            app:layout_constraintEnd_toEndOf="@id/record_chart_view"/>
+
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/record_chart_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <Button
+        android:id="@+id/record_syncdata_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:textSize="20sp"
+        android:text="@string/sync_data"
+        android:background="@drawable/text_selector_policy"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="20dp"/>
 </LinearLayout>

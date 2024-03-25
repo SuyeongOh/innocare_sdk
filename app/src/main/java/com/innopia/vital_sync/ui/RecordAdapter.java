@@ -39,8 +39,9 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.ViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        TextView textView = holder.label;
-        textView.setText(mData.get(position));
+        Item item = itemList.get(position);
+        holder.label.setText(item.getName());
+        holder.label.setSelected(item.isSelected());
     }
 
     @Override

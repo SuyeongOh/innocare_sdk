@@ -17,6 +17,7 @@
     <string name="privacy_policy">개인정보 처리방침</string>
 
     <string name="enter">입력완료</string>
+    <string name="sync_data">데이터 동기화</string>
     <string name="app_name">VitalSync</string>
 
     <string name="welcome_message">

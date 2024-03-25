@@ -1,12 +1,8 @@
-package com.innopia.vital_sync.client;
+package com.innopia.vital_sync.service.vital;
 
 import android.util.Log;
 
 import com.innopia.vital_sync.data.Config;
-import com.innopia.vital_sync.data.ResultVitalSign;
-import com.innopia.vital_sync.service.VitalRequest;
-import com.innopia.vital_sync.service.VitalResponse;
-import com.innopia.vital_sync.service.VitalService;
 
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;

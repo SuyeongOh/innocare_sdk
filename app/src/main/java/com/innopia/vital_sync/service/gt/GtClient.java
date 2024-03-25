@@ -1,9 +1,6 @@
-package com.innopia.vital_sync.client;
+package com.innopia.vital_sync.service.gt;
 
 import com.innopia.vital_sync.data.Config;
-import com.innopia.vital_sync.service.GtRequest;
-import com.innopia.vital_sync.service.GtResponse;
-import com.innopia.vital_sync.service.GtService;
 
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;

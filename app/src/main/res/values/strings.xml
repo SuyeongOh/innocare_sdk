@@ -28,7 +28,7 @@ Welcome, %1$s!\n
 \n- ver. 20240319</string>
     <string name="male">Male</string>
     <string name="female">Female</string>
-
+    <string name="sync_data">Data Sync</string>
 
     <!--Measure View -->
     <string name="app_name">VitalSync</string>

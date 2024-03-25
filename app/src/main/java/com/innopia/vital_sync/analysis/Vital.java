@@ -13,12 +13,12 @@ import com.github.psambit9791.jdsp.transform.DiscreteFourier;
 import com.github.psambit9791.jdsp.transform.FastFourier;
 import com.github.psambit9791.jdsp.transform.Hilbert;
 import com.innopia.vital_sync.bvp.BandPassFilter;
-import com.innopia.vital_sync.client.VitalClient;
+import com.innopia.vital_sync.service.vital.VitalClient;
 import com.innopia.vital_sync.data.Config;
 import com.innopia.vital_sync.data.ResultVitalSign;
 import com.innopia.vital_sync.data.Rppg;
 import com.innopia.vital_sync.data.VitalChartData;
-import com.innopia.vital_sync.service.VitalResponse;
+import com.innopia.vital_sync.service.vital.VitalResponse;
 import com.paramsen.noise.Noise;
 
 import java.text.SimpleDateFormat;
