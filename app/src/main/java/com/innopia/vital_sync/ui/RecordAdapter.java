@@ -1,6 +1,7 @@
 package com.innopia.vital_sync.ui;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +22,8 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.ViewHolder
     private List<Item> itemList;
     private final List<String> mData = new ArrayList<>();
 
+    private RecordDataLoadListener listener;
+
     public RecordAdapter(Context context, List<String> data) {
         mInflater = LayoutInflater.from(context);
         itemList = new ArrayList<Item>();
@@ -39,6 +42,7 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.ViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        Log.d("vital", "record position : " + position);
         Item item = itemList.get(position);
         holder.label.setText(item.getName());
         holder.label.setSelected(item.isSelected());
@@ -49,16 +53,29 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.ViewHolder
         return mData.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public void setLoadListener(RecordDataLoadListener listener) {
+        this.listener = listener;
+    }
 
+    public void clearAllSelect(){
+        for(int i = 0; i < itemList.size(); i++) {
+            if(itemList.get(i).selected){
+                itemList.get(i).selected = false;
+                notifyItemChanged(i);
+            }
+        }
+    }
+
+    public class ViewHolder extends RecyclerView.ViewHolder {
         Button label;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
             label = itemView.findViewById(R.id.record_element_label);
-            itemView.setOnClickListener(new View.OnClickListener() {
+            label.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    listener.onLoad(label);
                     int position = getAdapterPosition();
                     if (position != RecyclerView.NO_POSITION) {
                         // 기존에 선택된 아이템 선택 해제
@@ -71,6 +88,10 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.ViewHolder
                     }
                 }
             });
+        }
+
+        public Button getButton(){
+            return label;
         }
     }
 
@@ -94,5 +115,9 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.ViewHolder
         public void setSelected(boolean selected) {
             this.selected = selected;
         }
+    }
+
+    public interface RecordDataLoadListener{
+        void onLoad(Button btn);
     }
 }

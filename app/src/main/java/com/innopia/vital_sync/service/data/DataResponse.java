@@ -12,5 +12,5 @@ public class DataResponse {
     public double bp = 0;
     public double sbp = 0;
     public double dbp = 0;
-    public String measurementTime = "";
+    public String MeasurementTime = "";
 }
