@@ -31,6 +31,8 @@ public class GtAdapter extends RecyclerView.Adapter<GtAdapter.ViewHolder> {
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.layout_gt_element, parent, false);
+        EditText inputView = view.findViewById(R.id.view_input_gt);
+        inputView.setText("0");
         return new ViewHolder(view);
     }
 

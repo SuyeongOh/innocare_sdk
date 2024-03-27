@@ -48,24 +48,51 @@ public class GtinputFragment extends Fragment {
                 HashMap<String, String> inputData = adapter.getDataMap();
 
                 //label 순서 ["HR", "RR", "HRV", "vital 1", "vital 2", "vital 3-1", "vital 3-2"]
-                //TODO 일부입력시에도 저장 기능
+                ResultVitalSign gtData = new ResultVitalSign();
                 try{
-                    ResultVitalSign gtData = new ResultVitalSign();
                     gtData.HR = Double.parseDouble(inputData.get(Config.GT_LABEL_LIST[0]));
-                    gtData.HRV = Double.parseDouble(inputData.get(Config.GT_LABEL_LIST[1]));
-                    gtData.RR = Double.parseDouble(inputData.get(Config.GT_LABEL_LIST[2]));
-                    gtData.SpO2 = Double.parseDouble(inputData.get(Config.GT_LABEL_LIST[3]));
-                    gtData.STRESS = Double.parseDouble(inputData.get(Config.GT_LABEL_LIST[4]));
-                    gtData.SBP = Double.parseDouble(inputData.get(Config.GT_LABEL_LIST[5]));
-                    gtData.DBP = Double.parseDouble(inputData.get(Config.GT_LABEL_LIST[6]));
-
-                    GtRequest request = new GtRequest(gtData, Config.Measure_Time, Config.USER_ID);
-                    GtClient.getInstance().postGT(request, gtListener);
                 } catch (Exception e){
+                    gtData.HR = 0;
                     Log.e("Vital", "Ground Truth input Error : " + e.getMessage());
                 }
-
-
+                try{
+                    gtData.HRV = Double.parseDouble(inputData.get(Config.GT_LABEL_LIST[1]));
+                } catch (Exception e){
+                    gtData.HRV = 0;
+                    Log.e("Vital", "Ground Truth input Error : " + e.getMessage());
+                }
+                try{
+                    gtData.RR = Double.parseDouble(inputData.get(Config.GT_LABEL_LIST[2]));
+                } catch (Exception e){
+                    gtData.RR = 0;
+                    Log.e("Vital", "Ground Truth input Error : " + e.getMessage());
+                }
+                try{
+                    gtData.SpO2 = Double.parseDouble(inputData.get(Config.GT_LABEL_LIST[3]));
+                } catch (Exception e){
+                    gtData.SpO2 = 0;
+                    Log.e("Vital", "Ground Truth input Error : " + e.getMessage());
+                }
+                try{
+                    gtData.STRESS = Double.parseDouble(inputData.get(Config.GT_LABEL_LIST[4]));
+                } catch (Exception e){
+                    gtData.STRESS = 0;
+                    Log.e("Vital", "Ground Truth input Error : " + e.getMessage());
+                }
+                try{
+                    gtData.SBP = Double.parseDouble(inputData.get(Config.GT_LABEL_LIST[5]));
+                } catch (Exception e){
+                    gtData.SBP = 0;
+                    Log.e("Vital", "Ground Truth input Error : " + e.getMessage());
+                }
+                try{
+                    gtData.DBP = Double.parseDouble(inputData.get(Config.GT_LABEL_LIST[6]));
+                } catch (Exception e){
+                    gtData.DBP = 0;
+                    Log.e("Vital", "Ground Truth input Error : " + e.getMessage());
+                }
+                GtRequest request = new GtRequest(gtData, Config.Measure_Time, Config.USER_ID);
+                GtClient.getInstance().postGT(request, gtListener);
                 ResultActivity activity = (ResultActivity) getActivity();
                 activity.replaceFragment(new ResultFragment());
             }
