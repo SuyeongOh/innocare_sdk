@@ -44,7 +44,6 @@ public class ResultFragment extends Fragment {
     private LineChart hrChart;
 
     private Button restartBtn;
-    private Button analysisBtn;
 
     @Nullable
     @Override
@@ -60,13 +59,6 @@ public class ResultFragment extends Fragment {
                 Intent intent = new Intent(getContext(), MainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 getContext().startActivity(intent);
-            }
-        });
-        analysisBtn = view.findViewById(R.id.result_analysis_btn);
-        analysisBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //분석 view로 넘어가기
             }
         });
         bindChart(view);
@@ -103,18 +95,18 @@ public class ResultFragment extends Fragment {
     }
 
     private void setLineChart(){
-        drawChart(greenChart, VitalChartData.R_SIGNAL, Color.RED);
-        drawChart(greenChart, VitalChartData.G_SIGNAL, Color.GREEN);
-        drawChart(greenChart, VitalChartData.B_SIGNAL, Color.BLUE);
-        drawChart(smoothChart, VitalChartData.SMOOTH_R_SIGNAL, Color.RED);
-        drawChart(smoothChart, VitalChartData.SMOOTH_G_SIGNAL, Color.GREEN);
-        drawChart(smoothChart, VitalChartData.SMOOTH_B_SIGNAL, Color.BLUE);
-        drawChart(coreChart, VitalChartData.CORE_SIGNAL, Color.MAGENTA);
-        drawChart(detrendChart, VitalChartData.DETREND_SIGNAL, Color.CYAN);
-        drawChart(bpfChart, VitalChartData.BPF_SIGNAL, Color.BLUE);
+        drawChart(greenChart, VitalChartData.R_SIGNAL, Color.RED, "");
+        drawChart(greenChart, VitalChartData.G_SIGNAL, Color.GREEN, "");
+        drawChart(greenChart, VitalChartData.B_SIGNAL, Color.BLUE, "");
+        drawChart(smoothChart, VitalChartData.SMOOTH_R_SIGNAL, Color.RED, "");
+        drawChart(smoothChart, VitalChartData.SMOOTH_G_SIGNAL, Color.GREEN, "");
+        drawChart(smoothChart, VitalChartData.SMOOTH_B_SIGNAL, Color.BLUE, "");
+        drawChart(coreChart, VitalChartData.CORE_SIGNAL, Color.MAGENTA, "");
+        drawChart(detrendChart, VitalChartData.DETREND_SIGNAL, Color.CYAN, "");
+        drawChart(bpfChart, VitalChartData.BPF_SIGNAL, Color.BLUE, "");
         drawCombinedChart(bvpChart, VitalChartData.BVP_SIGNAL, VitalChartData.HRV_PEAK, Color.MAGENTA);
-        drawChart(fftChart, VitalChartData.FFT_SIGNAL, Color.CYAN);
-        drawHrChart(hrChart, VitalChartData.HR_SIGNAL, Color.BLUE);
+        drawChart(fftChart, VitalChartData.FFT_SIGNAL, Color.CYAN, "");
+        drawChart(hrChart, VitalChartData.HR_SIGNAL, Color.BLUE, "hr");
     }
 
     private void initChart(LineChart chart, String description){
@@ -203,16 +195,26 @@ public class ResultFragment extends Fragment {
         yAxis.setGranularity((float) 0.1);
     }
 
-    private void drawChart(LineChart chart, double[] signal, int lineColor){
+    private void drawChart(LineChart chart, double[] signal, int lineColor, String type){
         List<Entry> entryList = new ArrayList<>();
-        for (int i = 0; i < signal.length; i++) {
-            entryList.add(new Entry(i, (float) signal[i]));
+        if(type.equals("hr")){
+            for (int i = 0; i < signal.length; i++) {
+                entryList.add(
+                        new Entry(VitalChartData.FREQUENCY_INTERVAL * 60 * (i + VitalChartData.START_FILTER_INDEX), (float) signal[i]));
+            }
+        } else {
+            for (int i = 0; i < signal.length; i++) {
+                entryList.add(new Entry(i, (float) signal[i]));
+            }
         }
+
         LineDataSet dataset = new LineDataSet(entryList, "");
         dataset.setDrawCircles(false);
         dataset.setColor(lineColor);
         LineData data = new LineData(dataset);
         chart.setData(data);
+        chart.setExtraTopOffset(5f);
+        chart.setExtraBottomOffset(5f);
         chart.notifyDataSetChanged();
         chart.invalidate();
     }
@@ -242,21 +244,8 @@ public class ResultFragment extends Fragment {
         combinedData.setData(dataPoint);
 
         chart.setData(combinedData);
-        chart.notifyDataSetChanged();
-        chart.invalidate();
-    }
-
-    private void drawHrChart(LineChart chart, double[] signal, int lineColor){
-        List<Entry> entryList = new ArrayList<>();
-        for (int i = 0; i < signal.length; i++) {
-            entryList.add(
-                    new Entry(VitalChartData.FREQUENCY_INTERVAL * 60 * (i + VitalChartData.START_FILTER_INDEX), (float) signal[i]));
-        }
-        LineDataSet dataset = new LineDataSet(entryList, "");
-        dataset.setDrawCircles(false);
-        dataset.setColor(lineColor);
-        LineData data = new LineData(dataset);
-        chart.setData(data);
+        chart.setExtraTopOffset(5f);
+        chart.setExtraBottomOffset(5f);
         chart.notifyDataSetChanged();
         chart.invalidate();
     }
