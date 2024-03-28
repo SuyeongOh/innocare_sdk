@@ -18,13 +18,8 @@ public class BpmAnalysisViewModel extends AndroidViewModel {
         mContext = context;
     }
 
-    public boolean addFaceImageModel(@NonNull FaceImageModel faceImageModel){
-        return calculateAnalysis(faceImageModel);
-    }
-
-    private boolean calculateAnalysis(@NonNull FaceImageModel faceImageModel){
+    public void addFaceImageModel(@NonNull FaceImageModel faceImageModel){
         ResultVitalSign.vitalSignData = Vital.toResultVitalSign(vital.calculateVital(faceImageModel));
-        return ResultVitalSign.vitalSignData.SBP != 0;
     }
 
     public void clearAnalysis(){

@@ -125,6 +125,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private boolean isStopPredict = false;
     private boolean calibrationFinish = false;
     private boolean calibrationTimerStart = false;
+    private long faceModelTime;
+    private long startTime;
     private final Range<Integer> fpsRange = new Range<>(25, Config.TARGET_FRAME);
 
     @Override
@@ -161,7 +163,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         imageSurfaceView = view.findViewById(R.id.view_finder_image);
         mTrackingOverlayView = view.findViewById(R.id.tracking_overlay);
         mProgressBar = view.findViewById(R.id.progress);
-
 
         if (Config.FLAG_INNER_TEST) {
             mVitalGroup = view.findViewById(R.id.vital_info_group);
@@ -391,8 +392,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                             }
                             inputImage.close();
 
-                            updateProgressBar(sNthFrame/(Vital.BUFFER_SIZE / 100));
-
                             if(isFixedFace){
                                 Bitmap faceImage;
                                 try{
@@ -401,15 +400,21 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                     e.printStackTrace();
                                     return;
                                 }
+                                if(sNthFrame == 0){
+                                    startTime = System.currentTimeMillis();
+                                }
+                                faceModelTime = System.currentTimeMillis();
+                                updateProgressBar((int)((faceModelTime - startTime) * 100 / (double)25000));
+                                if((mProgressBar.getMax() == mProgressBar.getProgress()) || sNthFrame == (Config.TARGET_FRAME * Config.ANALYSIS_TIME - 1)){
+                                    isFinishAnalysis = true;
+                                }
+                                mBpmAnalysisViewModel.addFaceImageModel(new FaceImageModel(faceImage, faceModelTime, isFinishAnalysis));
 
-                                isFinishAnalysis = mBpmAnalysisViewModel.addFaceImageModel(new FaceImageModel(faceImage, System.currentTimeMillis()));
 
                                 sNthFrame ++;
                                 if(isFinishAnalysis){
                                     if(Config.FLAG_INNER_TEST){
-                                        if (sNthFrame % Vital.BUFFER_SIZE == 0) {
-                                            updateVitalSignValue();
-                                        }
+                                        updateVitalSignValue();
                                         new Handler(Looper.getMainLooper()).post(new Runnable() {
                                             @Override
                                             public void run() {
@@ -575,6 +580,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         if((progress == mProgressBar.getMin())
                 && (mProgressBar.getProgress() == mProgressBar.getMin())) return;
         mProgressBar.setProgress(progress);
+
         mProgressBar.invalidate();
     }
 
@@ -584,34 +590,33 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
             public void run() {
                 hrValueView.setText(
                         Math.round(ResultVitalSign.vitalSignServerData.HR) + "/" +
-                        String.valueOf(Math.round(ResultVitalSign.vitalSignData.HR))
+                        Math.round(ResultVitalSign.vitalSignData.HR)
                 );
                 rrValueView.setText(
                         Math.round(ResultVitalSign.vitalSignServerData.RR) + "/" +
-                        String.valueOf(Math.round(ResultVitalSign.vitalSignData.RR))
+                        Math.round(ResultVitalSign.vitalSignData.RR)
                 );
                 sdnnValueView.setText(
                         Math.round(ResultVitalSign.vitalSignServerData.HRV) + "/" +
-                        String.valueOf(Math.round(ResultVitalSign.vitalSignData.HRV))
+                        Math.round(ResultVitalSign.vitalSignData.HRV)
                 );
                 stressValueView.setText(
-                        ResultVitalSign.vitalSignServerData.STRESS + "/n" +
-                        String.valueOf(ResultVitalSign.vitalSignData.STRESS)
+                        String.format("%1$,.2f / %1$,.2f"
+                                , ResultVitalSign.vitalSignServerData.STRESS
+                                , ResultVitalSign.vitalSignData.STRESS)
                 );
                 spo2ValueView.setText(
                         Math.round(ResultVitalSign.vitalSignServerData.SpO2) + "/" +
-                        String.valueOf(Math.round(ResultVitalSign.vitalSignData.SpO2))
+                        Math.round(ResultVitalSign.vitalSignData.SpO2)
                 );
-//                sbpValueView.setText(
-//                        Math.round(ResultVitalSign.vitalSignServerData.SBP) + "/" +
-//                        String.valueOf(Math.round(ResultVitalSign.vitalSignData.SBP))
-//                );
-//                dbpValueView.setText(
-//                        Math.round(ResultVitalSign.vitalSignServerData.DBP) + "/" +
-//                        String.valueOf(Math.round(ResultVitalSign.vitalSignData.DBP))
-//                );
-                sbpValueView.setText("TBD");
-                dbpValueView.setText("TBD");
+                sbpValueView.setText(
+                        Math.round(ResultVitalSign.vitalSignServerData.SBP) + "/" +
+                        Math.round(ResultVitalSign.vitalSignData.SBP)
+                );
+                dbpValueView.setText(
+                        Math.round(ResultVitalSign.vitalSignServerData.DBP) + "/" +
+                        Math.round(ResultVitalSign.vitalSignData.DBP)
+                );
             }
         });
     }

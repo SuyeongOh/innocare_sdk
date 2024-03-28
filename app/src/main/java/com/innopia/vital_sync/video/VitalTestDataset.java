@@ -72,8 +72,9 @@ public class VitalTestDataset {
         for(int i = 0; i < Config.ANALYSIS_TIME * Config.TARGET_FRAME; i++){
             try{
                 Bitmap curFrame = retriever.getFrameAtIndex(i);
-                faceImageModel = new FaceImageModel(curFrame, (long)(i * 1000L /(float)30));
-                if(bpmAnalysisViewModel.addFaceImageModel(faceImageModel)){
+                faceImageModel = new FaceImageModel(curFrame, (long)(i * 1000L /(float)30), i==600);
+                bpmAnalysisViewModel.addFaceImageModel(faceImageModel);
+                if(i == 600){
                     return true;
                 }
             } catch (Exception e){

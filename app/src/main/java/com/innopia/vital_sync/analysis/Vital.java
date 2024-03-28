@@ -19,6 +19,7 @@ import com.innopia.vital_sync.data.ResultVitalSign;
 import com.innopia.vital_sync.data.Rppg;
 import com.innopia.vital_sync.data.VitalChartData;
 import com.innopia.vital_sync.service.vital.VitalResponse;
+import com.innopia.vital_sync.utils.RppgUtils;
 import com.paramsen.noise.Noise;
 
 import java.text.SimpleDateFormat;
@@ -63,7 +64,7 @@ public class Vital {
     public Result calculateVital(FaceImageModel model) throws IllegalArgumentException {
         if (pixelIndex == 0) firstFrameTime = model.frameUtcTimeMs;
 
-        rPPG.frameTimeArray[bufferIndex] = model.frameUtcTimeMs;
+        rPPG.frameTimeArray[pixelIndex] = model.frameUtcTimeMs;
         Bitmap bitmap = model.bitmap;
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
@@ -86,15 +87,23 @@ public class Vital {
         totalG = totalG / totalPixel;
         totalB = totalB / totalPixel;
 
-        rPPG.f_pixel_buff[0][bufferIndex] = totalR;
-        rPPG.f_pixel_buff[1][bufferIndex] = totalG;
-        rPPG.f_pixel_buff[2][bufferIndex] = totalB;
+        rPPG.f_pixel_buff[0][pixelIndex] = totalR;
+        rPPG.f_pixel_buff[1][pixelIndex] = totalG;
+        rPPG.f_pixel_buff[2][pixelIndex] = totalB;
 
-        if (bufferIndex == BUFFER_SIZE - 1) {
-            VitalChartData.frameTimeArray = rPPG.frameTimeArray;
+        if (model.isFinish) {
             lastFrameTime = model.frameUtcTimeMs;
             VIDEO_FRAME_RATE = (int) (1000 / ((float) ((lastFrameTime - firstFrameTime) / (float) pixelIndex)));
-            double[] pre_processed = preprocessing_omit(rPPG.f_pixel_buff);
+            //TODO interpolation
+            long[] interpolatedTimeArray = RppgUtils.interpolateTime(rPPG.frameTimeArray, VIDEO_FRAME_RATE);
+            double[][] interpolatedSignal = RppgUtils.interpolateSignal(rPPG.f_pixel_buff, rPPG.frameTimeArray, interpolatedTimeArray, VIDEO_FRAME_RATE);
+            VitalChartData.frameTimeArray = rPPG.frameTimeArray;
+
+            //TODO preprocessing은 interpolated signal을 이용
+
+            requestToServer();
+
+            double[] pre_processed = preprocessing_omit(interpolatedSignal, interpolatedTimeArray);
             VitalChartData.FFT_SIGNAL = pre_processed;
             rPPG.lastHrSignal = pre_processed;
             lastResult.HR_result = get_HR(pre_processed);
@@ -133,35 +142,31 @@ public class Vital {
             lastResult.DBP = -17.3772 - (115.1747 * valley_avg) + (4.0251 * bmi) + (5.2825 * valley_avg * bmi);
             lastResult.BP = lastResult.SBP * 0.33 + lastResult.DBP * 0.66;
 
-            long currentTimeMillis = System.currentTimeMillis();
-            Date currentDate = new Date(currentTimeMillis);
+        }
+        pixelIndex++;
+        return lastResult;
+    }
 
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-            String measureTime = sdf.format(currentDate);
-            Config.Measure_Time = measureTime;
-            //Web server prototype
-            if (Config.SERVER_RESPONSE_MODE) {
-                try{
-                    VitalResponse response = VitalClient.getInstance().requestSyncAnalysis(rPPG.f_pixel_buff, measureTime).body();
-                    ResultVitalSign.vitalSignServerData.HR = response.hr;
-                    ResultVitalSign.vitalSignServerData.RR = response.rr;
-                    ResultVitalSign.vitalSignServerData.HRV = response.hrv;
-                    ResultVitalSign.vitalSignServerData.SpO2 = response.spo2;
-                    ResultVitalSign.vitalSignServerData.STRESS = (float) response.stress;
-                    ResultVitalSign.vitalSignServerData.SBP = response.sbp;
-                    ResultVitalSign.vitalSignServerData.DBP = response.dbp;
-                    ResultVitalSign.vitalSignServerData.BP = response.bp;
-                } catch (Exception e){
-                    ResultVitalSign.vitalSignServerData.HR = 0;
-                    ResultVitalSign.vitalSignServerData.RR = 0;
-                    ResultVitalSign.vitalSignServerData.HRV = 0;
-                    ResultVitalSign.vitalSignServerData.SpO2 = 0;
-                    ResultVitalSign.vitalSignServerData.STRESS = 0;
-                    ResultVitalSign.vitalSignServerData.SBP = 0;
-                    ResultVitalSign.vitalSignServerData.DBP = 0;
-                    ResultVitalSign.vitalSignServerData.BP = 0;
-                }
-            } else{
+    private void requestToServer(){
+        long currentTimeMillis = System.currentTimeMillis();
+        Date currentDate = new Date(currentTimeMillis);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        String measureTime = sdf.format(currentDate);
+        Config.Measure_Time = measureTime;
+        //Web server prototype
+        if (Config.SERVER_RESPONSE_MODE) {
+            try{
+                VitalResponse response = VitalClient.getInstance().requestSyncAnalysis(rPPG.f_pixel_buff, measureTime).body();
+                ResultVitalSign.vitalSignServerData.HR = response.hr;
+                ResultVitalSign.vitalSignServerData.RR = response.rr;
+                ResultVitalSign.vitalSignServerData.HRV = response.hrv;
+                ResultVitalSign.vitalSignServerData.SpO2 = response.spo2;
+                ResultVitalSign.vitalSignServerData.STRESS = (float) response.stress;
+                ResultVitalSign.vitalSignServerData.SBP = response.sbp;
+                ResultVitalSign.vitalSignServerData.DBP = response.dbp;
+                ResultVitalSign.vitalSignServerData.BP = response.bp;
+            } catch (Exception e){
                 ResultVitalSign.vitalSignServerData.HR = 0;
                 ResultVitalSign.vitalSignServerData.RR = 0;
                 ResultVitalSign.vitalSignServerData.HRV = 0;
@@ -171,13 +176,18 @@ public class Vital {
                 ResultVitalSign.vitalSignServerData.DBP = 0;
                 ResultVitalSign.vitalSignServerData.BP = 0;
             }
+        } else{
+            ResultVitalSign.vitalSignServerData.HR = 0;
+            ResultVitalSign.vitalSignServerData.RR = 0;
+            ResultVitalSign.vitalSignServerData.HRV = 0;
+            ResultVitalSign.vitalSignServerData.SpO2 = 0;
+            ResultVitalSign.vitalSignServerData.STRESS = 0;
+            ResultVitalSign.vitalSignServerData.SBP = 0;
+            ResultVitalSign.vitalSignServerData.DBP = 0;
+            ResultVitalSign.vitalSignServerData.BP = 0;
         }
-        bufferIndex = (bufferIndex + 1) % BUFFER_SIZE;
-        pixelIndex++;
-        return lastResult;
     }
-
-    public double[] preprocessing_omit(double[][] pixel) {
+    public double[] preprocessing_omit(double[][] pixel, long[] InterpolatedFrameTime) {
         //pixel = setRGB.setRGB();
         VitalChartData.R_SIGNAL = pixel[0];
         VitalChartData.G_SIGNAL = pixel[1];
@@ -193,9 +203,9 @@ public class Vital {
         VitalChartData.SMOOTH_B_SIGNAL = smoothPixel[0];
 
         //Time Smoothing
-        double[] timeToDouble = new double[rPPG.frameTimeArray.length];
+        double[] timeToDouble = new double[InterpolatedFrameTime.length];
         for (int i = 0; i < timeToDouble.length; i++) {
-            timeToDouble[i] = rPPG.frameTimeArray[i];
+            timeToDouble[i] = InterpolatedFrameTime[i];
         }
         rPPG.frameDoubleTimeArray = new Smooth(timeToDouble, 4, "rectangular").smoothSignal();
         Vec v = new DenseVector(1);
@@ -244,59 +254,6 @@ public class Vital {
 
         return fft.getMagnitude(true);
     }
-
-//    public double[] preprocessing_pos(double[][] pixel){
-//        //pixel = setRGB.setRGB();
-//        VitalChartData.R_SIGNAL = pixel[0];
-//        VitalChartData.G_SIGNAL = pixel[1];
-//        VitalChartData.B_SIGNAL = pixel[2];
-//
-//        double[][] smoothPixel = new double[pixel.length][pixel[0].length];
-//        smoothPixel[0] = new Smooth(pixel[0], 4, "rectangular").smoothSignal();
-//        smoothPixel[1] = new Smooth(pixel[1], 4, "rectangular").smoothSignal();
-//        smoothPixel[2] = new Smooth(pixel[2], 4, "rectangular").smoothSignal();
-//
-//        VitalChartData.SMOOTH_R_SIGNAL = smoothPixel[0];
-//        VitalChartData.SMOOTH_G_SIGNAL = smoothPixel[0];
-//        VitalChartData.SMOOTH_B_SIGNAL = smoothPixel[0];
-//
-//        double[][] posMatrix = new double[][]{
-//                {0, 1, -1}
-//                ,{-2, 1, 1}
-//        };
-//        double[][] matrixS = UtilMethods.matrixMultiply(posMatrix, smoothPixel);
-//
-//        double[] matrixH = DoubleUtils.calculateH(matrixS);
-//        double meanH = DoubleUtils.calculateMean(matrixH);
-//
-//
-//        //smoothTranspose
-////        Detrend d2 = new Detrend(matrixH, DETREND_POWER);
-////        double[] d_g = d2.detrendSignal();
-//        double[] d_g = RppgToolBox.detrend(matrixH, 100);
-//
-//        VitalChartData.DETREND_SIGNAL = d_g;
-//
-//        BandPassFilter bpf_hr = new BandPassFilter(Config.MAX_HR_FREQUENCY, Config.MIN_HR_FREQUENCY);
-//        BandPassFilter bpf_rr = new BandPassFilter(Config.MAX_RR_FREQUENCY, Config.MIN_RR_FREQUENCY);
-//        double[] bpf_hr_signal = new double[d_g.length];
-//        double[] bpf_rr_signal = new double[d_g.length];
-//        for(int i = 1; i < d_g.length; i++){
-//            bpf_hr_signal[i] = bpf_hr.filter(d_g[i], rPPG.frameTimeArray[i] - rPPG.frameTimeArray[i - 1]);
-//            bpf_rr_signal[i] = bpf_rr.filter(d_g[i], rPPG.frameTimeArray[i] - rPPG.frameTimeArray[i - 1]);
-//        }
-//
-//        VitalChartData.BPF_SIGNAL = bpf_hr_signal;
-//        rPPG.lastBvpSignal = bpf_hr_signal;
-//        rPPG.lastRrSignal = bpf_rr_signal;
-//        VitalChartData.BVP_SIGNAL = rPPG.lastBvpSignal;
-//
-//        FastFourier fft = new FastFourier(bpf_hr_signal);
-//        fft.transform();
-//
-//        fftArray = fft.getComplex2D(true);
-//        return fft.getMagnitude(true);
-//    }
 
     public double[] get_peak_avg(double[] signalG, double hr) { // flag 0 : vally 1 : peak
 
@@ -494,7 +451,6 @@ public class Vital {
             long interval = rrIntervals.get(i);
             if (interval > lowerBound && interval < upperBound) {
                 FilteredRRInterval.add(interval);
-                Log.d("vital", "interval :: " + interval);
             }
 
         }
@@ -505,7 +461,7 @@ public class Vital {
         ResultVitalSign.vitalSignData.IBI_mean = mean;
         ResultVitalSign.vitalSignData.IBI_HR = 1000 / mean * 60;
         double meanOfSquaredDifferences = FilteredRRInterval.stream().mapToDouble(a -> a - mean).map(a -> a * a).average().orElse(0.0);
-        Log.d("vital", "IBI : " + mean);
+        Log.d("vital", "IBI : " + mean + "IBI-HR : " + 60000/mean);
         return Math.sqrt(meanOfSquaredDifferences);
     }
 
