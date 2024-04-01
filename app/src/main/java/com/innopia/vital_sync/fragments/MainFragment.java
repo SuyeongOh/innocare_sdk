@@ -416,7 +416,13 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                     startTime = System.currentTimeMillis();
                                 }
                                 faceModelTime = System.currentTimeMillis();
-                                updateProgressBar((int)((faceModelTime - startTime) * 100 / (double)20000));
+                                if((int)((faceModelTime - startTime) * 100 / (double)20000)
+                                        > sNthFrame / (double)(Config.TARGET_FRAME * Config.ANALYSIS_TIME - 1)){
+                                    updateProgressBar((int)((faceModelTime - startTime) * 100 / (double)20000));
+                                } else{
+                                    updateProgressBar((int) (sNthFrame / (double)(Config.TARGET_FRAME * Config.ANALYSIS_TIME - 1)));
+                                }
+
                                 if((mProgressBar.getMax() == mProgressBar.getProgress()) || sNthFrame == (Config.TARGET_FRAME * Config.ANALYSIS_TIME - 1)){
                                     isFinishAnalysis = true;
                                 }
