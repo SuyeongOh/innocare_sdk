@@ -125,6 +125,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private boolean isStopPredict = false;
     private boolean calibrationFinish = false;
     private boolean calibrationTimerStart = false;
+    private boolean isTablet = false;
     private long faceModelTime;
     private long startTime;
     private final Range<Integer> fpsRange = new Range<>(25, Config.TARGET_FRAME);
@@ -356,14 +357,25 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                             inputImage.getPlanes();
                             Bitmap bitmapImage = ImageUtils.convertYUV420ToARGB8888(inputImage);
                             if(Config.USE_CAMERA_DIRECTION == Constant.CAMERA_DIRECTION_FRONT){
-                                Matrix rotateMatrix = new Matrix();
-                                Matrix flipMatrix = new Matrix();
-                                rotateMatrix.postRotate(-90);
-                                flipMatrix.setScale(-1, 1);
-                                bitmapImage = Bitmap.createBitmap(
-                                        bitmapImage, 0, 0, bitmapImage.getWidth(), bitmapImage.getHeight(), rotateMatrix, false);
-                                bitmapImage = Bitmap.createBitmap(
-                                        bitmapImage, 0, 0, bitmapImage.getWidth(), bitmapImage.getHeight(), flipMatrix, false);
+                                if(isTablet){
+//                                    Matrix rotateMatrix = new Matrix();
+                                    Matrix flipMatrix = new Matrix();
+//                                    rotateMatrix.postRotate(-90);
+                                    flipMatrix.setScale(-1, 1);
+//                                    bitmapImage = Bitmap.createBitmap(
+//                                            bitmapImage, 0, 0, bitmapImage.getWidth(), bitmapImage.getHeight(), rotateMatrix, false);
+                                    bitmapImage = Bitmap.createBitmap(
+                                            bitmapImage, 0, 0, bitmapImage.getWidth(), bitmapImage.getHeight(), flipMatrix, false);
+                                } else{
+                                    Matrix rotateMatrix = new Matrix();
+                                    Matrix flipMatrix = new Matrix();
+                                    rotateMatrix.postRotate(-90);
+                                    flipMatrix.setScale(-1, 1);
+                                    bitmapImage = Bitmap.createBitmap(
+                                            bitmapImage, 0, 0, bitmapImage.getWidth(), bitmapImage.getHeight(), rotateMatrix, false);
+                                    bitmapImage = Bitmap.createBitmap(
+                                            bitmapImage, 0, 0, bitmapImage.getWidth(), bitmapImage.getHeight(), flipMatrix, false);
+                                }
                             }
                             Bitmap finalBitmapImage = bitmapImage;
 
@@ -404,7 +416,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                     startTime = System.currentTimeMillis();
                                 }
                                 faceModelTime = System.currentTimeMillis();
-                                updateProgressBar((int)((faceModelTime - startTime) * 100 / (double)25000));
+                                updateProgressBar((int)((faceModelTime - startTime) * 100 / (double)20000));
                                 if((mProgressBar.getMax() == mProgressBar.getProgress()) || sNthFrame == (Config.TARGET_FRAME * Config.ANALYSIS_TIME - 1)){
                                     isFinishAnalysis = true;
                                 }

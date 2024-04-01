@@ -1,7 +1,11 @@
 package com.innopia.vital_sync.utils;
 
+import android.util.Log;
+
 import com.innopia.vital_sync.data.Config;
 import com.innopia.vital_sync.data.Rppg;
+
+import java.util.Arrays;
 
 
 public class RppgUtils {
@@ -108,6 +112,12 @@ public class RppgUtils {
                 newSignal[1][i] = prevG + gradG * weight;
                 newSignal[2][i] = prevB + gradB * weight;
             }
+
+            Log.d("vital", "== rgb original ==\n" + Arrays.toString(rgb[1]));
+            Log.d("vital", "== rgb new signal ==\n" + Arrays.toString(newSignal[1]));
+            Log.d("vital", "== original time ==\n" + Arrays.toString(originalTimeArray));
+            Log.d("vital", "== new time ==\n" + Arrays.toString(procTimeArray));
+
             return newSignal;
         }
         for (int i = 1; i < rgb[0].length; i++) {

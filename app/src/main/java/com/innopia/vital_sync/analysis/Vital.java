@@ -124,10 +124,11 @@ public class Vital {
 
             try {
                 lastResult.spo2_result = spo2(rPPG.f_pixel_buff[0], rPPG.f_pixel_buff[2], VIDEO_FRAME_RATE);
+                lastResult.spo2_result = Math.round(lastResult.spo2_result);
             } catch (Exception e) {
                 lastResult.spo2_result = 0;
             }
-            lastResult.spo2_result = Math.round(lastResult.spo2_result);
+
 
             double[] avg = get_peak_avg(VitalChartData.DETREND_SIGNAL, lastResult.HR_result);
             double peak_avg = avg[0];
@@ -240,8 +241,8 @@ public class Vital {
         double[] bpf_hr_signal = new double[d_g.length];
         double[] bpf_rr_signal = new double[d_g.length];
         for (int i = 1; i < d_g.length; i++) {
-            bpf_hr_signal[i] = bpf_hr.filter(d_g[i], rPPG.frameTimeArray[i] - rPPG.frameTimeArray[i - 1]);
-            bpf_rr_signal[i] = bpf_rr.filter(d_g[i], rPPG.frameTimeArray[i] - rPPG.frameTimeArray[i - 1]);
+            bpf_hr_signal[i] = bpf_hr.filter(d_g[i], rPPG.frameDoubleTimeArray[i] - rPPG.frameDoubleTimeArray[i - 1]);
+            bpf_rr_signal[i] = bpf_rr.filter(d_g[i], rPPG.frameDoubleTimeArray[i] - rPPG.frameDoubleTimeArray[i - 1]);
         }
 
         VitalChartData.BPF_SIGNAL = bpf_hr_signal;

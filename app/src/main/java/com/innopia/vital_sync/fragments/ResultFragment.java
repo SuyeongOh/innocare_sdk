@@ -77,6 +77,7 @@ public class ResultFragment extends Fragment {
         fftChart = rootView.findViewById(R.id.fft_chart);
         hrChart = rootView.findViewById(R.id.hr_chart);
 
+
         initChart(greenChart, "G Signal");
         initChart(smoothChart, "Smooth");
         initChart(coreChart, "Core");
