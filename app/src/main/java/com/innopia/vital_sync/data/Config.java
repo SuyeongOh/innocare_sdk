@@ -20,6 +20,12 @@ public class Config {
 
     public static final double MIN_RR_FREQUENCY = 0.83f;
     public static final double MAX_RR_FREQUENCY = 2.5f;
+
+    public static final double MIN_LF_FREQUENCY = 0.04f;
+    public static final double MAX_LF_FREQUENCY = 0.15f;
+    public static final double MIN_HF_FREQUENCY = 0.15f;
+    public static final double MAX_HF_FREQUENCY = 0.4f;
+
     public static boolean LARGE_FACE_MODE = false;
     public static boolean SMALL_FACE_MODE = false;
     public static boolean SERVER_RESPONSE_MODE = false;

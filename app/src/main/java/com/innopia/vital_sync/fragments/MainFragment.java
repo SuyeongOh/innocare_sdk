@@ -358,12 +358,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                             Bitmap bitmapImage = ImageUtils.convertYUV420ToARGB8888(inputImage);
                             if(Config.USE_CAMERA_DIRECTION == Constant.CAMERA_DIRECTION_FRONT){
                                 if(isTablet){
-//                                    Matrix rotateMatrix = new Matrix();
                                     Matrix flipMatrix = new Matrix();
-//                                    rotateMatrix.postRotate(-90);
                                     flipMatrix.setScale(-1, 1);
-//                                    bitmapImage = Bitmap.createBitmap(
-//                                            bitmapImage, 0, 0, bitmapImage.getWidth(), bitmapImage.getHeight(), rotateMatrix, false);
                                     bitmapImage = Bitmap.createBitmap(
                                             bitmapImage, 0, 0, bitmapImage.getWidth(), bitmapImage.getHeight(), flipMatrix, false);
                                 } else{

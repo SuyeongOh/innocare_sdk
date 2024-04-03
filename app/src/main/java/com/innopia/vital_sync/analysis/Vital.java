@@ -116,7 +116,7 @@ public class Vital {
             lastResult.sdnn_result = HRV_IBI(rPPG.lastBvpSignal, rPPG, lastResult.HR_result);
             lastResult.sdnn_result = Math.round(lastResult.sdnn_result);
             //--------SDNN --------------------//
-            lastResult.LF_HF_ratio = LF_HF_ratio(pre_processed, BUFFER_SIZE);
+            lastResult.LF_HF_ratio = LF_HF_ratio(VitalChartData.DETREND_SIGNAL);
 
             Log.d("vital", String.format(
                     "HR : %f, hrv : %f"
@@ -380,18 +380,39 @@ public class Vital {
         return max_index * frequency_interval * 48;
     }
 
-    public float LF_HF_ratio(double[] real_dft, int buff_size) {
-
+    public float LF_HF_ratio(double[] real_dft) {
         float LF = 0.0f;
         float HF = 0.0f;
-        float filter_interval = VIDEO_FRAME_RATE / (float) buff_size;
-        for (int i = 0; i < real_dft.length; i++) {
-            if (0.8 <= i * filter_interval && i * filter_interval < 1.5)
-                LF += real_dft[i]; //1을 저장공간으로 사용
-            else if (1.5 <= i * filter_interval && i * filter_interval <= 4.0)
-                HF += real_dft[i]; //1을 저장공간으로 사용
+        float filter_interval = VIDEO_FRAME_RATE / (float)real_dft.length;
+
+        BandPassFilter bpf_lf = new BandPassFilter(Config.MAX_LF_FREQUENCY, Config.MIN_LF_FREQUENCY);
+        BandPassFilter bpf_hf = new BandPassFilter(Config.MAX_HF_FREQUENCY, Config.MIN_HF_FREQUENCY);
+        double[] bpf_lf_signal = new double[real_dft.length];
+        double[] bpf_hf_signal = new double[real_dft.length];
+        for (int i = 1; i < real_dft.length; i++) {
+            bpf_lf_signal[i] = bpf_lf.filter(real_dft[i], rPPG.frameDoubleTimeArray[i] - rPPG.frameDoubleTimeArray[i - 1]);
+            bpf_hf_signal[i] = bpf_hf.filter(real_dft[i], rPPG.frameDoubleTimeArray[i] - rPPG.frameDoubleTimeArray[i - 1]);
         }
-        return LF / HF;
+
+        FastFourier fft_lf = new FastFourier(bpf_lf_signal);
+        FastFourier fft_hf = new FastFourier(bpf_hf_signal);
+
+        fft_lf.transform();
+        fft_hf.transform();
+
+        double[] power_lf = fft_lf.getMagnitude(true);
+        double[] power_hf = fft_hf.getMagnitude(true);
+
+        for( int i =0 ; i < bpf_lf_signal.length ; i++){
+            if(Config.MIN_LF_FREQUENCY <= i * filter_interval
+                    && i * filter_interval < Config.MAX_LF_FREQUENCY)
+                LF += power_lf[i];
+            else if(Config.MIN_HF_FREQUENCY <= i * filter_interval
+                    && i * filter_interval <= Config.MAX_HF_FREQUENCY)
+                HF += power_hf[i];
+        }
+        Log.d("Vital", "LF : " + LF + ", HF : " + HF);
+        return LF/HF;
     }
 
     public double HRV_IBI(double[] signalG, Rppg rppg, double hr) {
