@@ -2,29 +2,23 @@ package com.innopia.vital_sync.analysis;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Matrix;
-import android.os.SystemClock;
 
-import com.google.mediapipe.framework.image.BitmapImageBuilder;
-import com.google.mediapipe.framework.image.MPImage;
-import com.google.mediapipe.tasks.core.BaseOptions;
-import com.google.mediapipe.tasks.core.Delegate;
-import com.google.mediapipe.tasks.vision.core.RunningMode;
-import com.google.mediapipe.tasks.vision.facedetector.FaceDetector;
-import com.google.mediapipe.tasks.vision.facedetector.FaceDetectorResult;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.face.Face;
+import com.google.mlkit.vision.face.FaceDetection;
+import com.google.mlkit.vision.face.FaceDetector;
+import com.google.mlkit.vision.face.FaceDetectorOptions;
 import com.innopia.vital_sync.data.Config;
-import com.innopia.vital_sync.data.Constant;
 
-import java.util.Collections;
 import java.util.List;
 
-import androidx.camera.core.ImageProxy;
+import androidx.annotation.NonNull;
 
-public class EnhanceFaceDetector {
+public class EnhanceFaceDetector extends VisionProcessorBase<List<Face>> {
     private static final String FACE_DETECTION_MODEL_NAME = "face_detection_short_range.tflite";
     private static final float threshold = Config.THRESHOLD_DEFAULT;
-    private static final int currentDelegate = Constant.DELEGATE_CPU;
-    private static final RunningMode runningMode = RunningMode.LIVE_STREAM;
 
     private DetectorListener mDetectorListener;
 
@@ -33,102 +27,44 @@ public class EnhanceFaceDetector {
 
     private FaceDetector faceDetector;
 
-    private android.media.FaceDetector detector;
-
     public EnhanceFaceDetector(Context context, DetectorListener listener){
+        super(context);
         mContext = context;
         mDetectorListener = listener;
         setupFaceDetector();
     }
 
     public void setupFaceDetector(){
-        BaseOptions.Builder baseoptionBuilder = BaseOptions.builder();
+        FaceDetectorOptions options = new FaceDetectorOptions.Builder()
+                .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_ALL)
+                .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
+                .enableTracking()
+                .build();
 
-        if(currentDelegate == Constant.DELEGATE_CPU){
-            baseoptionBuilder.setDelegate(Delegate.CPU);
-        }else if(currentDelegate == Constant.DELEGATE_GPU){
-            baseoptionBuilder.setDelegate(Delegate.GPU);
-        }
-        baseoptionBuilder.setModelAssetPath(FACE_DETECTION_MODEL_NAME);
-
-        if(mDetectorListener == null){
-            throw new IllegalStateException("faceDetectorListener must be set");
-        }
-
-        try{
-            FaceDetector.FaceDetectorOptions.Builder optionBuilder = FaceDetector.FaceDetectorOptions.builder()
-                    .setBaseOptions(baseoptionBuilder.build())
-                    .setMinDetectionConfidence(threshold)
-                    .setRunningMode(runningMode);
-
-            if(runningMode.equals(RunningMode.LIVE_STREAM)){
-                optionBuilder.setResultListener(this::returnLivestreamResult)
-                    .setErrorListener(this::returnLivestreamError);
-            }else if(runningMode.equals(RunningMode.IMAGE)){
-                optionBuilder.setResultListener(this::returnLivestreamResult)
-                        .setErrorListener(this::returnLivestreamError);
-            }
-
-            FaceDetector.FaceDetectorOptions options = optionBuilder.build();
-            faceDetector = FaceDetector.createFromOptions(mContext, options);
-        } catch (Exception e){
-            e.printStackTrace();
-            mDetectorListener.onError(e.getMessage(), 1);
-        }
+        faceDetector = FaceDetection.getClient(options);
     }
 
-    public void detectLiveStreamFrame(ImageProxy imageProxy){
-        long frametime = SystemClock.uptimeMillis();
-
-        Bitmap buffer = Bitmap.createBitmap(imageProxy.getWidth(), imageProxy.getHeight(), Bitmap.Config.ARGB_8888);
-        buffer.copyPixelsFromBuffer(imageProxy.getPlanes()[0].getBuffer());
-        imageProxy.close();
-
-        Matrix matrix = new Matrix();
-        matrix.postRotate(imageProxy.getImageInfo().getRotationDegrees());
-        if(Config.USE_CAMERA_DIRECTION == Constant.CAMERA_DIRECTION_FRONT){
-            matrix.postScale(-1f, 1f, imageProxy.getWidth(), imageProxy.getHeight());
-        }
-
-        Bitmap rotatedBitmap = Bitmap.createBitmap(buffer, 0, 0, buffer.getWidth(), buffer.getHeight(), matrix, true);
-        MPImage mpImage = new BitmapImageBuilder(rotatedBitmap).build();
-        originalBitmap = rotatedBitmap;
-        detectAsync(mpImage, frametime);
-    }
-
-    public void detectAsync(MPImage mpImage, long frameTime){
-        faceDetector.detectAsync(mpImage, frameTime);
-    }
-
-    public void detectAsync(MPImage mpImage, Bitmap original, long frameTime){
+    public void detectAsync(InputImage image, Bitmap original){
         originalBitmap = original;
-        faceDetector.detectAsync(mpImage, frameTime);
+        Task<List<Face>> result = faceDetector.process(image);
+        result.addOnCompleteListener(new OnCompleteListener<List<Face>>() {
+            @Override
+            public void onComplete(@NonNull Task<List<Face>> task) {
+                mDetectorListener.onResults(
+                        originalBitmap,
+                        new ResultBundle(
+                                result.getResult(),
+                                image.getHeight(),
+                                image.getWidth()
+                        )
+                );
+            }
+        });
     }
 
-    private void returnLivestreamResult(FaceDetectorResult result, MPImage input){
-        long finishTimeMs = SystemClock.uptimeMillis();
-        long inferencetime = finishTimeMs - result.timestampMs();
+    @Override
+    protected void onFailure(@NonNull Exception e) {
 
-        mDetectorListener.onResults(
-                input,
-                originalBitmap,
-                new ResultBundle(
-                        Collections.singletonList(result),
-                        inferencetime,
-                        input.getHeight(),
-                        input.getWidth()
-                )
-        );
-    }
-
-    private void returnLivestreamError(RuntimeException error) {
-        mDetectorListener.onError(
-                error.getMessage(), 1
-        );
-    }
-
-    public boolean isClosed(){
-        return faceDetector == null;
     }
 
     public void clearFaceDetector() {
@@ -136,31 +72,56 @@ public class EnhanceFaceDetector {
         faceDetector = null;
     }
 
+    @Override
+    public void processBitmap(Bitmap bitmap) {
+        super.processBitmap(bitmap);
+    }
+
+    @Override
+    public void stop() {
+        super.stop();
+    }
+
+    @Override
+    protected Task<List<Face>> detectInImage(InputImage image) {
+        return faceDetector.process(image);
+    }
+
+    @Override
+    protected void onSuccess(@NonNull List<Face> results) {
+        mDetectorListener.onResults(
+                originalBitmap,
+                new ResultBundle(
+                        results,
+                        originalBitmap.getHeight(),
+                        originalBitmap.getWidth()
+                )
+        );
+    }
+
 
     public static class ResultBundle{
-        List<FaceDetectorResult> results;
-        long inferenceTime;
+        List<Face> results;
         public int inputImageHeight;
         public int inputImageWidth;
 
         public ResultBundle (
-            List<FaceDetectorResult> results,
-            long inferenceTime,
+            List<Face> results,
             int inputImageHeight,
             int inputImageWidth
         ) {
             this.results = results;
-            this.inferenceTime = inferenceTime;
             this.inputImageHeight = inputImageHeight;
             this.inputImageWidth = inputImageWidth;
         }
 
-        public List<FaceDetectorResult> getResults(){
+        public List<Face> getResults(){
             return results;
         }
     }
+
     public interface DetectorListener {
         public void onError(String error, int errorCode);
-        public void onResults(MPImage input, Bitmap original, ResultBundle resultBundle);
+        public void onResults(Bitmap original, ResultBundle resultBundle);
     }
 }

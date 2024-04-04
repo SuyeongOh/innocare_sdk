@@ -41,18 +41,16 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.google.mediapipe.framework.image.BitmapImageBuilder;
-import com.google.mediapipe.framework.image.MPImage;
-import com.google.mediapipe.tasks.vision.facedetector.FaceDetectorResult;
-import com.innopia.vital_sync.analysis.BpmAnalysisViewModel;
-import com.innopia.vital_sync.data.Config;
-import com.innopia.vital_sync.analysis.EnhanceFaceDetector;
-import com.innopia.vital_sync.analysis.FaceImageModel;
+import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.face.Face;
 import com.innopia.vital_sync.R;
 import com.innopia.vital_sync.activities.ResultActivity;
-import com.innopia.vital_sync.analysis.Vital;
+import com.innopia.vital_sync.analysis.BpmAnalysisViewModel;
+import com.innopia.vital_sync.analysis.EnhanceFaceDetector;
+import com.innopia.vital_sync.analysis.FaceImageModel;
 import com.innopia.vital_sync.camera.AutoFitSurfaceView;
 import com.innopia.vital_sync.camera.CameraSizes;
+import com.innopia.vital_sync.data.Config;
 import com.innopia.vital_sync.data.Constant;
 import com.innopia.vital_sync.data.ResultVitalSign;
 import com.innopia.vital_sync.ui.CommonPopupView;
@@ -400,52 +398,55 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                             }
                             inputImage.close();
 
-                            if(isFixedFace){
-                                Bitmap faceImage;
-                                try{
-                                    faceImage = Bitmap.createBitmap(bitmapImage, faceROI.left, faceROI.top, faceROI.width(), faceROI.height());
-                                } catch (Exception e){
-                                    e.printStackTrace();
-                                    return;
-                                }
-                                if(sNthFrame == 0){
-                                    startTime = System.currentTimeMillis();
-                                }
-                                faceModelTime = System.currentTimeMillis();
-                                if((int)((faceModelTime - startTime) * 100 / (double)20000)
-                                        > sNthFrame / (double)(Config.TARGET_FRAME * Config.ANALYSIS_TIME - 1)){
-                                    updateProgressBar((int)((faceModelTime - startTime) * 100 / (double)20000));
-                                } else{
-                                    updateProgressBar((int) (sNthFrame / (double)(Config.TARGET_FRAME * Config.ANALYSIS_TIME - 1)));
-                                }
-
-                                if((mProgressBar.getMax() == mProgressBar.getProgress()) || sNthFrame == (Config.TARGET_FRAME * Config.ANALYSIS_TIME - 1)){
-                                    isFinishAnalysis = true;
-                                }
-                                mBpmAnalysisViewModel.addFaceImageModel(new FaceImageModel(faceImage, faceModelTime, isFinishAnalysis));
-
-
-                                sNthFrame ++;
-                                if(isFinishAnalysis){
-                                    if(Config.FLAG_INNER_TEST){
-                                        updateVitalSignValue();
-                                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                reStartBtn.setVisibility(View.VISIBLE);
-                                                nextPageBtn.setVisibility(View.VISIBLE);
-                                                mFinishPopup.show();
-                                            }
-                                        });
-                                    }else{
-                                        Intent intent = new Intent(getContext(), ResultActivity.class);
-                                        getContext().startActivity(intent);
-                                    }
-                                }
-                            } else{
-                                MPImage image = new BitmapImageBuilder(bitmapImage).build();
-                                faceDetector.detectAsync(image, bitmapImage ,System.currentTimeMillis());
-                            }
+                            InputImage image = InputImage.fromBitmap(bitmapImage, 0);
+                            faceDetector.detectAsync(image, bitmapImage);
+//                            if(isFixedFace){
+//                                Bitmap faceImage;
+//                                try{
+//                                    faceImage = Bitmap.createBitmap(bitmapImage, faceROI.left, faceROI.top, faceROI.width(), faceROI.height());
+//                                } catch (Exception e){
+//                                    e.printStackTrace();
+//                                    return;
+//                                }
+//                                if(sNthFrame == 0){
+//                                    startTime = System.currentTimeMillis();
+//                                }
+//                                faceModelTime = System.currentTimeMillis();
+//                                if((int)((faceModelTime - startTime) * 100 / (double)20000)
+//                                        > sNthFrame / (double)(Config.TARGET_FRAME * Config.ANALYSIS_TIME - 1)){
+//                                    updateProgressBar((int)((faceModelTime - startTime) * 100 / (double)20000));
+//                                } else{
+//                                    updateProgressBar((int) (sNthFrame / (double)(Config.TARGET_FRAME * Config.ANALYSIS_TIME - 1)));
+//                                }
+//
+//                                if((mProgressBar.getMax() == mProgressBar.getProgress()) || sNthFrame == (Config.TARGET_FRAME * Config.ANALYSIS_TIME - 1)){
+//                                    isFinishAnalysis = true;
+//                                }
+//                                mBpmAnalysisViewModel.addFaceImageModel(new FaceImageModel(faceImage, faceModelTime, isFinishAnalysis));
+//
+//
+//                                sNthFrame ++;
+//                                if(isFinishAnalysis){
+//                                    if(Config.FLAG_INNER_TEST){
+//                                        updateVitalSignValue();
+//                                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+//                                            @Override
+//                                            public void run() {
+//                                                reStartBtn.setVisibility(View.VISIBLE);
+//                                                nextPageBtn.setVisibility(View.VISIBLE);
+//                                                mFinishPopup.show();
+//                                            }
+//                                        });
+//                                    }else{
+//                                        Intent intent = new Intent(getContext(), ResultActivity.class);
+//                                        getContext().startActivity(intent);
+//                                    }
+//                                }
+//                            }
+//                            else{
+//                                InputImage image = InputImage.fromBitmap(bitmapImage, 0);
+//                                faceDetector.detectAsync(image, bitmapImage);
+//                            }
 
                         }
                     }, imageReaderHandler);
@@ -491,12 +492,12 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
     private Runnable postInferenceCallback;
 
-    public void processImage(MPImage image, EnhanceFaceDetector.ResultBundle resultBundle){
-        postInferenceCallback = image::close;
-        List<FaceDetectorResult> faceDetectorResults = resultBundle.getResults();
+    public void processImage(EnhanceFaceDetector.ResultBundle resultBundle){
+        List<Face> faceDetectorResults = resultBundle.getResults();
         try {
-            if (faceDetectorResults.get(0).detections().size() >= 1) {
-                RectF box = faceDetectorResults.get(0).detections().get(0).boundingBox();
+            if (faceDetectorResults.size()>= 1) {
+                Rect resultBox = faceDetectorResults.get(0).getBoundingBox();
+                RectF box = new RectF(resultBox);
 
                 if(mTrackingOverlayView.isOutBoundary(box)){
                     if(!isStopPredict) {
@@ -537,7 +538,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
             }
             if (mTrackingOverlayView != null) {
-                FaceDetectorResult result = resultBundle.getResults().get(0);
+                Face result = resultBundle.getResults().get(0);
                 mTrackingOverlayView.setResults(result,
                         resultBundle.inputImageWidth,
                         resultBundle.inputImageHeight,
@@ -558,9 +559,9 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     }
 
     @Override
-    public void onResults(MPImage input, Bitmap original, EnhanceFaceDetector.ResultBundle resultBundle) {
+    public void onResults(Bitmap original, EnhanceFaceDetector.ResultBundle resultBundle) {
         mOriginalBitmap = original;
-        processImage(input, resultBundle);
+        processImage(resultBundle);
     }
 
     private void stopPrediction(String type){
