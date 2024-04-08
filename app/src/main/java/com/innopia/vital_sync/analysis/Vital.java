@@ -138,9 +138,30 @@ public class Vital {
 
             if (bmi == 0) bmi = 20.1f;
 
-            //원래는 23.7889
-            lastResult.SBP = 23.7889 + (95.4335 * peak_avg) + (4.5958 * bmi) - (5.109 * peak_avg * bmi);
-            lastResult.DBP = -17.3772 - (115.1747 * valley_avg) + (4.0251 * bmi) + (5.2825 * valley_avg * bmi);
+            //Resistivity of blood https://github.com/miller619/bloodPressure_FYP2_2017
+            double ROB = 18.31;
+            //Ejection Time
+            double ET = (364.5-1.23 * lastResult.HR_result);
+            //Body Surface Area
+            double BSA = 0.007184*(Math.pow(Config.USER_WEIGHT,0.425))*(Math.pow(Config.USER_HEIGHT,0.725));
+            //Stroke volume
+            double SV = (-6.6 + (0.25*(ET-35)) - (0.62*lastResult.HR_result) + (40.4*BSA) - (0.51*Config.USER_AGE));
+            //Pulse Pressure
+            double PP = SV / ((0.013 * Config.USER_WEIGHT - 0.007*Config.USER_AGE-0.004 * lastResult.HR_result)+1.307);
+
+            //심박출량 : 각 심실에서 1분에 폐나 순환계로 뿜 어 내보내는 이완기 혈액의 양(정상치: 4-8L/min)
+            double user_cardiac_output = 6;
+            double MAP = user_cardiac_output * ROB;
+
+            int SP = (int) (MAP + 3/2*PP);
+            int DP = (int) (MAP - PP/3);
+
+            Log.d("BPM ", "Sys "+SP+" Dys "+DP+" Beats "+lastResult.HR_result);
+            lastResult.SBP = SP;
+            lastResult.DBP = DP;
+
+//            lastResult.SBP = 23.7889 + (95.4335 * peak_avg) + (4.5958 * bmi) - (5.109 * peak_avg * bmi);
+//            lastResult.DBP = -17.3772 - (115.1747 * valley_avg) + (4.0251 * bmi) + (5.2825 * valley_avg * bmi);
             lastResult.BP = lastResult.SBP * 0.33 + lastResult.DBP * 0.66;
 
         }
