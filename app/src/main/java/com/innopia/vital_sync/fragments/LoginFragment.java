@@ -125,6 +125,7 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
     }
 
     private void loginGuest() {
+        Config.USER_ID = "Guest";
         MainActivity activity = (MainActivity) getActivity();
         activity.replaceFragment(new InitFragment());
     }
@@ -152,6 +153,4 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
         editor.putString(USER_ID_KEY, ID);
         editor.apply();
     }
-
-
 }

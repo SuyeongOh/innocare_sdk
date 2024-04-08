@@ -206,22 +206,22 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 openCamera(cameraManager, cameraId, cameraHandler);
                 Size[] sizeArray = (characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(Constant.PIXEL_FORMAT));
                 Size imageReaderSize = null;
-                for(int i = sizeArray.length - 1; i > 0; i--){
-                    if(CameraSizes.isHdRatio(sizeArray[i]) && (sizeArray[i].getWidth() == 640)){
+                for (int i = sizeArray.length - 1; i > 0; i--) {
+                    if (CameraSizes.isHdRatio(sizeArray[i]) && (sizeArray[i].getWidth() == 640)) {
                         imageReaderSize = sizeArray[i];
                         break;
                     }
                 }
                 //640x360비율이 없을경우 낮은곳에서 찾기, TODO 640 밑으로 16:9가 없는 카메라 생기면 그때 또 handling
-                if(imageReaderSize == null){
-                    for(int i = sizeArray.length - 1; i > 0; i--){
-                        if(CameraSizes.isHdRatio(sizeArray[i]) && (sizeArray[i].getWidth() <= 640)){
+                if (imageReaderSize == null) {
+                    for (int i = sizeArray.length - 1; i > 0; i--) {
+                        if (CameraSizes.isHdRatio(sizeArray[i]) && (sizeArray[i].getWidth() <= 640)) {
                             imageReaderSize = sizeArray[i];
                             break;
                         }
                     }
                 }
-                if(imageReaderSize == null){
+                if (imageReaderSize == null) {
                     imageReaderSize = new Size(autoFitSurfaceView.getWidth(), autoFitSurfaceView.getHeight());
                 }
                 imageReader = ImageReader.newInstance(imageReaderSize.getWidth(), imageReaderSize.getHeight(), Constant.PIXEL_FORMAT, Constant.IMAGE_BUFFER_SIZE);
@@ -233,9 +233,9 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
                 //세로 방향 인지 판단
                 int rotation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
-                if(rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270){ // landscape
+                if (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270) { // landscape
                     displaySize.y = displaySize.x * imageReaderSize.getWidth() / imageReaderSize.getHeight();
-                } else{ // portrait 16:9 >> 9:16 전환
+                } else { // portrait 16:9 >> 9:16 전환
                     displaySize.y = displaySize.x * imageReaderSize.getWidth() / imageReaderSize.getHeight();
                 }
                 view.post(() -> initCamera());
@@ -251,7 +251,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         });
     }
 
-    private void initThread(){
+    private void initThread() {
         thread_preview = new HandlerThread("preview Thread");
         thread_preview.start();
 
@@ -267,31 +267,32 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         createCaptureSession(Camera, Arrays.asList(imageReader.getSurface()), cameraHandler);
     }
 
-    private String chooseCamera(){
+    private String chooseCamera() {
         cameraManager = (CameraManager) requireContext().getApplicationContext()
                 .getSystemService(Context.CAMERA_SERVICE);
         try {
-            for(String cameraId : cameraManager.getCameraIdList()){
+            for (String cameraId : cameraManager.getCameraIdList()) {
                 characteristics = cameraManager.getCameraCharacteristics(cameraId);
                 StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
-                if(map != null){
+                if (map != null) {
                     int lens = characteristics.get(CameraCharacteristics.LENS_FACING);
-                    if(Config.USE_CAMERA_DIRECTION == Constant.CAMERA_DIRECTION_FRONT){
-                        if(lens == CameraCharacteristics.LENS_FACING_FRONT){
+                    if (Config.USE_CAMERA_DIRECTION == Constant.CAMERA_DIRECTION_FRONT) {
+                        if (lens == CameraCharacteristics.LENS_FACING_FRONT) {
                             return cameraId;
                         }
-                    }else{
-                        if(lens == CameraCharacteristics.LENS_FACING_BACK){
+                    } else {
+                        if (lens == CameraCharacteristics.LENS_FACING_BACK) {
                             return cameraId;
                         }
                     }
                 }
             }
-        }catch (CameraAccessException e){
+        } catch (CameraAccessException e) {
             logCameraAccessException(e);
         }
         return null;
     }
+
     private void openCamera(CameraManager manager, String cameraId, Handler handler) {
         if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
@@ -303,7 +304,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        try{
+        try {
             manager.openCamera(cameraId, new CameraDevice.StateCallback() {
                 @Override
                 public void onOpened(@NonNull CameraDevice camera) {
@@ -321,14 +322,14 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 }
 
             }, handler);
-        } catch (CameraAccessException e){
+        } catch (CameraAccessException e) {
             e.printStackTrace();
             logCameraAccessException(e);
         }
     }
 
-    private void createCaptureSession(CameraDevice camera, List<Surface> targets, Handler handler){
-        try{
+    private void createCaptureSession(CameraDevice camera, List<Surface> targets, Handler handler) {
+        try {
             camera.createCaptureSession(targets, new CameraCaptureSession.StateCallback() {
                 @Override
                 public void onConfigured(@NonNull CameraCaptureSession session) {
@@ -347,22 +348,22 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                         public void onImageAvailable(ImageReader reader) {
                             Image inputImage = reader.acquireLatestImage();
 
-                            if(inputImage == null) {
+                            if (inputImage == null) {
                                 return;
                             }
-                            if(isFinishAnalysis){
+                            if (isFinishAnalysis) {
                                 inputImage.close();
                                 return;
                             }
                             inputImage.getPlanes();
                             Bitmap bitmapImage = ImageUtils.convertYUV420ToARGB8888(inputImage);
-                            if(Config.USE_CAMERA_DIRECTION == Constant.CAMERA_DIRECTION_FRONT){
-                                if(isTablet){
+                            if (Config.USE_CAMERA_DIRECTION == Constant.CAMERA_DIRECTION_FRONT) {
+                                if (isTablet) {
                                     Matrix flipMatrix = new Matrix();
                                     flipMatrix.setScale(-1, 1);
                                     bitmapImage = Bitmap.createBitmap(
                                             bitmapImage, 0, 0, bitmapImage.getWidth(), bitmapImage.getHeight(), flipMatrix, false);
-                                } else{
+                                } else {
                                     Matrix rotateMatrix = new Matrix();
                                     Matrix flipMatrix = new Matrix();
                                     rotateMatrix.postRotate(-90);
@@ -383,7 +384,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                 }
                             });
 
-                            if(sNthFrame == 0 && !calibrationTimerStart){
+                            if (sNthFrame == 0 && !calibrationTimerStart) {
                                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                                     @Override
                                     public void run() {
@@ -394,40 +395,40 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                 calibrationTimerStart = true;
                                 calibrationFinish = false;
                             }
-                            if(!calibrationFinish) {
+                            if (!calibrationFinish) {
                                 inputImage.close();
                                 return;
                             }
                             inputImage.close();
 
-                            if(isFixedFace){
+                            if (isFixedFace) {
                                 Bitmap faceImage;
-                                try{
+                                try {
                                     faceImage = Bitmap.createBitmap(bitmapImage, faceROI.left, faceROI.top, faceROI.width(), faceROI.height());
-                                } catch (Exception e){
+                                } catch (Exception e) {
                                     e.printStackTrace();
                                     return;
                                 }
-                                if(sNthFrame == 0){
+                                if (sNthFrame == 0) {
                                     startTime = System.currentTimeMillis();
                                 }
                                 faceModelTime = System.currentTimeMillis();
-                                if((int)((faceModelTime - startTime) * 100 / (double)20000)
-                                        > sNthFrame / (double)(Config.TARGET_FRAME * Config.ANALYSIS_TIME - 1)){
-                                    updateProgressBar((int)((faceModelTime - startTime) * 100 / (double)20000));
-                                } else{
-                                    updateProgressBar((int) (sNthFrame / (double)(Config.TARGET_FRAME * Config.ANALYSIS_TIME - 1)));
+                                if ((int) ((faceModelTime - startTime) * 100 / (double) 20000)
+                                        > sNthFrame / (double) (Config.TARGET_FRAME * Config.ANALYSIS_TIME - 1)) {
+                                    updateProgressBar((int) ((faceModelTime - startTime) * 100 / (double) 20000));
+                                } else {
+                                    updateProgressBar((int) (sNthFrame / (double) (Config.TARGET_FRAME * Config.ANALYSIS_TIME - 1)));
                                 }
 
-                                if((mProgressBar.getMax() == mProgressBar.getProgress()) || sNthFrame == (Config.TARGET_FRAME * Config.ANALYSIS_TIME - 1)){
+                                if ((mProgressBar.getMax() == mProgressBar.getProgress()) || sNthFrame == (Config.TARGET_FRAME * Config.ANALYSIS_TIME - 1)) {
                                     isFinishAnalysis = true;
                                 }
                                 mBpmAnalysisViewModel.addFaceImageModel(new FaceImageModel(faceImage, faceModelTime, isFinishAnalysis));
 
 
-                                sNthFrame ++;
-                                if(isFinishAnalysis){
-                                    if(Config.FLAG_INNER_TEST){
+                                sNthFrame++;
+                                if (isFinishAnalysis) {
+                                    if (Config.FLAG_INNER_TEST) {
                                         updateVitalSignValue();
                                         new Handler(Looper.getMainLooper()).post(new Runnable() {
                                             @Override
@@ -437,26 +438,27 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                                 mFinishPopup.show();
                                             }
                                         });
-                                    }else{
+                                    } else {
                                         Intent intent = new Intent(getContext(), ResultActivity.class);
                                         getContext().startActivity(intent);
                                     }
                                 }
-                            } else{
+                            } else {
                                 MPImage image = new BitmapImageBuilder(bitmapImage).build();
-                                faceDetector.detectAsync(image, bitmapImage ,System.currentTimeMillis());
+                                faceDetector.detectAsync(image, bitmapImage, System.currentTimeMillis());
                             }
 
                         }
                     }, imageReaderHandler);
 
                 }
+
                 @Override
                 public void onConfigureFailed(@NonNull CameraCaptureSession session) {
 
                 }
             }, handler);
-        } catch (CameraAccessException e){
+        } catch (CameraAccessException e) {
             logCameraAccessException(e);
         }
 
@@ -478,12 +480,12 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         imageReaderThread.quitSafely();
         thread_preview.quitSafely();
         mFrontCameraExecutor.shutdown();
-        try{
+        try {
             mFrontCameraExecutor.awaitTermination(
                     Long.MAX_VALUE,
                     TimeUnit.NANOSECONDS
             );
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -491,21 +493,21 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
     private Runnable postInferenceCallback;
 
-    public void processImage(MPImage image, EnhanceFaceDetector.ResultBundle resultBundle){
+    public void processImage(MPImage image, EnhanceFaceDetector.ResultBundle resultBundle) {
         postInferenceCallback = image::close;
         List<FaceDetectorResult> faceDetectorResults = resultBundle.getResults();
         try {
             if (faceDetectorResults.get(0).detections().size() >= 1) {
                 RectF box = faceDetectorResults.get(0).detections().get(0).boundingBox();
 
-                if(mTrackingOverlayView.isOutBoundary(box)){
-                    if(!isStopPredict) {
+                if (mTrackingOverlayView.isOutBoundary(box)) {
+                    if (!isStopPredict) {
                         stopPrediction(Constant.TYPE_OF_OUT);
                     }
                     readyForNextImage();
                     return;
                 } else if (mTrackingOverlayView.isSmallSize(box)) {
-                    if(!isStopPredict) {
+                    if (!isStopPredict) {
                         stopPrediction(Constant.TYPE_OF_SMALL);
                     }
                     readyForNextImage();
@@ -515,25 +517,31 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 mGuidePopupView.dismiss();
 
                 isFixedFace = true;
-                if(Config.LARGE_FACE_MODE){
-                    float width = box.width();
-                    float height = box.height();
-                    box.left -= width/4;
-                    box.right += width/4;
-                    box.top -= height/4;
-                    box.bottom += height/4;
-                    box.round(faceROI);
-                } else if (Config.SMALL_FACE_MODE){
-                    float width = box.width();
-                    float height = box.height();
-                    box.left += width/10;
-                    box.right -= width/10;
-                    box.top += height/10 * 4;
-                    box.bottom -= height/10 * 4;
-                    box.round(faceROI);
-                }else{
-                    box.round(faceROI);
-                }
+                float width = box.width();
+                float height = box.height();
+                faceROI.left = (int)(box.left + width/10);
+                faceROI.right = (int) (box.right - width/10);
+                faceROI.top = (int) (box.top + height/10 * 4);
+                faceROI.bottom = (int) (box.bottom - height/10 * 4);
+//                if(Config.LARGE_FACE_MODE){
+//                    float width = box.width();
+//                    float height = box.height();
+//                    box.left -= width/4;
+//                    box.right += width/4;
+//                    box.top -= height/4;
+//                    box.bottom += height/4;
+//                    box.round(faceROI);
+//                } else if (Config.SMALL_FACE_MODE){
+//                    float width = box.width();
+//                    float height = box.height();
+//                    box.left += width/10;
+//                    box.right -= width/10;
+//                    box.top += height/10 * 4;
+//                    box.bottom -= height/10 * 4;
+//                    box.round(faceROI);
+//                }else{
+//                    box.round(faceROI);
+//                }
 
             }
             if (mTrackingOverlayView != null) {
@@ -545,7 +553,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
             }
 
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         readyForNextImage();
@@ -563,7 +571,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         processImage(input, resultBundle);
     }
 
-    private void stopPrediction(String type){
+    private void stopPrediction(String type) {
         switch (type) {
             case Constant.TYPE_OF_BIG:
                 mGuidePopupText.setText(R.string.face_big_detection);
@@ -590,29 +598,29 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
     }
 
-    private void updateProgressBar(int progress){
-        if((progress == mProgressBar.getMin())
+    private void updateProgressBar(int progress) {
+        if ((progress == mProgressBar.getMin())
                 && (mProgressBar.getProgress() == mProgressBar.getMin())) return;
         mProgressBar.setProgress(progress);
 
         mProgressBar.invalidate();
     }
 
-    private void updateVitalSignValue(){
+    private void updateVitalSignValue() {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
                 hrValueView.setText(
                         Math.round(ResultVitalSign.vitalSignServerData.HR) + "/" +
-                        Math.round(ResultVitalSign.vitalSignData.HR)
+                                Math.round(ResultVitalSign.vitalSignData.HR)
                 );
                 rrValueView.setText(
                         Math.round(ResultVitalSign.vitalSignServerData.RR) + "/" +
-                        Math.round(ResultVitalSign.vitalSignData.RR)
+                                Math.round(ResultVitalSign.vitalSignData.RR)
                 );
                 sdnnValueView.setText(
                         Math.round(ResultVitalSign.vitalSignServerData.HRV) + "/" +
-                        Math.round(ResultVitalSign.vitalSignData.HRV)
+                                Math.round(ResultVitalSign.vitalSignData.HRV)
                 );
                 stressValueView.setText(
                         String.format("%1$,.2f / %1$,.2f"
@@ -621,21 +629,21 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 );
                 spo2ValueView.setText(
                         Math.round(ResultVitalSign.vitalSignServerData.SpO2) + "/" +
-                        Math.round(ResultVitalSign.vitalSignData.SpO2)
+                                Math.round(ResultVitalSign.vitalSignData.SpO2)
                 );
                 sbpValueView.setText(
                         Math.round(ResultVitalSign.vitalSignServerData.SBP) + "/" +
-                        Math.round(ResultVitalSign.vitalSignData.SBP)
+                                Math.round(ResultVitalSign.vitalSignData.SBP)
                 );
                 dbpValueView.setText(
                         Math.round(ResultVitalSign.vitalSignServerData.DBP) + "/" +
-                        Math.round(ResultVitalSign.vitalSignData.DBP)
+                                Math.round(ResultVitalSign.vitalSignData.DBP)
                 );
             }
         });
     }
 
-    private void initListener(){
+    private void initListener() {
         mFinishPopup = new AlertDialog.Builder(getContext())
                 .setTitle("분석 마침")
                 .setMessage("결과화면으로 넘어가시겠습니까?\n")
@@ -668,7 +676,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         });
     }
 
-    private void finishAnalysis(){
+    private void finishAnalysis() {
         isStopPredict = false;
         sNthFrame = 0;
         ResultVitalSign.vitalSignData.init();
@@ -684,7 +692,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         isFixedFace = false;
     }
 
-    private void initCalibrationTimer(){
+    private void initCalibrationTimer() {
         mCalibrationTimer = new CountDownTimer(3999, 1) {
             @Override
             public void onTick(long millisUntilFinished) {
@@ -692,7 +700,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        mCountDownView.setCountDownText(String.valueOf(millisUntilFinished/1000));
+                        mCountDownView.setCountDownText(String.valueOf(millisUntilFinished / 1000));
                         getView().invalidate();
                     }
                 });
@@ -707,11 +715,11 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         };
     }
 
-    private void startCalibrationTimer(){
+    private void startCalibrationTimer() {
         mCalibrationTimer.start();
     }
 
-    private void logCameraAccessException(Exception e){
+    private void logCameraAccessException(Exception e) {
         Log.e("Camera", "Can not accessed in Camera : " + e.getMessage());
     }
 
