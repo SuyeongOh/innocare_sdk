@@ -14,9 +14,9 @@ import android.widget.RadioGroup;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import com.innopia.vital_sync.data.Config;
-import com.innopia.vital_sync.activities.MainActivity;
 import com.innopia.vital_sync.R;
+import com.innopia.vital_sync.activities.MainActivity;
+import com.innopia.vital_sync.data.Config;
 import com.innopia.vital_sync.data.Constant;
 
 import androidx.annotation.NonNull;
@@ -30,6 +30,8 @@ public class InitFragment extends Fragment {
     private EditText ageInputView;
     private EditText heightInputView;
     private EditText weightInputView;
+    private EditText sbpInputView;
+    private EditText dbpInputView;
     private RadioGroup radioGroupGender;
     private RadioButton radioButtonMale;
     private RadioButton radioButtonFemale;
@@ -49,7 +51,8 @@ public class InitFragment extends Fragment {
     private final String USER_HEIGHT_KEY = "height";
     private final String USER_AGE_KEY = "age";
     private final String USER_GENDER_KEY = "gender";
-
+    private final String USER_SBP_KEY = "sbp";
+    private final String USER_DBP_KEY = "dbp";
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -60,11 +63,12 @@ public class InitFragment extends Fragment {
         ageInputView = view.findViewById(R.id.init_view_age_input);
         heightInputView = view.findViewById(R.id.init_view_height_input);
         weightInputView = view.findViewById(R.id.init_view_weight_input);
+        sbpInputView = view.findViewById(R.id.init_view_sbp_input);
+        dbpInputView = view.findViewById(R.id.init_view_dbp_input);
+
         radioGroupGender = view.findViewById(R.id.init_view_gender_group);
         radioButtonMale = view.findViewById(R.id.init_view_gender_male);
         radioButtonFemale = view.findViewById(R.id.init_view_gender_female);
-
-        radioGroupGender.check(R.id.init_view_gender_male);
 
         applyBtn = view.findViewById(R.id.init_btn_submit);
         recordBtn = view.findViewById(R.id.init_btn_record);
@@ -96,12 +100,15 @@ public class InitFragment extends Fragment {
         ageInputView.setText(loginCookie.getString(USER_AGE_KEY, ""));
         weightInputView.setText(loginCookie.getString(USER_WEIGHT_KEY, ""));
         heightInputView.setText(loginCookie.getString(USER_HEIGHT_KEY, ""));
+        sbpInputView.setText(loginCookie.getString(USER_SBP_KEY, ""));
+        dbpInputView.setText(loginCookie.getString(USER_DBP_KEY, ""));
 
         String gender = loginCookie.getString(USER_GENDER_KEY, "");
+
         if(gender.equals("female")){
-            radioButtonFemale.setChecked(true);
+            radioGroupGender.check(R.id.init_view_gender_female);
         } else if(gender.equals("male")){
-            radioButtonMale.setChecked(true);
+            radioGroupGender.check(R.id.init_view_gender_male);
         }
         largeFaceSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -135,6 +142,9 @@ public class InitFragment extends Fragment {
                 String age = ageInputView.getText().toString();
                 String weight = weightInputView.getText().toString();
                 String height = heightInputView.getText().toString();
+                String sbp = sbpInputView.getText().toString();
+                String dbp = dbpInputView.getText().toString();
+
                 String frame = frameInputView.getText().toString();
                 String time = analysisTimeInputView.getText().toString();
 
@@ -166,6 +176,20 @@ public class InitFragment extends Fragment {
                 } catch (Exception e){
                     e.printStackTrace();
                     Config.USER_HEIGHT = 0;
+                }
+                try{
+                    Config.USER_SBP= Double.parseDouble(sbp);
+                    editor.putString(USER_SBP_KEY, sbp);
+                } catch (Exception e){
+                    e.printStackTrace();
+                    Config.USER_SBP = 0;
+                }
+                try{
+                    Config.USER_DBP= Double.parseDouble(dbp);
+                    editor.putString(USER_DBP_KEY, dbp);
+                } catch (Exception e){
+                    e.printStackTrace();
+                    Config.USER_DBP = 0;
                 }
                 if(radioGroupGender.getCheckedRadioButtonId() == R.id.init_view_gender_female){
                     Config.USER_GENDER = "female";

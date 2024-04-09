@@ -56,5 +56,7 @@ public class Config {
     public static int USER_AGE = 0;
     public static double USER_HEIGHT;
     public static double USER_WEIGHT;
+    public static double USER_SBP;
+    public static double USER_DBP;
 }
 

@@ -153,6 +153,10 @@ public class Vital {
             double user_cardiac_output = 6;
             double MAP = user_cardiac_output * ROB;
 
+            double user_mbp = (Config.USER_SBP + Config.USER_DBP * 2) / 3;
+
+            MAP = (user_mbp == 0) ? MAP : user_mbp;
+
             int SP = (int) (MAP + 3/2*PP);
             int DP = (int) (MAP - PP/3);
 
