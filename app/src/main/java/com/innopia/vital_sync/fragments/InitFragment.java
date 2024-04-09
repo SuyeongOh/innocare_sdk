@@ -107,7 +107,7 @@ public class InitFragment extends Fragment {
 
         if(gender.equals("female")){
             radioGroupGender.check(R.id.init_view_gender_female);
-        } else if(gender.equals("male")){
+        } else {
             radioGroupGender.check(R.id.init_view_gender_male);
         }
         largeFaceSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -148,54 +148,56 @@ public class InitFragment extends Fragment {
                 String frame = frameInputView.getText().toString();
                 String time = analysisTimeInputView.getText().toString();
 
+                if(radioGroupGender.getCheckedRadioButtonId() == R.id.init_view_gender_female){
+                    Config.USER_GENDER = "female";
+                }else if(radioGroupGender.getCheckedRadioButtonId() == R.id.init_view_gender_male){
+                    Config.USER_GENDER = "male";
+                }
+
                 SharedPreferences.Editor editor = loginCookie.edit();
                 try{
                     Config.USER_BMI = Double.parseDouble(bmi);
                     editor.putString(USER_BMI_KEY, bmi);
                 } catch (Exception e){
                     e.printStackTrace();
-                    Config.USER_BMI = 0;
+                    Config.USER_BMI = Config.USER_GENDER.equals("male") ? 25 : 22.5;
                 }
                 try{
                     Config.USER_AGE = Integer.parseInt(age);
                     editor.putString(USER_AGE_KEY, age);
                 } catch (Exception e){
                     e.printStackTrace();
-                    Config.USER_AGE = 0;
+                    Config.USER_AGE = 40;
                 }
                 try{
                     Config.USER_WEIGHT = Double.parseDouble(weight);
                     editor.putString(USER_WEIGHT_KEY, weight);
                 } catch (Exception e){
                     e.printStackTrace();
-                    Config.USER_WEIGHT = 0;
+                    Config.USER_WEIGHT = Config.USER_GENDER.equals("male") ? 76 : 56;
                 }
                 try{
                     Config.USER_HEIGHT= Double.parseDouble(height);
                     editor.putString(USER_HEIGHT_KEY, height);
                 } catch (Exception e){
                     e.printStackTrace();
-                    Config.USER_HEIGHT = 0;
+                    Config.USER_HEIGHT = Config.USER_GENDER.equals("male") ? 174 : 158;
                 }
                 try{
                     Config.USER_SBP= Double.parseDouble(sbp);
                     editor.putString(USER_SBP_KEY, sbp);
                 } catch (Exception e){
                     e.printStackTrace();
-                    Config.USER_SBP = 0;
+                    Config.USER_SBP = 120;
                 }
                 try{
                     Config.USER_DBP= Double.parseDouble(dbp);
                     editor.putString(USER_DBP_KEY, dbp);
                 } catch (Exception e){
                     e.printStackTrace();
-                    Config.USER_DBP = 0;
+                    Config.USER_DBP = 80;
                 }
-                if(radioGroupGender.getCheckedRadioButtonId() == R.id.init_view_gender_female){
-                    Config.USER_GENDER = "female";
-                }else if(radioGroupGender.getCheckedRadioButtonId() == R.id.init_view_gender_male){
-                    Config.USER_GENDER = "male";
-                }
+
                 editor.putString(USER_GENDER_KEY, Config.USER_GENDER);
                 editor.apply();
 

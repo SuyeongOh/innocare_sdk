@@ -54,9 +54,9 @@ public class Config {
     public static String USER_GENDER = "male";
     public static double USER_BMI = 0f;
     public static int USER_AGE = 0;
-    public static double USER_HEIGHT;
-    public static double USER_WEIGHT;
-    public static double USER_SBP;
-    public static double USER_DBP;
+    public static double USER_HEIGHT = 0;
+    public static double USER_WEIGHT = 0;
+    public static double USER_SBP = 0;
+    public static double USER_DBP = 0;
 }
 
