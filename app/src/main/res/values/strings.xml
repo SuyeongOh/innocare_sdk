@@ -24,8 +24,8 @@ Welcome, %1$s!\n
 \n- Leave blank to set defaults.
 \n- Tap the confirm button at the bottom of the app.
 \n- Please avoid moving in an unstable lighting environment.
-\n- Default BMI: 20.1, frame: 30
-\n- ver. 20240319</string>
+\n- If you analysis power of blood, fill all blank.
+\n- ver. 20240408(0.1.3)</string>
     <string name="male">Male</string>
     <string name="female">Female</string>
     <string name="sync_data">Data Sync</string>

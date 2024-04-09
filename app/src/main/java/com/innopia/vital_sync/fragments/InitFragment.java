@@ -1,5 +1,7 @@
 package com.innopia.vital_sync.fragments;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,6 +43,13 @@ public class InitFragment extends Fragment {
     private Switch cameraDirectionSwitch;
     private Switch largeFaceSwitch;
     private Switch smallFaceSwitch;
+    private SharedPreferences loginCookie;
+    private final String USER_BMI_KEY = "bmi";
+    private final String USER_WEIGHT_KEY = "weight";
+    private final String USER_HEIGHT_KEY = "height";
+    private final String USER_AGE_KEY = "age";
+    private final String USER_GENDER_KEY = "gender";
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -80,6 +89,20 @@ public class InitFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        loginCookie = getContext().getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+
+        //String to Double
+        bmiInputView.setText(loginCookie.getString(USER_BMI_KEY, ""));
+        ageInputView.setText(loginCookie.getString(USER_AGE_KEY, ""));
+        weightInputView.setText(loginCookie.getString(USER_WEIGHT_KEY, ""));
+        heightInputView.setText(loginCookie.getString(USER_HEIGHT_KEY, ""));
+
+        String gender = loginCookie.getString(USER_GENDER_KEY, "");
+        if(gender.equals("female")){
+            radioButtonFemale.setChecked(true);
+        } else if(gender.equals("male")){
+            radioButtonMale.setChecked(true);
+        }
         largeFaceSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -115,26 +138,43 @@ public class InitFragment extends Fragment {
                 String frame = frameInputView.getText().toString();
                 String time = analysisTimeInputView.getText().toString();
 
+                SharedPreferences.Editor editor = loginCookie.edit();
                 try{
                     Config.USER_BMI = Double.parseDouble(bmi);
+                    editor.putString(USER_BMI_KEY, bmi);
                 } catch (Exception e){
-                    Config.USER_BMI = 20.1f;
+                    e.printStackTrace();
+                    Config.USER_BMI = 0;
                 }
                 try{
                     Config.USER_AGE = Integer.parseInt(age);
+                    editor.putString(USER_AGE_KEY, age);
                 } catch (Exception e){
+                    e.printStackTrace();
                     Config.USER_AGE = 0;
                 }
                 try{
                     Config.USER_WEIGHT = Double.parseDouble(weight);
+                    editor.putString(USER_WEIGHT_KEY, weight);
                 } catch (Exception e){
+                    e.printStackTrace();
                     Config.USER_WEIGHT = 0;
                 }
                 try{
                     Config.USER_HEIGHT= Double.parseDouble(height);
+                    editor.putString(USER_HEIGHT_KEY, height);
                 } catch (Exception e){
+                    e.printStackTrace();
                     Config.USER_HEIGHT = 0;
                 }
+                if(radioGroupGender.getCheckedRadioButtonId() == R.id.init_view_gender_female){
+                    Config.USER_GENDER = "female";
+                }else if(radioGroupGender.getCheckedRadioButtonId() == R.id.init_view_gender_male){
+                    Config.USER_GENDER = "male";
+                }
+                editor.putString(USER_GENDER_KEY, Config.USER_GENDER);
+                editor.apply();
+
                 try{
                     Config.TARGET_FRAME = Integer.parseInt(frame);
                 } catch (Exception e){
@@ -151,11 +191,6 @@ public class InitFragment extends Fragment {
                 }
 
 
-                if(radioGroupGender.getCheckedRadioButtonId() == R.id.init_view_gender_female){
-                    Config.USER_GENDER = "female";
-                }else if(radioGroupGender.getCheckedRadioButtonId() == R.id.init_view_gender_male){
-                    Config.USER_GENDER = "male";
-                }
                 Config.SERVER_RESPONSE_MODE = serverResponseSwitch.isChecked();
                 //Config.LARGE_FACE_MODE = largeFaceSwitch.isChecked();
                 Config.SMALL_FACE_MODE = smallFaceSwitch.isChecked();

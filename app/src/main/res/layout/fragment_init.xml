@@ -57,7 +57,7 @@
                     android:layout_gravity="center"
                     android:textSize="15sp"
                     android:singleLine="true"
-                    android:hint="Bmi" />
+                    android:hint="Bmi (ex. 20.1)" />
 
                 <EditText
                     android:id="@+id/init_view_age_input"
@@ -68,7 +68,7 @@
                     android:layout_gravity="center"
                     android:textSize="15sp"
                     android:singleLine="true"
-                    android:hint="나이" />
+                    android:hint="나이 (ex. 33)" />
             </LinearLayout>
 
             <LinearLayout
@@ -85,7 +85,7 @@
                     android:layout_gravity="center"
                     android:textSize="15sp"
                     android:singleLine="true"
-                    android:hint="키(cm)" />
+                    android:hint="키(cm, ex.174)" />
                 <EditText
                     android:id="@+id/init_view_weight_input"
                     android:layout_width="match_parent"
@@ -95,7 +95,7 @@
                     android:layout_gravity="center"
                     android:textSize="15sp"
                     android:singleLine="true"
-                    android:hint="몸무게(kg)" />
+                    android:hint="몸무게(kg, ex.82)" />
             </LinearLayout>
 
 
@@ -211,6 +211,7 @@
             android:textSize="20sp"
             android:checked="false"
             android:maxLines="1"
+            android:visibility="gone"
             android:text="얼굴 영역 축소 기능을 사용하시겠습니까?" />
 
         <Switch
