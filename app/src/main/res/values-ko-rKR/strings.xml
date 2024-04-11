@@ -37,8 +37,8 @@
     <string name="hrv_sdnn_unit">ms</string>
     <string name="oxygen_saturation">signal 1</string>
     <string name="oxygen_saturation_unit">pt</string>
-    <string name="stress">signal 2</string>
-    <string name="blood_pressure">signal 3</string>
+    <string name="stress">Stress</string>
+    <string name="blood_pressure">혈압</string>
     <string name="blood_pressure_unit">mmHg</string>
 
     <!--Vital Analysis-->
@@ -50,10 +50,10 @@
     <string name="vital_oxygen_saturation_unit">pt</string>
     <string name="vital_respiratory_rate">호흡</string>
     <string name="vital_respiratory_rate_unit">(rpm)</string>
-    <string name="vital_stress">signal 2</string>
+    <string name="vital_stress">Stress</string>
     <string name="vital_hrv_sdnn">HRV-SDNN</string>
     <string name="vital_hrv_sdnn_unit">(ms)</string>
-    <string name="vital_blood_pressure">signal 3</string>
+    <string name="vital_blood_pressure">혈압</string>
     <string name="vital_blood_pressure_unit">(mmHg)</string>
     <string name="vital_analysis_progress">분석진행률</string>
     <string name="vital_analysis_complete">생체검사 완료</string>

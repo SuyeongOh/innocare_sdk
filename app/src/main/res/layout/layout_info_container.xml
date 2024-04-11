@@ -400,16 +400,8 @@
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/oxygen_saturation_container"
         app:layout_constraintTop_toTopOf="@+id/oxygen_saturation_container"
+        app:layout_constraintVertical_bias="1.0"
         app:layout_constraintWidth_percent="0.3">
-
-        <TextView
-            android:id="@+id/stress_text"
-            style="@style/InfoContainerTitleTextView"
-            android:text="@string/stress"
-            app:layout_constraintBottom_toTopOf="@+id/stress_img"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
             android:id="@+id/stress_img"
@@ -422,25 +414,38 @@
             app:layout_constraintStart_toStartOf="@+id/stress_text"
             app:layout_constraintTop_toBottomOf="@+id/stress_text" />
 
-        <com.robinhood.ticker.TickerView
-            android:id="@+id/stress_ews"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="3dp"
-            android:textAppearance="@style/TickerTextAppearance_main"
-            app:layout_constraintBottom_toTopOf="@+id/stress_value"
-            app:layout_constraintRight_toLeftOf="@+id/late_stress_ews_unit"
-            app:ticker_animationDuration="500"
-            app:ticker_defaultCharacterList="number"
-            tools:text="2" />
+        <ProgressBar
+            android:id="@+id/stress_value_progress"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:indeterminateDrawable="@drawable/circle_progress"
+            android:indeterminateDuration="1000"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/stress_img"
+            app:layout_constraintDimensionRatio="1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_percent="0.4"
+            app:layout_constraintStart_toEndOf="@+id/stress_img"
+            app:layout_constraintTop_toTopOf="@+id/stress_img"
+            tools:visibility="visible" />
 
         <TextView
             android:id="@+id/late_stress_ews_unit"
             style="@style/InfoContainerUnitTextView"
             android:text="@string/heart_rate_ews_unit"
             app:layout_constraintBottom_toTopOf="@+id/stress_value"
-            app:layout_constraintTop_toTopOf="@+id/stress_ews"
-            app:layout_constraintRight_toRightOf="@id/stress_value"/>
+            app:layout_constraintRight_toRightOf="@id/stress_value"
+            app:layout_constraintTop_toTopOf="@+id/stress_ews" />
+
+        <TextView
+            android:id="@+id/stress_text"
+            style="@style/InfoContainerTitleTextView"
+            android:text="@string/stress"
+            app:layout_constraintBottom_toTopOf="@+id/stress_img"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <com.robinhood.ticker.TickerView
             android:id="@+id/stress_value"
@@ -454,21 +459,17 @@
             app:ticker_defaultCharacterList="number"
             tools:text="@string/vital_stress_normal" />
 
-        <ProgressBar
-            android:id="@+id/stress_value_progress"
-            style="?android:attr/progressBarStyle"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:indeterminateDrawable="@drawable/circle_progress"
-            android:indeterminateDuration="1000"
-            android:visibility="gone"
-            app:layout_constraintHeight_percent="0.4"
-            app:layout_constraintDimensionRatio="1"
-            app:layout_constraintStart_toEndOf="@+id/stress_img"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/stress_img"
-            app:layout_constraintBottom_toBottomOf="@+id/stress_img"
-            tools:visibility="visible"/>
+        <com.robinhood.ticker.TickerView
+            android:id="@+id/stress_ews"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="3dp"
+            android:textAppearance="@style/TickerTextAppearance_main"
+            app:layout_constraintBottom_toTopOf="@+id/stress_value"
+            app:layout_constraintRight_toLeftOf="@+id/late_stress_ews_unit"
+            app:ticker_animationDuration="500"
+            app:ticker_defaultCharacterList="number"
+            tools:text="2" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
