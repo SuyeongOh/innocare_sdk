@@ -537,6 +537,7 @@
             app:layout_constraintTop_toTopOf="@+id/blood_pressur_img"
             app:ticker_animationDuration="500"
             app:ticker_defaultCharacterList="number"
+            android:textSize="13sp"
             tools:text="TBD" />
 
         <TextView
@@ -556,6 +557,7 @@
             app:layout_constraintEnd_toEndOf="@+id/highest_blood_pressure_value"
             app:layout_constraintTop_toBottomOf="@+id/highest_blood_pressure_value"
             app:ticker_animationDuration="500"
+            android:textSize="12sp"
             app:ticker_defaultCharacterList="number"
             tools:text="TBD" />
 

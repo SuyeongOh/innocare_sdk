@@ -631,12 +631,20 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                         Math.round(ResultVitalSign.vitalSignServerData.SpO2) + "/" +
                                 Math.round(ResultVitalSign.vitalSignData.SpO2)
                 );
+//                sbpValueView.setText(
+//                        Math.round(ResultVitalSign.vitalSignServerData.SBP) + "/" +
+//                                Math.round(ResultVitalSign.vitalSignData.SBP)
+//                );
+//                dbpValueView.setText(
+//                        Math.round(ResultVitalSign.vitalSignServerData.DBP) + "/" +
+//                                Math.round(ResultVitalSign.vitalSignData.DBP)
+//                );
                 sbpValueView.setText(
-                        Math.round(ResultVitalSign.vitalSignServerData.SBP) + "/" +
+                        "SBP " + Math.round(ResultVitalSign.vitalSignData.SBP) + "/" +
                                 Math.round(ResultVitalSign.vitalSignData.SBP)
                 );
                 dbpValueView.setText(
-                        Math.round(ResultVitalSign.vitalSignServerData.DBP) + "/" +
+                        "DBP " + Math.round(ResultVitalSign.vitalSignData.DBP) + "/" +
                                 Math.round(ResultVitalSign.vitalSignData.DBP)
                 );
             }

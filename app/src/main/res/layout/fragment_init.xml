@@ -40,6 +40,55 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:orientation="horizontal"
+            android:layout_weight="2">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="6"
+                android:textSize="15sp"
+                android:textAlignment="center"
+                android:gravity="center_vertical"
+                android:text="성별을 선택하세요"
+                tools:ignore="RtlCompat" />
+
+            <RadioGroup
+                android:id="@+id/init_view_gender_group"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="6"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/init_view_gender_male"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Male"/>
+
+                <RadioButton
+                    android:id="@+id/init_view_gender_female"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Female"/>
+            </RadioGroup>
+
+            <Button
+                android:id="@+id/init_btn_gender_clear"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="4"
+                android:textSize="15sp"
+                android:textAlignment="center"
+                android:gravity="center_vertical"
+                android:text="성별 초기화"
+                tools:ignore="RtlCompat" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
             android:layout_weight="4"
             android:orientation="horizontal">
 
@@ -48,27 +97,35 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:orientation="vertical">
-                <EditText
-                    android:id="@+id/init_view_bmi_input"
+                <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:textAlignment="center"
-                    android:layout_gravity="center"
-                    android:textSize="15sp"
-                    android:singleLine="true"
-                    android:hint="Bmi (ex. 20.1)" />
+                    android:layout_weight="1">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/init_view_bmi_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:textAlignment="center"
+                        android:layout_gravity="center"
+                        android:textSize="15sp"
+                        android:singleLine="true"
+                        android:hint="Bmi (ex. 20.1)" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-                <EditText
-                    android:id="@+id/init_view_age_input"
+                <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:textAlignment="center"
-                    android:layout_gravity="center"
-                    android:textSize="15sp"
-                    android:singleLine="true"
-                    android:hint="나이 (ex. 33)" />
+                    android:layout_weight="1">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/init_view_age_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:textAlignment="center"
+                        android:layout_gravity="center"
+                        android:textSize="15sp"
+                        android:singleLine="true"
+                        android:hint="나이 (ex. 33)" />
+                </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
 
             <LinearLayout
@@ -76,26 +133,36 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:orientation="vertical">
-                <EditText
-                    android:id="@+id/init_view_height_input"
+                <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:textAlignment="center"
-                    android:layout_gravity="center"
-                    android:textSize="15sp"
-                    android:singleLine="true"
-                    android:hint="키(cm, ex.174)" />
-                <EditText
-                    android:id="@+id/init_view_weight_input"
+                    android:layout_weight="1">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/init_view_height_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:textAlignment="center"
+                        android:layout_gravity="center"
+                        android:textSize="15sp"
+                        android:singleLine="true"
+                        android:hint="키(cm, ex.174)" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:textAlignment="center"
-                    android:layout_gravity="center"
-                    android:textSize="15sp"
-                    android:singleLine="true"
-                    android:hint="몸무게(kg, ex.82)" />
+                    android:layout_weight="1">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/init_view_weight_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:textAlignment="center"
+                        android:layout_gravity="center"
+                        android:textSize="15sp"
+                        android:singleLine="true"
+                        android:hint="몸무게(kg, ex.82)" />
+                </com.google.android.material.textfield.TextInputLayout>
+
             </LinearLayout>
 
 
@@ -106,76 +173,39 @@
                 android:layout_weight="1"
                 android:orientation="vertical">
 
-                <TextView
+                <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:layout_weight="4"
-                    android:textSize="15sp"
-                    android:layout_gravity="center"
-                    android:text="성별을 입력하세요"
-                    android:textAlignment="center"/>
+                    android:layout_weight="1">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/init_view_sbp_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:textAlignment="center"
+                        android:layout_gravity="center"
+                        android:textSize="15sp"
+                        android:singleLine="true"
+                        android:hint="수축기(mmHg, ex.120)" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-                <RadioGroup
-                    android:id="@+id/init_view_gender_group"
+                <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:layout_weight="13"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <RadioButton
-                        android:id="@+id/init_view_gender_male"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Male"/>
-
-                    <RadioButton
-                        android:id="@+id/init_view_gender_female"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Female"/>
-                </RadioGroup>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/black"/>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" />
+                    android:layout_weight="1">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/init_view_dbp_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:textAlignment="center"
+                        android:layout_gravity="center"
+                        android:textSize="15sp"
+                        android:singleLine="true"
+                        android:hint="이완기(mmHg, ex.80)" />
+                </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
-
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:orientation="horizontal"
-            android:layout_weight="2">
 
-            <EditText
-                android:id="@+id/init_view_sbp_input"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:textAlignment="center"
-                android:layout_gravity="center"
-                android:textSize="15sp"
-                android:singleLine="true"
-                android:hint="수축기(mmHg, ex.120)" />
-            <EditText
-                android:id="@+id/init_view_dbp_input"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:textAlignment="center"
-                android:layout_gravity="center"
-                android:textSize="15sp"
-                android:singleLine="true"
-                android:hint="이완기(mmHg, ex.80)" />
-        </LinearLayout>
 
 
         <EditText
@@ -197,7 +227,7 @@
             android:textAlignment="center"
             android:layout_gravity="center"
             android:autoSizeTextType="uniform"
-            android:hint="로컬서버 ip를 입력하세요" />
+            android:hint="로컬서버 ip를 입력하세요(개발자만 이용)" />
 
         <View
             android:layout_width="match_parent"
@@ -262,7 +292,7 @@
             android:layout_height="0dp"
             android:layout_weight="3"
             android:autoSizeTextType="uniform"
-            android:text="입력 완료" />
+            android:text="측정 시작" />
 
         <Button
             android:id="@+id/init_btn_record"

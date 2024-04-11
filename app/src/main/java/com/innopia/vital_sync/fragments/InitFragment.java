@@ -2,7 +2,13 @@ package com.innopia.vital_sync.fragments;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +20,8 @@ import android.widget.RadioGroup;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.innopia.vital_sync.R;
 import com.innopia.vital_sync.activities.MainActivity;
 import com.innopia.vital_sync.data.Config;
@@ -26,21 +34,20 @@ import androidx.fragment.app.Fragment;
 public class InitFragment extends Fragment {
 
     private TextView guideTextView;
-    private EditText bmiInputView;
-    private EditText ageInputView;
-    private EditText heightInputView;
-    private EditText weightInputView;
-    private EditText sbpInputView;
-    private EditText dbpInputView;
+    private TextInputEditText bmiInputView;
+    private TextInputEditText ageInputView;
+    private TextInputEditText heightInputView;
+    private TextInputEditText weightInputView;
+    private TextInputEditText sbpInputView;
+    private TextInputEditText dbpInputView;
     private RadioGroup radioGroupGender;
-    private RadioButton radioButtonMale;
-    private RadioButton radioButtonFemale;
 
     private EditText frameInputView;
     private EditText analysisTimeInputView;
     private EditText localIpInputView;
     private Button applyBtn;
     private Button recordBtn;
+    private Button clearGenderBtn;
     private Switch serverResponseSwitch;
     private Switch cameraDirectionSwitch;
     private Switch largeFaceSwitch;
@@ -53,6 +60,7 @@ public class InitFragment extends Fragment {
     private final String USER_GENDER_KEY = "gender";
     private final String USER_SBP_KEY = "sbp";
     private final String USER_DBP_KEY = "dbp";
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -67,11 +75,11 @@ public class InitFragment extends Fragment {
         dbpInputView = view.findViewById(R.id.init_view_dbp_input);
 
         radioGroupGender = view.findViewById(R.id.init_view_gender_group);
-        radioButtonMale = view.findViewById(R.id.init_view_gender_male);
-        radioButtonFemale = view.findViewById(R.id.init_view_gender_female);
+        radioGroupGender.setOnCheckedChangeListener(genderChangeListener);
 
         applyBtn = view.findViewById(R.id.init_btn_submit);
         recordBtn = view.findViewById(R.id.init_btn_record);
+        clearGenderBtn = view.findViewById(R.id.init_btn_gender_clear);
         cameraDirectionSwitch = view.findViewById(R.id.init_view_camera_switch);
         frameInputView = view.findViewById(R.id.init_view_frame_input);
         smallFaceSwitch = view.findViewById(R.id.init_view_small_face_switch);
@@ -80,12 +88,44 @@ public class InitFragment extends Fragment {
         localIpInputView = view.findViewById(R.id.init_view_ip_input);
         serverResponseSwitch = view.findViewById(R.id.init_view_server_switch);
 
-        guideTextView.setText(
-                String.format(getResources().getString(R.string.welcome_message), Config.USER_ID));
+        String welcomeMsg = String.format(getResources().getString(R.string.welcome_message), Config.USER_ID);
+        SpannableStringBuilder spannableWelcome = new SpannableStringBuilder(welcomeMsg);
+        //첫번째줄
+        String targetMsg = welcomeMsg.split("-")[1];
+        int startIdx = welcomeMsg.indexOf(targetMsg);
+        int endIdx = startIdx + targetMsg.length();
+        spannableWelcome.setSpan(
+                new ForegroundColorSpan(Color.BLUE)
+                , startIdx
+                , endIdx
+                , Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        if(Config.USER_ID.equals(getContext().getString(R.string.guest))){
+        targetMsg = welcomeMsg.split("-")[3];
+        startIdx = welcomeMsg.indexOf(targetMsg);
+        endIdx = startIdx + targetMsg.length();
+        spannableWelcome.setSpan(
+                new ForegroundColorSpan(Color.BLUE)
+                , startIdx
+                , endIdx
+                , Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        guideTextView.setText(spannableWelcome);
+
+        if (Config.USER_ID.equals(getContext().getString(R.string.guest))) {
             recordBtn.setVisibility(View.GONE);
         }
+        clearGenderBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                radioGroupGender.clearCheck();
+                heightInputView.setText("");
+                bmiInputView.setText("");
+                weightInputView.setText("");
+                sbpInputView.setText("");
+                dbpInputView.setText("");
+                ageInputView.setText("");
+            }
+        });
         return view;
     }
 
@@ -105,15 +145,15 @@ public class InitFragment extends Fragment {
 
         String gender = loginCookie.getString(USER_GENDER_KEY, "");
 
-        if(gender.equals("female")){
+        if (gender.equals("female")) {
             radioGroupGender.check(R.id.init_view_gender_female);
-        } else {
+        } else if (gender.equals("male")) {
             radioGroupGender.check(R.id.init_view_gender_male);
         }
         largeFaceSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked && smallFaceSwitch.isChecked()){
+                if (isChecked && smallFaceSwitch.isChecked()) {
                     smallFaceSwitch.setChecked(false);
                 }
             }
@@ -121,7 +161,7 @@ public class InitFragment extends Fragment {
         smallFaceSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked && largeFaceSwitch.isChecked()){
+                if (isChecked && largeFaceSwitch.isChecked()) {
                     largeFaceSwitch.setChecked(false);
                 }
             }
@@ -148,71 +188,65 @@ public class InitFragment extends Fragment {
                 String frame = frameInputView.getText().toString();
                 String time = analysisTimeInputView.getText().toString();
 
-                if(radioGroupGender.getCheckedRadioButtonId() == R.id.init_view_gender_female){
+                if (radioGroupGender.getCheckedRadioButtonId() == R.id.init_view_gender_female) {
                     Config.USER_GENDER = "female";
-                }else if(radioGroupGender.getCheckedRadioButtonId() == R.id.init_view_gender_male){
+                } else if (radioGroupGender.getCheckedRadioButtonId() == R.id.init_view_gender_male) {
                     Config.USER_GENDER = "male";
                 }
 
                 SharedPreferences.Editor editor = loginCookie.edit();
-                try{
+                try {
                     Config.USER_BMI = Double.parseDouble(bmi);
                     editor.putString(USER_BMI_KEY, bmi);
-                } catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
-                    Config.USER_BMI = Config.USER_GENDER.equals("male") ? 25 : 22.5;
                 }
-                try{
+                try {
                     Config.USER_AGE = Integer.parseInt(age);
                     editor.putString(USER_AGE_KEY, age);
-                } catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
-                    Config.USER_AGE = 40;
                 }
-                try{
+                try {
                     Config.USER_WEIGHT = Double.parseDouble(weight);
                     editor.putString(USER_WEIGHT_KEY, weight);
-                } catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
-                    Config.USER_WEIGHT = Config.USER_GENDER.equals("male") ? 76 : 56;
                 }
-                try{
-                    Config.USER_HEIGHT= Double.parseDouble(height);
+                try {
+                    Config.USER_HEIGHT = Double.parseDouble(height);
                     editor.putString(USER_HEIGHT_KEY, height);
-                } catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
-                    Config.USER_HEIGHT = Config.USER_GENDER.equals("male") ? 174 : 158;
                 }
-                try{
-                    Config.USER_SBP= Double.parseDouble(sbp);
+                try {
+                    Config.USER_SBP = Double.parseDouble(sbp);
                     editor.putString(USER_SBP_KEY, sbp);
-                } catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
-                    Config.USER_SBP = 120;
                 }
-                try{
-                    Config.USER_DBP= Double.parseDouble(dbp);
+                try {
+                    Config.USER_DBP = Double.parseDouble(dbp);
                     editor.putString(USER_DBP_KEY, dbp);
-                } catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
-                    Config.USER_DBP = 80;
                 }
 
                 editor.putString(USER_GENDER_KEY, Config.USER_GENDER);
                 editor.apply();
 
-                try{
+                try {
                     Config.TARGET_FRAME = Integer.parseInt(frame);
-                } catch (Exception e){
+                } catch (Exception e) {
                     Config.TARGET_FRAME = 30;
                 }
-                try{
+                try {
                     Config.ANALYSIS_TIME = Integer.parseInt(time);
-                } catch (Exception e){
+                } catch (Exception e) {
                     Config.ANALYSIS_TIME = 20;
                 }
 
-                if(!localIpInputView.getText().toString().equals("")){
+                if (!localIpInputView.getText().toString().equals("")) {
                     Config.LOCAL_SERVER_ADDRESS = localIpInputView.getText().toString();
                 }
 
@@ -220,7 +254,7 @@ public class InitFragment extends Fragment {
                 Config.SERVER_RESPONSE_MODE = serverResponseSwitch.isChecked();
                 //Config.LARGE_FACE_MODE = largeFaceSwitch.isChecked();
                 Config.SMALL_FACE_MODE = smallFaceSwitch.isChecked();
-                if(cameraDirectionSwitch.isChecked()){
+                if (cameraDirectionSwitch.isChecked()) {
                     Config.USE_CAMERA_DIRECTION = Constant.CAMERA_DIRECTION_BACK;
                 }
 
@@ -230,4 +264,26 @@ public class InitFragment extends Fragment {
             }
         });
     }
+
+    private RadioGroup.OnCheckedChangeListener genderChangeListener = new RadioGroup.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(RadioGroup group, int checkedId) {
+            Log.d("vital", "check changed : " + checkedId);
+            if (checkedId == group.findViewById(R.id.init_view_gender_male).getId()) {
+                if (heightInputView.getText().toString().equals("")) heightInputView.setText("174");
+                if (bmiInputView.getText().toString().equals("")) bmiInputView.setText("25");
+                if (weightInputView.getText().toString().equals("")) weightInputView.setText("76");
+                if (sbpInputView.getText().toString().equals("")) sbpInputView.setText("120");
+                if (dbpInputView.getText().toString().equals("")) dbpInputView.setText("80");
+                if (ageInputView.getText().toString().equals("")) ageInputView.setText("40");
+            } else {
+                if (heightInputView.getText().toString().equals("")) heightInputView.setText("158");
+                if (bmiInputView.getText().toString().equals("")) bmiInputView.setText("22.5");
+                if (weightInputView.getText().toString().equals("")) weightInputView.setText("56");
+                if (sbpInputView.getText().toString().equals("")) sbpInputView.setText("120");
+                if (dbpInputView.getText().toString().equals("")) dbpInputView.setText("80");
+                if (ageInputView.getText().toString().equals("")) ageInputView.setText("40");
+            }
+        }
+    };
 }
