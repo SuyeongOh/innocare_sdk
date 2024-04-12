@@ -241,7 +241,7 @@
             android:layout_weight="1"
             android:textColor="@color/black"
             android:textSize="20sp"
-            android:checked="false"
+            android:checked="true"
             android:maxLines="1"
             android:text="결과 출력을 서버응답으로 하겠습니까?" />
 
