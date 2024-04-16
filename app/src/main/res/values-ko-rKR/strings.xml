@@ -53,7 +53,7 @@
     <string name="vital_stress">Stress</string>
     <string name="vital_hrv_sdnn">HRV-SDNN</string>
     <string name="vital_hrv_sdnn_unit">(ms)</string>
-    <string name="vital_blood_pressure">혈압</string>
+    <string name="vital_blood_pressure">Signal 2</string>
     <string name="vital_blood_pressure_unit">(mmHg)</string>
     <string name="vital_analysis_progress">분석진행률</string>
     <string name="vital_analysis_complete">생체검사 완료</string>

@@ -4,16 +4,16 @@ plugins {
 }
 
 ext {
-    manufacture = "Innopia"
+    manufacture = "vitalsync"
     packageName = "VitalSync"
 }
 
 android {
-    namespace 'com.innopia.vital_sync'
+    namespace 'com.vitalsync.vital_sync'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.innopia.vital_sync"
+        applicationId "com.vitalsync.vital_sync"
         minSdk 29
         targetSdk 33
         //noinspection AccidentalOctal
