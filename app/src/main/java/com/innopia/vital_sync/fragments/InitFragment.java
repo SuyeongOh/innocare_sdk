@@ -88,6 +88,10 @@ public class InitFragment extends Fragment {
         localIpInputView = view.findViewById(R.id.init_view_ip_input);
         serverResponseSwitch = view.findViewById(R.id.init_view_server_switch);
 
+        if(Config.USER_ID.equals(getContext().getString(R.string.target_guest))){
+            analysisTimeInputView.setVisibility(View.GONE);
+            localIpInputView.setVisibility(View.GONE);
+        }
         String welcomeMsg = String.format(getResources().getString(R.string.welcome_message), Config.USER_ID);
         SpannableStringBuilder spannableWelcome = new SpannableStringBuilder(welcomeMsg);
         //첫번째줄

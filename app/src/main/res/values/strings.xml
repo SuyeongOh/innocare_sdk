@@ -13,7 +13,7 @@
 \n3. This app does not collect any personally identifiable information.
 \n4. This app collects\/transmits\/stores data only with the user\'s consent.
 \n5. This app does not share any collected data with any third parties.
-\n6. If not have ID, using Guest.</string>
+\n6. If you Tester, click start measure.</string>
     <string name="privacy_policy">Privacy Policy</string>
 
     <!--ui text-->
@@ -67,4 +67,15 @@ Welcome, %1$s!\n
     <string name="face_no_detection">\n얼굴이 인식되지 않습니다.\n가까이 와주세요.\n</string>
     <string name="face_big_detection">\n얼굴이 너무 가깝습니다.\n조금 떨어져 주세요.\n</string>
     <string name="face_out_detection">\n얼굴이 범위를 벗어났습니다.\n화면 중앙을 향해주세요.\n</string>
+    <string name="target_developer">Developer</string>
+    <string name="target_guest">Guest</string>
+    <string name="target_question">Select the purpose of using the application</string>
+    <string name="analysis_start">Start Measure</string>
+    <string name="analysis_record">Measure Record</string>
+    <string name="reset_gender">reset gender</string>
+    <string name="input_analysis_time">Input Analysis Time</string>
+    <string name="select_gender">Select the your gender</string>
+    <string name="gender_male">Male</string>
+    <string name="gender_female">Female</string>
+    <string name="rule_measure">Starting analyzing, don\'t move your face!!</string>
 </resources>

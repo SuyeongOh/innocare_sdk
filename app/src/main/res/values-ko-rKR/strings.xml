@@ -13,7 +13,7 @@
 \n3. 이 앱은 개인 식별 정보를 수집하지 않습니다.
 \n4. 이 앱은 사용자의 동의가 있는 경우에만 데이터를 수집/전송/저장합니다.
 \n5. 이 앱은 수집된 데이터를 제3자와 공유하지 않습니다.
-\n6. 아이디가 없으신 분은 Guest 버튼을 이용해주세요.</string>
+\n6. 준비되시면 측정시작 버튼을 눌러주세요.</string>
     <string name="privacy_policy">개인정보 처리방침</string>
 
     <string name="enter">입력완료</string>
@@ -66,4 +66,15 @@
     <string name="gt_header">비교 기기 결과</string>
     <string name="male">남성</string>
     <string name="female">여성</string>
+    <string name="target_developer">개발자</string>
+    <string name="target_guest">체험인</string>
+    <string name="target_question">어플리케이션의 사용 목적을 선택하세요.</string>
+    <string name="analysis_start">측정 시작</string>
+    <string name="analysis_record">측정 기록</string>
+    <string name="reset_gender">성별 초기화</string>
+    <string name="select_gender">성별을 선택하세요</string>
+    <string name="input_analysis_time">측정시간을 입력하세요</string>
+    <string name="gender_male">남성</string>
+    <string name="gender_female">여성</string>
+    <string name="rule_measure">분석을 시작하면 얼굴을 움직이지 마세요.</string>
 </resources>

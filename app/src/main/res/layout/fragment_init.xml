@@ -35,7 +35,7 @@
             android:textAlignment="center"
             android:layout_gravity="center"
             android:autoSizeTextType="uniform"
-            android:hint="측정시간을 입력하세요" />
+            android:hint="@string/input_analysis_time" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -49,7 +49,7 @@
                 android:textSize="15sp"
                 android:textAlignment="center"
                 android:gravity="center_vertical"
-                android:text="성별을 선택하세요"
+                android:text="@string/select_gender"
                 tools:ignore="RtlCompat" />
 
             <RadioGroup
@@ -64,13 +64,15 @@
                     android:id="@+id/init_view_gender_male"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Male"/>
+                    android:textSize="15sp"
+                    android:text="@string/gender_male"/>
 
                 <RadioButton
                     android:id="@+id/init_view_gender_female"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Female"/>
+                    android:textSize="15sp"
+                    android:text="@string/gender_female"/>
             </RadioGroup>
 
             <Button
@@ -80,8 +82,10 @@
                 android:layout_weight="4"
                 android:textSize="15sp"
                 android:textAlignment="center"
+                android:background="@drawable/selector_record_button"
+                android:layout_margin="5dp"
                 android:gravity="center_vertical"
-                android:text="성별 초기화"
+                android:text="@string/reset_gender"
                 tools:ignore="RtlCompat" />
 
         </LinearLayout>
@@ -291,16 +295,20 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="3"
-            android:autoSizeTextType="uniform"
-            android:text="측정 시작" />
+            android:textSize="35sp"
+            android:background="@drawable/selector_record_button"
+            android:layout_margin="10dp"
+            android:text="@string/analysis_start" />
 
         <Button
             android:id="@+id/init_btn_record"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="3"
-            android:autoSizeTextType="uniform"
-            android:text="측정 기록" />
+            android:textSize="35sp"
+            android:layout_margin="10dp"
+            android:background="@drawable/selector_record_button"
+            android:text="@string/analysis_record" />
 
     </LinearLayout>
 

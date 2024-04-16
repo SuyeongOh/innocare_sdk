@@ -8,6 +8,7 @@ import com.innopia.vital_sync.data.Config;
 import com.innopia.vital_sync.R;
 import com.innopia.vital_sync.fragments.InitFragment;
 import com.innopia.vital_sync.fragments.LoginFragment;
+import com.innopia.vital_sync.fragments.SelectTargetFragment;
 import com.innopia.vital_sync.video.VitalTestDataset;
 
 import androidx.annotation.Nullable;
@@ -42,10 +43,11 @@ public class MainActivity extends FragmentActivity {
             //finish();
         }
 
+        //최초시작 select target fragment
         LoginFragment fragment = new LoginFragment();
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragmentContainerView, fragment)
-                    .commit();
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.fragmentContainerView, fragment)
+                .commit();
         currentFragment = fragment;
     }
 

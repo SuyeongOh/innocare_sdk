@@ -85,7 +85,7 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
         guestButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Config.USER_ID = "Guest";
+                Config.USER_ID = getContext().getString(R.string.target_guest);
                 loginGuest();
             }
         });
@@ -127,7 +127,8 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
 
     private void loginGuest() {
         MainActivity activity = (MainActivity) getActivity();
-        activity.replaceFragment(new InitFragment());
+        activity.replaceFragment(new MainFragment()
+        );
     }
 
     @Override
@@ -138,7 +139,8 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
             saveID(inputID);
         }
         Config.USER_ID = inputID;
-        loginGuest();
+        MainActivity activity = (MainActivity) getActivity();
+        activity.replaceFragment(new InitFragment());
     }
 
     @Override

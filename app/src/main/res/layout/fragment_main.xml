@@ -93,7 +93,7 @@
             android:id="@+id/vital_info_layout"
             layout="@layout/layout_info_container"
             android:layout_width="match_parent"
-            android:layout_height="100dp"
+            android:layout_height="240dp"
             android:layout_marginStart="@dimen/vital_analysis_start_margin"
             android:layout_marginEnd="@dimen/vital_analysis_end_margin"
             android:layout_marginBottom="@dimen/vital_origin_info_margin_bottom"

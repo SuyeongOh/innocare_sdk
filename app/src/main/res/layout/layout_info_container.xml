@@ -17,15 +17,14 @@
         android:layout_height="0dp"
         android:background="@drawable/bg_white_border_light_blue_grey_r4"
         android:elevation="2dp"
-        app:layout_constraintBottom_toTopOf="@+id/oxygen_saturation_container"
         app:layout_constraintEnd_toStartOf="@+id/respiratory_rate_container"
-        app:layout_constraintHeight_percent="0.45"
+        app:layout_constraintHeight_percent="0.3"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintHorizontal_chainStyle="spread_inside"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="spread_inside"
-        app:layout_constraintWidth_percent="0.3">
+        app:layout_constraintWidth_percent="0.45">
 
         <TextView
             android:id="@+id/heart_rate_text"
@@ -113,12 +112,12 @@
         android:background="@drawable/bg_white_border_light_blue_grey_r4"
         android:elevation="2dp"
         app:layout_constraintBottom_toBottomOf="@+id/heart_rate_container"
-        app:layout_constraintEnd_toStartOf="@+id/hrv_sdnn_container"
-        app:layout_constraintHeight_percent="0.45"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.3"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/heart_rate_container"
         app:layout_constraintTop_toTopOf="@+id/heart_rate_container"
-        app:layout_constraintWidth_percent="0.3">
+        app:layout_constraintWidth_percent="0.45">
 
         <TextView
             android:id="@+id/respiratory_rate_text"
@@ -206,13 +205,12 @@
         android:layout_height="0dp"
         android:background="@drawable/bg_white_border_light_blue_grey_r4"
         android:elevation="2dp"
-        app:layout_constraintBottom_toBottomOf="@+id/heart_rate_container"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.45"
+        app:layout_constraintHeight_percent="0.3"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/respiratory_rate_container"
-        app:layout_constraintTop_toTopOf="@+id/heart_rate_container"
-        app:layout_constraintWidth_percent="0.3">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/heart_rate_container"
+        app:layout_constraintBottom_toTopOf="@id/oxygen_saturation_container"
+        app:layout_constraintWidth_percent="0.45">
 
         <TextView
             android:id="@+id/hrv_sdnn_text"
@@ -300,14 +298,12 @@
         android:layout_height="0dp"
         android:background="@drawable/bg_white_border_light_blue_grey_r4"
         android:elevation="2dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/stress_container"
-        app:layout_constraintHeight_percent="0.45"
+        app:layout_constraintHeight_percent="0.3"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintHorizontal_chainStyle="spread_inside"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/heart_rate_container"
-        app:layout_constraintWidth_percent="0.3">
+        app:layout_constraintWidth_percent="0.45">
 
         <TextView
             android:id="@+id/oxygen_saturation_text"
@@ -394,14 +390,14 @@
         android:layout_height="0dp"
         android:background="@drawable/bg_white_border_light_blue_grey_r4"
         android:elevation="2dp"
-        app:layout_constraintBottom_toBottomOf="@+id/oxygen_saturation_container"
-        app:layout_constraintEnd_toStartOf="@+id/blood_pressure_container"
-        app:layout_constraintHeight_percent="0.45"
+        app:layout_constraintHeight_percent="0.3"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/oxygen_saturation_container"
+        app:layout_constraintStart_toStartOf="@+id/respiratory_rate_container"
         app:layout_constraintTop_toTopOf="@+id/oxygen_saturation_container"
+        app:layout_constraintBottom_toBottomOf="@+id/oxygen_saturation_container"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintVertical_bias="1.0"
-        app:layout_constraintWidth_percent="0.3">
+        app:layout_constraintWidth_percent="0.45">
 
         <ImageView
             android:id="@+id/stress_img"
@@ -479,13 +475,13 @@
         android:layout_height="0dp"
         android:background="@drawable/bg_white_border_light_blue_grey_r4"
         android:elevation="2dp"
-        app:layout_constraintBottom_toBottomOf="@+id/oxygen_saturation_container"
+        app:layout_constraintBottom_toTopOf="@+id/stress_container"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.45"
+        app:layout_constraintHeight_percent="0.3"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/stress_container"
-        app:layout_constraintTop_toTopOf="@+id/oxygen_saturation_container"
-        app:layout_constraintWidth_percent="0.3">
+        app:layout_constraintStart_toStartOf="@id/respiratory_rate_container"
+        app:layout_constraintTop_toBottomOf="@+id/respiratory_rate_container"
+        app:layout_constraintWidth_percent="0.45">
 
         <TextView
             android:id="@+id/blood_pressur_text"

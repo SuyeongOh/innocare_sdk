@@ -178,6 +178,10 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
         vitalValueLayout = view.findViewById(R.id.vital_info_layout);
         vitalValueLayout.setClickable(false);
+        if(Config.USER_ID.equals(getContext().getString(R.string.target_guest))){
+            TextView bpTextView = vitalValueLayout.findViewById(R.id.blood_pressur_text);
+            bpTextView.setText("Signal 2");
+        }
         hrValueView = view.findViewById(R.id.heart_rate_value);
         rrValueView = view.findViewById(R.id.respiratory_rate_value);
         sdnnValueView = view.findViewById(R.id.hrv_sdnn_value);
@@ -631,14 +635,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                         Math.round(ResultVitalSign.vitalSignServerData.SpO2) + "/" +
                                 Math.round(ResultVitalSign.vitalSignData.SpO2)
                 );
-//                sbpValueView.setText(
-//                        Math.round(ResultVitalSign.vitalSignServerData.SBP) + "/" +
-//                                Math.round(ResultVitalSign.vitalSignData.SBP)
-//                );
-//                dbpValueView.setText(
-//                        Math.round(ResultVitalSign.vitalSignServerData.DBP) + "/" +
-//                                Math.round(ResultVitalSign.vitalSignData.DBP)
-//                );
                 sbpValueView.setText(
                         "SBP " + Math.round(ResultVitalSign.vitalSignData.SBP) + "/" +
                                 Math.round(ResultVitalSign.vitalSignData.SBP)
@@ -652,22 +648,34 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     }
 
     private void initListener() {
-        mFinishPopup = new AlertDialog.Builder(getContext())
-                .setTitle("분석 마침")
-                .setMessage("결과화면으로 넘어가시겠습니까?\n")
-                .setPositiveButton("예", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Intent intent = new Intent(getContext(), ResultActivity.class);
-                        getContext().startActivity(intent);
-                    }
-                })
-                .setNegativeButton("아니오", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                }).create();
+        if(Config.USER_ID.equals(getContext().getString(R.string.target_guest))){
+            mFinishPopup = new AlertDialog.Builder(getContext())
+                    .setMessage("분석 완료 !!\n")
+                    .setNeutralButton("닫기", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    }).create();
+        } else{
+            mFinishPopup = new AlertDialog.Builder(getContext())
+                    .setTitle("분석 마침")
+                    .setMessage("결과화면으로 넘어가시겠습니까?\n")
+                    .setPositiveButton("예", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent intent = new Intent(getContext(), ResultActivity.class);
+                            getContext().startActivity(intent);
+                        }
+                    })
+                    .setNegativeButton("아니오", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    }).create();
+        }
+
 
         reStartBtn.setOnClickListener(new View.OnClickListener() {
             @Override
