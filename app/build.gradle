@@ -17,8 +17,8 @@ android {
         minSdk 29
         targetSdk 33
         //noinspection AccidentalOctal
-        versionCode 14
-        versionName "0.1.4"
+        versionCode 16
+        versionName "0.1.6"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

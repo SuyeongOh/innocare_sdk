@@ -29,7 +29,7 @@
         android:layout_height="wrap_content"
         android:text="@string/app_caution"
         android:textAlignment="viewStart"
-        android:textSize="15sp"
+        android:textSize="12sp"
         app:layout_constraintTop_toBottomOf="@id/view_login_caution_title" />
 
     <Button
@@ -55,7 +55,7 @@
         app:layout_constraintRight_toRightOf="@+id/view_login_guest_button"
         app:layout_constraintTop_toBottomOf="@id/view_login_guest_button"
         android:background="@drawable/selector_record_button"
-        android:textSize="18sp"
+        android:textSize="10sp"
         android:textColor="@color/black"
         android:text="@string/rule_measure"/>
 
