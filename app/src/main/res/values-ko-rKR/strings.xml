@@ -2,7 +2,7 @@
 <resources>
     <!--Login Fragment-->
     <string name="user_id">ID</string>
-    <string name="user_id_guide">input your ID</string>
+    <string name="user_id_guide">관리자만 로그인하세요</string>
     <string name="login">Login</string>
     <string name="guest">Guest</string>
     <string name="login_fail">Login Failed !!</string>
