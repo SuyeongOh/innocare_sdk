@@ -39,7 +39,11 @@ public class MainActivity extends FragmentActivity {
             test.runTest();
             //finish();
         }
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
         //최초시작 select target fragment
         LoginFragment fragment = new LoginFragment();
         getSupportFragmentManager().beginTransaction()

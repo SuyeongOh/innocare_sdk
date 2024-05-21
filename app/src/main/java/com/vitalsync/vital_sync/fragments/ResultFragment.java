@@ -23,6 +23,7 @@ import com.github.mikephil.charting.data.ScatterData;
 import com.github.mikephil.charting.data.ScatterDataSet;
 import com.vitalsync.vital_sync.R;
 import com.vitalsync.vital_sync.activities.MainActivity;
+import com.vitalsync.vital_sync.activities.ResultActivity;
 import com.vitalsync.vital_sync.data.ResultVitalSign;
 import com.vitalsync.vital_sync.data.VitalChartData;
 
@@ -56,9 +57,7 @@ public class ResultFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 VitalChartData.START_FILTER_INDEX = 0;
-                Intent intent = new Intent(getContext(), MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                getContext().startActivity(intent);
+                getActivity().finish();
             }
         });
         bindChart(view);
