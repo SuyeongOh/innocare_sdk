@@ -6,6 +6,7 @@ import android.os.Bundle;
 import com.vitalsync.vital_sync.data.Config;
 import com.vitalsync.vital_sync.R;
 import com.vitalsync.vital_sync.fragments.LoginFragment;
+import com.vitalsync.vital_sync.fragments.SplashFragment;
 import com.vitalsync.vital_sync.video.VitalTestDataset;
 
 import androidx.annotation.Nullable;
@@ -45,11 +46,18 @@ public class MainActivity extends FragmentActivity {
     protected void onStart() {
         super.onStart();
         //최초시작 select target fragment
-        LoginFragment fragment = new LoginFragment();
-        getSupportFragmentManager().beginTransaction()
-                .add(R.id.fragmentContainerView, fragment)
-                .commit();
-        currentFragment = fragment;
+        if(currentFragment == null){
+            SplashFragment fragment = new SplashFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragmentContainerView, fragment)
+                    .commit();
+        } else {
+            LoginFragment fragment = new LoginFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragmentContainerView, fragment)
+                    .commit();
+            currentFragment = fragment;
+        }
     }
 
     @Override
