@@ -13,6 +13,11 @@ import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.skydoves.balloon.ArrowPositionRules;
+import com.skydoves.balloon.Balloon;
+import com.skydoves.balloon.BalloonAnimation;
+import com.skydoves.balloon.BalloonHighlightAnimation;
+import com.skydoves.balloon.BalloonSizeSpec;
 import com.vitalsync.vital_sync.R;
 import com.vitalsync.vital_sync.activities.MainActivity;
 import com.vitalsync.vital_sync.service.login.LoginClient;
@@ -38,7 +43,7 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
     private WebView privacyWebView;
     private ImageButton webviewCloseButton;
     private SharedPreferences loginCookie;
-
+    private Balloon mCheckupBallon;
     public LoginFragment() {
 
     }
@@ -67,6 +72,7 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
         TextView popupTextView = viewNoDetectionPopup.findViewById(R.id.text_face_popup);
         popupTextView.setText(R.string.login_fail);
         popupView = new CommonPopupView(requireContext(), viewNoDetectionPopup);
+
         viewNoDetectionPopup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -104,6 +110,24 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
             }
         });
 
+        mCheckupBallon = new Balloon.Builder(getContext())
+                .setHeight(BalloonSizeSpec.WRAP)
+                .setWidth(BalloonSizeSpec.WRAP)
+                .setText(getString(R.string.rule_measure))
+                .setTextColorResource(R.color.color_btn_text_default_1)
+                .setTextSize(15f)
+                .setArrowPositionRules(ArrowPositionRules.ALIGN_ANCHOR)
+                .setArrowSize(10)
+                .setArrowPosition(0.5f)
+                .setPadding(12)
+                .setCornerRadius(8f)
+                .setBackgroundColorResource(R.color.lightBlueGrey)
+                .setBalloonAnimation(BalloonAnimation.FADE)
+                .setBalloonHighlightAnimation(BalloonHighlightAnimation.HEARTBEAT)
+                .setLifecycleOwner(this)
+                .setFocusable(false)
+                .build();
+
         return view;
     }
 
@@ -116,6 +140,7 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
             userIdEditText.setHint("");
             userIdEditText.setText(id);
         }
+        mCheckupBallon.showAlignBottom(guestButton);
     }
 
     private void login() {
