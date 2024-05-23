@@ -20,4 +20,8 @@
     <color name="white70">#A0FFFFFF</color>
     <color name="color_btn_text_default_1">#256EB7</color>
     <color name="color_btn_text_default_4">#6E93B9</color>
+
+    <color name="color_text_caution">#DD4233</color>
+    <color name="color_text_guide">#256EB7</color>
+
 </resources>

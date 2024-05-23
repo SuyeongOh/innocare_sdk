@@ -41,7 +41,7 @@ public class SplashFragment extends Fragment {
             @Override
             public void run() {
                 MainActivity activity = (MainActivity) getActivity();
-                activity.replaceFragment(new LoginFragment());
+                activity.replaceFragment(new GuideFragment());
             }
         }, SPLASH_DISPLAY_LENGTH);
     }

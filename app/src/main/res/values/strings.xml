@@ -8,12 +8,12 @@
     <string name="login_fail">Login Failed !!</string>
     <string name="caution">Caution !!</string>
     <string name="app_caution">
-\n1. This app is not intended for use for health care or medical purposes.
-\n2. This app aims to research and improve awareness of general wellness.
-\n3. This app does not collect any personally identifiable information.
-\n4. This app collects\/transmits\/stores data only with the user\'s consent.
-\n5. This app does not share any collected data with any third parties.
-\n6. If you Tester, click start measure.</string>
+\n-  This app is not intended for use for health care or medical purposes.
+\n-  This app aims to research and improve awareness of general wellness.
+\n-  This app does not collect any personally identifiable information.
+\n-  This app collects\/transmits\/stores data only with the user\'s consent.
+\n-  This app does not share any collected data with any third parties.
+\n-  If you Tester, click start measure.</string>
     <string name="privacy_policy">Privacy Policy</string>
 
     <!--ui text-->

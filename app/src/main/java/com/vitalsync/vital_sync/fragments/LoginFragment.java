@@ -38,10 +38,8 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
     private Button guestButton;
     private ProgressBar loadingView;
     private CommonPopupView popupView;
-    private CommonPopupView webviewPopupView;
-    private TextView privacyPolicyView;
-    private WebView privacyWebView;
-    private ImageButton webviewCloseButton;
+
+
     private SharedPreferences loginCookie;
     private Balloon mCheckupBallon;
     public LoginFragment() {
@@ -59,14 +57,6 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
         loginButton = view.findViewById(R.id.view_login_button);
         guestButton = view.findViewById(R.id.view_login_guest_button);
         loadingView = view.findViewById(R.id.view_login_loading);
-        privacyPolicyView = view.findViewById(R.id.view_login_policy);
-
-        View viewWebViewContainer = inflater.inflate(R.layout.view_webview_container,container, false);
-        privacyWebView = viewWebViewContainer.findViewById(R.id.view_webview);
-        privacyWebView.getSettings().setJavaScriptEnabled(true);
-        privacyWebView.loadUrl(Config.PRIVACY_POLICY);
-        webviewCloseButton = viewWebViewContainer.findViewById(R.id.view_webview_close);
-        webviewPopupView = new CommonPopupView(requireContext(), viewWebViewContainer);
 
         View viewNoDetectionPopup = inflater.inflate(R.layout.layout_detection_popup, container, false);
         TextView popupTextView = viewNoDetectionPopup.findViewById(R.id.text_face_popup);
@@ -93,20 +83,6 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
             public void onClick(View v) {
                 Config.USER_ID = getContext().getString(R.string.target_guest);
                 loginGuest();
-            }
-        });
-
-        privacyPolicyView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //개인정보 처리방침 webview
-                webviewPopupView.show();
-            }
-        });
-        webviewCloseButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                webviewPopupView.dismiss();
             }
         });
 
