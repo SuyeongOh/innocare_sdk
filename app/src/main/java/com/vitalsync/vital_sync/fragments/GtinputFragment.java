@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 
 import com.vitalsync.vital_sync.R;
 import com.vitalsync.vital_sync.activities.ResultActivity;
@@ -28,11 +29,16 @@ import androidx.recyclerview.widget.RecyclerView;
 public class GtinputFragment extends Fragment {
     private RecyclerView gtRecyclerView;
     private Button gtInputButton;
+
+    private ImageView homeButton;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_gtinput, container, false);
+
+        homeButton = view.findViewById(R.id.view_gt_home_button);
 
         gtRecyclerView = view.findViewById(R.id.view_gt_recycler);
 
@@ -98,6 +104,17 @@ public class GtinputFragment extends Fragment {
             }
         });
         return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        homeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getActivity().finish();
+            }
+        });
     }
 
     private final GtClient.GtResponseListener gtListener = new GtClient.GtResponseListener() {

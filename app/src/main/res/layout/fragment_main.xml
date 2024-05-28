@@ -49,20 +49,29 @@
             android:layout_height="match_parent">
         </com.vitalsync.vital_sync.ui.CustomCountdownView>
 
+        <ImageView
+            android:id="@+id/view_home_button"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:textSize="20sp"
+            android:src="@drawable/ic_home"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <Button
             android:id="@+id/vital_recheck_btn"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:textSize="30sp"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             android:text="재검사"/>
         <Button
             android:id="@+id/vital_next_page"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:textSize="30sp"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/vital_recheck_btn"
             app:layout_constraintEnd_toEndOf="parent"
             android:text="결과화면"/>
     </androidx.constraintlayout.widget.ConstraintLayout>

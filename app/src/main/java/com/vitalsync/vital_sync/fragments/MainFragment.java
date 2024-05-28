@@ -44,6 +44,7 @@ import android.widget.TextView;
 import com.google.mediapipe.framework.image.BitmapImageBuilder;
 import com.google.mediapipe.framework.image.MPImage;
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetectorResult;
+import com.vitalsync.vital_sync.activities.MainActivity;
 import com.vitalsync.vital_sync.analysis.BpmAnalysisViewModel;
 import com.vitalsync.vital_sync.data.Config;
 import com.vitalsync.vital_sync.analysis.EnhanceFaceDetector;
@@ -106,6 +107,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private TickerView stressValueView;
     private TickerView sbpValueView;
     private TickerView dbpValueView;
+    private ImageView homeButton;
     private Button reStartBtn;
     private Button nextPageBtn;
 
@@ -195,12 +197,24 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         nextPageBtn.setVisibility(View.INVISIBLE);
         initListener();
         initCalibrationTimer();
+
+        homeButton = view.findViewById(R.id.view_home_button);
+
         return view;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        homeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MainActivity activity = (MainActivity) getActivity();
+                activity.replaceFragment(new LoginFragment());
+            }
+        });
+
         requireActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         cameraId = chooseCamera();
         autoFitSurfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
@@ -485,6 +499,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         cameraThread.quitSafely();
         imageReaderThread.quitSafely();
         thread_preview.quitSafely();
+        mCalibrationTimer.cancel();
         mFrontCameraExecutor.shutdown();
         try {
             mFrontCameraExecutor.awaitTermination(
@@ -733,7 +748,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                     @Override
                     public void run() {
                         mCountDownView.setCountDownText(String.valueOf(millisUntilFinished / 1000));
-                        getView().invalidate();
                     }
                 });
 

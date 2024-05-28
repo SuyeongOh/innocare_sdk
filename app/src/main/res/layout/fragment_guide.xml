@@ -37,7 +37,7 @@
         android:layout_height="wrap_content"
         android:background="@drawable/drawable_btn_bg"
         android:textAllCaps="false"
-        android:textColor="@color/color_btn_text_default_1"
+        android:textColor="@drawable/selector_text_confirm"
         android:textSize="20sp"
         android:text="Confirm"
         android:textAlignment="center"

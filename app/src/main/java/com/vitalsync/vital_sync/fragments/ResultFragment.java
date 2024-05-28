@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 
 import com.github.mikephil.charting.charts.CombinedChart;
 import com.github.mikephil.charting.charts.LineChart;
@@ -45,11 +46,14 @@ public class ResultFragment extends Fragment {
     private LineChart hrChart;
 
     private Button restartBtn;
+    private ImageView homeButton;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_result, container, false);
+
+        homeButton = view.findViewById(R.id.view_result_home_button);
 
         restartBtn = view.findViewById(R.id.result_recheck_btn);
         restartBtn.setText(String.format("재검사, frame : %d", VitalChartData.FRAME_RATE));
@@ -64,6 +68,18 @@ public class ResultFragment extends Fragment {
         setValue();
 
         return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        homeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getActivity().finish();
+            }
+        });
+
     }
 
     private void bindChart(View rootView){

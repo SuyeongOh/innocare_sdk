@@ -16,7 +16,7 @@
             android:id="@+id/init_view_guide"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="6"
+            android:layout_weight="5"
             android:autoSizeTextType="uniform"
             android:textColor="@color/black"
             android:text=""
@@ -25,7 +25,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"/>
+            android:layout_weight="0.5"/>
 
         <EditText
             android:id="@+id/init_view_analysis_time"
@@ -93,7 +93,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="4"
+            android:layout_weight="6"
             android:orientation="horizontal">
 
             <LinearLayout
@@ -236,7 +236,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"/>
+            android:layout_weight="0.5"/>
 
         <Switch
             android:id="@+id/init_view_server_switch"
@@ -288,7 +288,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"/>
+            android:layout_weight="0.5"/>
 
         <Button
             android:id="@+id/init_btn_submit"
