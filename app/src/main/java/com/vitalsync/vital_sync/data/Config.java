@@ -24,6 +24,8 @@ public class Config {
     public static final double MIN_HF_FREQUENCY = 0.15f;
     public static final double MAX_HF_FREQUENCY = 0.4f;
 
+    public static final double SPO2_LOW_CUTOFF_FREQUENCY = 0.7f;
+    public static final double SPO2_HIGH_CUTOFF_FREQUENCY = 3.0f;
     public static boolean LARGE_FACE_MODE = false;
     public static boolean SMALL_FACE_MODE = false;
     public static boolean SERVER_RESPONSE_MODE = false;

@@ -1,10 +1,12 @@
 package com.vitalsync.vital_sync.analysis;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.log10;
 
 import android.graphics.Bitmap;
 import android.util.Log;
 
+import com.github.psambit9791.jdsp.filter.Butterworth;
 import com.github.psambit9791.jdsp.signal.Detrend;
 import com.github.psambit9791.jdsp.signal.Smooth;
 import com.github.psambit9791.jdsp.signal.peaks.FindPeak;
@@ -19,19 +21,25 @@ import com.vitalsync.vital_sync.data.ResultVitalSign;
 import com.vitalsync.vital_sync.data.Rppg;
 import com.vitalsync.vital_sync.data.VitalChartData;
 import com.vitalsync.vital_sync.service.vital.VitalResponse;
+import com.vitalsync.vital_sync.utils.DoubleUtils;
 import com.vitalsync.vital_sync.utils.RppgUtils;
 import com.paramsen.noise.Noise;
 
+import org.apache.commons.math3.util.MathArrays;
+import org.tensorflow.lite.Interpreter;
+
+import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import jsat.linear.DenseMatrix;
 import jsat.linear.DenseVector;
 import jsat.linear.Matrix;
 import jsat.linear.Vec;
-import uk.me.berndporr.iirj.Butterworth;
 
 public class Vital {
     public static final int BUFFER_SIZE = Config.ANALYSIS_TIME * Config.TARGET_FRAME;
@@ -123,7 +131,7 @@ public class Vital {
                     , lastResult.HR_result, lastResult.sdnn_result));
 
             try {
-                lastResult.spo2_result = spo2(rPPG.f_pixel_buff[0], rPPG.f_pixel_buff[2], VIDEO_FRAME_RATE);
+                lastResult.spo2_result = spo2(rPPG.f_pixel_buff[0], rPPG.f_pixel_buff[1], rPPG.f_pixel_buff[2], VIDEO_FRAME_RATE);
                 lastResult.spo2_result = Math.round(lastResult.spo2_result);
             } catch (Exception e) {
                 lastResult.spo2_result = 0;
@@ -281,23 +289,20 @@ public class Vital {
         return fft.getMagnitude(true);
     }
 
-    public double[] get_peak_avg(double[] signalG, double hr) { // flag 0 : vally 1 : peak
-
+    public ArrayList<ArrayList<Integer>> get_peak_idx(double[] signal, double hr){
         int minWindowSize = (int) (VIDEO_FRAME_RATE * 60 / hr * 0.8);
         int maxWindowSize = (int) (VIDEO_FRAME_RATE * 60 / hr * 1.2);
 
         ArrayList<Integer> peakArray = new ArrayList<>();
-        ArrayList<Double> peakPower = new ArrayList<>();
         ArrayList<Integer> valleyArray = new ArrayList<>();
-        ArrayList<Double> valleyPower = new ArrayList<>();
         //peak detect
         int firstIndex = 0;
-        double[] slice = Arrays.copyOfRange(signalG, 0, maxWindowSize);
+        double[] slice = Arrays.copyOfRange(signal, 0, maxWindowSize);
         FindPeak peak = new FindPeak(slice);
         int[] WindowArray = peak.detectRelativeMaxima();
 
         for (int i = 0; i < WindowArray.length; i++) {
-            if (signalG[0] < signalG[WindowArray[i]]) {
+            if (signal[0] < signal[WindowArray[i]]) {
                 firstIndex = i;
             }
         }
@@ -307,14 +312,13 @@ public class Vital {
         if (!(firstIndex == 1 || firstIndex == 0)) {
             firstIndex = firstIndex - 2;
         }
-        slice = Arrays.copyOfRange(signalG, firstIndex, signalG.length - 1);
+        slice = Arrays.copyOfRange(signal, firstIndex, signal.length - 1);
         peak = new FindPeak(slice);
         WindowArray = peak.detectPeaks().filterByPeakDistance(minWindowSize);
 
         for (int peakIndex : WindowArray) {
             int realIndex = peakIndex + firstIndex;
             peakArray.add(realIndex);
-            peakPower.add(signalG[realIndex]);
         }
 
         //valley detect
@@ -322,7 +326,7 @@ public class Vital {
         for (int i = 1; i < peakArray.size(); i++) {
             double[] targetArray;
             try {
-                targetArray = Arrays.copyOfRange(signalG, peakArray.get(i - 1), peakArray.get(i));
+                targetArray = Arrays.copyOfRange(signal, peakArray.get(i - 1), peakArray.get(i));
             } catch (Exception e) {
                 continue;
             }
@@ -337,13 +341,36 @@ public class Vital {
                 }
             }
             valleyArray.add(peakArray.get(i - 1) + minIndex);
-            valleyPower.add(targetArray[minIndex]);
         }
 
+        ArrayList<ArrayList<Integer>> peak_N_valley = new ArrayList<>();
+
+        peak_N_valley.add(peakArray);
+        peak_N_valley.add(valleyArray);
+
+        return peak_N_valley;
+
+
+    }
+
+    public double[] get_peak_avg(double[] signalG, double hr) { // flag 0 : vally 1 : peak
+        ArrayList<ArrayList<Integer>> peak_N_valley = get_peak_idx(signalG, hr);
+
+        ArrayList<Double> peakPower = new ArrayList<>();
+        ArrayList<Double> valleyPower = new ArrayList<>();
+
+        //[0] : peak, [1] : valley
+        for(int peak : peak_N_valley.get(0)){
+            peakPower.add(signalG[peak]);
+        }
+        for(int valley : peak_N_valley.get(1)){
+            valleyPower.add(signalG[valley]);
+        }
         double[] resultArray = new double[2];
 
         resultArray[0] = peakPower.stream().mapToDouble(e -> e).average().orElse(0.0);
         resultArray[1] = valleyPower.stream().mapToDouble(e -> e).average().orElse(0.0);
+
 
         //double[0] = peak, double[1] = valley
         return resultArray;
@@ -511,14 +538,92 @@ public class Vital {
         Log.d("vital", "IBI : " + mean + "IBI-HR : " + 60000/mean);
         return Math.sqrt(meanOfSquaredDifferences);
     }
+    public double spo2(double[] pixel_R,
+                       double[] pixel_G,
+                       double[] pixel_B,
+                       int VIDEO_FRAME_RATE){
+        Butterworth butterworth = new Butterworth((double)VIDEO_FRAME_RATE/2);
 
-    public double spo2(double[] spo2_pixel_buff_R, double[] spo2_pixel_buff_B, int VIDEO_FRAME_RATE) {
+        double[] HbO2 = MathArrays.ebeAdd(MathArrays.ebeAdd(
+                MathArrays.scale(0.125, pixel_R), MathArrays.scale(0.128, pixel_G)), MathArrays.scale(-0.253, pixel_B));
+        double[] Hb = MathArrays.ebeAdd(MathArrays.ebeAdd(
+                MathArrays.scale(-0.025, pixel_R), MathArrays.scale(0.165, pixel_G)), MathArrays.scale(-0.140, pixel_B));
+
+        HbO2 = butterworth.bandPassFilter(HbO2, 6 , Config.SPO2_LOW_CUTOFF_FREQUENCY, Config.SPO2_HIGH_CUTOFF_FREQUENCY);
+        Hb = butterworth.bandPassFilter(Hb, 6 , Config.SPO2_LOW_CUTOFF_FREQUENCY, Config.SPO2_HIGH_CUTOFF_FREQUENCY);
+
+        Detrend det_HbO2 = new Detrend(HbO2, 6);
+        Detrend det_Hb = new Detrend(Hb, 6);
+
+        ArrayList<ArrayList<Integer>> peak_N_valley_HbO2 = get_peak_idx(det_HbO2.detrendSignal(), lastResult.HR_result);
+        ArrayList<ArrayList<Integer>> peak_N_valley_Hb = get_peak_idx(det_Hb.detrendSignal(), lastResult.HR_result);
+
+        ArrayList<Integer> commonPeaks = RppgUtils.intersect1d(peak_N_valley_HbO2.get(0), peak_N_valley_Hb.get(0));
+        ArrayList<Integer> commonValleys = RppgUtils.intersect1d(peak_N_valley_HbO2.get(1), peak_N_valley_Hb.get(1));
+
+        Map<Integer, Integer> closestMap = RppgUtils.closestPairs(commonPeaks, commonValleys);
+
+        ArrayList<Integer> filtered_peaks = new ArrayList<>();
+        ArrayList<Integer> filtered_valleys = new ArrayList<>();
+        if(!closestMap.entrySet().isEmpty()){
+            for(Map.Entry<Integer, Integer> item : closestMap.entrySet()){
+                filtered_peaks.add(item.getKey());
+                filtered_valleys.add(item.getValue());
+            }
+        }
+
+        if(filtered_peaks.isEmpty() || filtered_valleys.isEmpty()) {
+            return 0;
+        }
+
+        double baseline_correction = Math.abs(
+                Math.min(DoubleUtils.findMin(HbO2), DoubleUtils.findMin(Hb))) + 1;
+
+        ArrayList<Double> p_power = new ArrayList<>();
+        ArrayList<Double> v_power = new ArrayList<>();
+
+        for(int peak : filtered_peaks){
+            p_power.add(HbO2[peak]);
+        }
+        for(int valley : filtered_valleys){
+            v_power.add(HbO2[valley]);
+        }
+        double[] divide_HbO2_pv = MathArrays.ebeDivide(p_power.stream().mapToDouble(Double:: doubleValue).toArray()
+                , v_power.stream().mapToDouble(Double:: doubleValue).toArray());
+        double[] divide_HbO2_log_pv = new double[divide_HbO2_pv.length];
+
+        for(int i = 0; i < divide_HbO2_pv.length; i++){
+            divide_HbO2_log_pv[i] = log10(divide_HbO2_pv[i]);
+        }
+
+        p_power.clear(); v_power.clear();
+
+        for(int peak : filtered_peaks){
+            p_power.add(Hb[peak]);
+        }
+        for(int valley : filtered_valleys){
+            v_power.add(Hb[valley]);
+        }
+
+        double[] divide_Hb_pv = MathArrays.ebeDivide(p_power.stream().mapToDouble(Double:: doubleValue).toArray()
+                , v_power.stream().mapToDouble(Double:: doubleValue).toArray());
+        double[] divide_Hb_log_pv = new double[divide_HbO2_pv.length];
+
+        for(int i = 0; i < divide_Hb_pv.length; i++){
+            divide_Hb_log_pv[i] = log10(divide_Hb_pv[i]);
+        }
+
+        double RoR = RppgUtils.getSpO2RoR(divide_HbO2_log_pv, divide_Hb_log_pv);
+
+        return -0.7836 * RoR + 102.4280;
+    }
+    public double spo2_lagacy(double[] spo2_pixel_buff_R, double[] spo2_pixel_buff_B, int VIDEO_FRAME_RATE) {
 
         //---------BPF_FILTER-----------//
-        double[] R_kernel = bandPassKernel(VIDEO_FRAME_RATE, 0.3d / (VIDEO_FRAME_RATE / 2), 2.5 / (VIDEO_FRAME_RATE / 2)); //BPF 생성 0.3/15~ 2.5/15사이
-        double[] B_kernel = bandPassKernel(VIDEO_FRAME_RATE, 0.3d / (VIDEO_FRAME_RATE / 2), 2.5 / (VIDEO_FRAME_RATE / 2));
-        double[] R_result = filter(spo2_pixel_buff_R, R_kernel); //BPF 통과_ 특정 주파수의 색만 남는다고함..주파수( 색의 파장 )
-        double[] B_result = filter(spo2_pixel_buff_B, B_kernel);
+        double[] R_kernel = RppgUtils.bandPassKernel(VIDEO_FRAME_RATE, 0.3d / (VIDEO_FRAME_RATE / 2), 2.5 / (VIDEO_FRAME_RATE / 2)); //BPF 생성 0.3/15~ 2.5/15사이
+        double[] B_kernel = RppgUtils.bandPassKernel(VIDEO_FRAME_RATE, 0.3d / (VIDEO_FRAME_RATE / 2), 2.5 / (VIDEO_FRAME_RATE / 2));
+        double[] R_result = RppgUtils.filter(spo2_pixel_buff_R, R_kernel); //BPF 통과_ 특정 주파수의 색만 남는다고함..주파수( 색의 파장 )
+        double[] B_result = RppgUtils.filter(spo2_pixel_buff_B, B_kernel);
         double R_reult_mean = 0;
         double B_reult_mean = 0;
         //--------SIGNAL SMOOTHING---// --> BPF의 평균값 제거를 통한 노이즈 제거
@@ -537,7 +642,7 @@ public class Vital {
             B_result[i] -= B_reult_mean;
         }
         //-------SECONDARY BPF(ButterWorth)-----// --> ButterWorth 필터로 2차 필터링 통과대역외의 일정 부분을 살리기 위함
-        Butterworth butterworth = new Butterworth();
+        uk.me.berndporr.iirj.Butterworth butterworth = new uk.me.berndporr.iirj.Butterworth();
         butterworth.bandPass(9, VIDEO_FRAME_RATE, 0.1, 0.1);
         for (int i = 0; i < R_result[i]; i++) {
             R_result[i] = butterworth.filter(R_result[i]);
@@ -647,98 +752,6 @@ public class Vital {
 
     }
 
-    private static double[] blackmanWindow(int length) {
-
-        double[] window = new double[length];
-        double factor = Math.PI / (length - 1);
-
-        for (int i = 0; i < window.length; ++i) {
-            window[i] = 0.42d - (0.5d * Math.cos(2 * factor * i)) + (0.08d * Math.cos(4 * factor * i));
-        }
-
-        return window;
-    }
-
-    public static double[] lowPassKernel(int length, double cutoffFreq, double[] window) {
-
-        double[] ker = new double[length + 1];
-        double factor = Math.PI * cutoffFreq * 2;
-        double sum = 0;
-
-        for (int i = 0; i < ker.length; i++) {
-            double d = i - length / 2;
-            if (d == 0) ker[i] = factor;
-            else ker[i] = Math.sin(factor * d) / d;
-            ker[i] *= window[i];
-            sum += ker[i];
-        }
-
-        // Normalize the kernel
-        for (int i = 0; i < ker.length; ++i) {
-            ker[i] /= sum;
-        }
-
-        return ker;
-    }
-
-    public static double[] bandPassKernel(int length, double lowFreq, double highFreq) {
-
-        double[] ker = new double[length + 1];
-        double[] window = blackmanWindow(length + 1);
-
-        // Create a band reject filter kernel using a high pass and a low pass filter kernel
-        double[] lowPass = lowPassKernel(length, lowFreq, window);
-
-        // Create a high pass kernel for the high frequency
-        // by inverting a low pass kernel
-        double[] highPass = lowPassKernel(length, highFreq, window);
-        for (int i = 0; i < highPass.length; ++i) highPass[i] = -highPass[i];
-        highPass[length / 2] += 1;
-
-        // Combine the filters and invert to create a bandpass filter kernel
-        for (int i = 0; i < ker.length; ++i) ker[i] = -(lowPass[i] + highPass[i]);
-        ker[length / 2] += 1;
-
-        return ker;
-    }
-
-    public static double[] filter(double[] signal, double[] kernel) {
-
-        double[] res = new double[signal.length];
-
-        for (int r = 0; r < res.length; ++r) {
-
-            int M = Math.min(kernel.length, r + 1);
-            for (int k = 0; k < M; ++k) {
-                res[r] += kernel[k] * signal[r - k];
-            }
-        }
-
-        return res;
-    }
-
-    public int HSV_fft(Noise noise2, float[] frame_hue_avg, float[] fft_hue, int HUE_FRAME, boolean[] hue_filter) {
-
-        noise2.fft(frame_hue_avg, fft_hue);
-
-        fft_hue[0] = fft_hue[1] = 0;
-
-        for (int i = 0; i < HUE_FRAME / 2; i++) {
-            fft_hue[i * 2 + 2] = fft_hue[i * 2 + 2] * (hue_filter[i] ? 1.0f : 0.0f);
-        }
-
-        int hue_hr_index = 0;
-        float hue_max = 0.0f;
-
-        for (int i = 0; i < HUE_FRAME / 2; i++) {
-            if (fft_hue[i * 2 + 2] > hue_max) {
-                hue_max = fft_hue[i * 2 + 2];
-                hue_hr_index = i;
-            }
-        }
-
-        return hue_hr_index;
-    }
 
     public static ResultVitalSign toResultVitalSign(Result result) {
         ResultVitalSign convert = new ResultVitalSign();

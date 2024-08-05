@@ -634,45 +634,44 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 hrValueView.setText(
                         Config.USER_ID.equals(getContext().getString(R.string.target_guest)) ?
                                 String.valueOf(Math.round(ResultVitalSign.vitalSignData.HR)) :
-                        Math.round(ResultVitalSign.vitalSignServerData.HR) + "/" +
-                                Math.round(ResultVitalSign.vitalSignData.HR)
+                        Math.round(ResultVitalSign.vitalSignData.HR) + "/" +
+                                Math.round(ResultVitalSign.vitalSignServerData.HR)
                 );
                 rrValueView.setText(
                         Config.USER_ID.equals(getContext().getString(R.string.target_guest)) ?
                                 String.valueOf(Math.round(ResultVitalSign.vitalSignData.RR)) :
-                        Math.round(ResultVitalSign.vitalSignServerData.RR) + "/" +
-                                Math.round(ResultVitalSign.vitalSignData.RR)
+                        Math.round(ResultVitalSign.vitalSignData.RR) + "/" +
+                                Math.round(ResultVitalSign.vitalSignServerData.RR)
                 );
                 sdnnValueView.setText(
                         Config.USER_ID.equals(getContext().getString(R.string.target_guest)) ?
-                                String.valueOf(Math.round(ResultVitalSign.vitalSignData.RR)) :
-                        Math.round(ResultVitalSign.vitalSignServerData.HRV) + "/" +
-                                Math.round(ResultVitalSign.vitalSignData.HRV)
+                                String.valueOf(Math.round(ResultVitalSign.vitalSignData.HRV)) :
+                        Math.round(ResultVitalSign.vitalSignData.HRV) + "/" +
+                                Math.round(ResultVitalSign.vitalSignServerData.HRV)
                 );
                 stressValueView.setText(
                         Config.USER_ID.equals(getContext().getString(R.string.target_guest)) ?
-                                String.format("%1$,.2f", ResultVitalSign.vitalSignData.STRESS) :
-                        String.format("%1$,.2f / %1$,.2f"
-                                , ResultVitalSign.vitalSignServerData.STRESS
-                                , ResultVitalSign.vitalSignData.STRESS)
+                                String.valueOf(Math.round(ResultVitalSign.vitalSignData.STRESS)) :
+                                Math.round(ResultVitalSign.vitalSignData.STRESS) + "/" +
+                                        Math.round(ResultVitalSign.vitalSignServerData.STRESS)
                 );
                 spo2ValueView.setText(
                         Config.USER_ID.equals(getContext().getString(R.string.target_guest)) ?
                                 String.valueOf(Math.round(ResultVitalSign.vitalSignData.RR)) :
-                        Math.round(ResultVitalSign.vitalSignServerData.SpO2) + "/" +
-                                Math.round(ResultVitalSign.vitalSignData.SpO2)
+                        Math.round(ResultVitalSign.vitalSignData.SpO2) + "/" +
+                                Math.round(ResultVitalSign.vitalSignServerData.SpO2)
                 );
                 sbpValueView.setText(
                         Config.USER_ID.equals(getContext().getString(R.string.target_guest)) ?
                                 "Sys " + Math.round(ResultVitalSign.vitalSignData.SBP) :
                         "Sys " + Math.round(ResultVitalSign.vitalSignData.SBP) + "/" +
-                                Math.round(ResultVitalSign.vitalSignData.SBP)
+                                Math.round(ResultVitalSign.vitalSignServerData.SBP)
                 );
                 dbpValueView.setText(
                         Config.USER_ID.equals(getContext().getString(R.string.target_guest)) ?
                                 "Dia " + Math.round(ResultVitalSign.vitalSignData.DBP) :
                         "Dia " + Math.round(ResultVitalSign.vitalSignData.DBP) + "/" +
-                                Math.round(ResultVitalSign.vitalSignData.DBP)
+                                Math.round(ResultVitalSign.vitalSignServerData.DBP)
                 );
             }
         });

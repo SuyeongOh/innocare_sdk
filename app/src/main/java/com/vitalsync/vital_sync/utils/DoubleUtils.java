@@ -30,4 +30,12 @@ public class DoubleUtils {
         }
         return sum / data.length;
     }
+
+    public static double findMin(double[] data){
+        double min = data[0];
+        for (double value : data){
+            if(min > value) min = value;
+        }
+        return min;
+    }
 }

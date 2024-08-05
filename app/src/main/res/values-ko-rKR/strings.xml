@@ -26,7 +26,7 @@
 \n- 측정시간은 기본 20초로 설정되어있습니다.
 \n- 안정적인 조명 환경에서 움직이지 마세요.
 \n- 아래 신체정보를 모두 넣으시면, 더 정확한 결과를 얻을수 있습니다.
-\n- 버전: 20240409(0.1.3)"</string>
+\n- 버전: 20240528(0.1.4)"</string>
 
     <string name="heart_rate">심박수</string>
     <string name="heart_rate_unit">bpm</string>
