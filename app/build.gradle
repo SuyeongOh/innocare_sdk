@@ -45,6 +45,9 @@ android {
         exclude 'META-INF/INDEX.LIST'
         exclude 'META-INF/notice.txt'
         exclude 'META-INF/ASL2.0'
+        exclude 'src/main/assets/pure/*'
+        exclude 'src/main/assets/sample_data_ppg.txt'
+        exclude 'src/main/assets/sample_data_result.txt'
     }
     signingConfigs {
         release {
@@ -59,7 +62,6 @@ android {
             outputFileName = getApkName(variant)
         }
     }
-
 }
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
