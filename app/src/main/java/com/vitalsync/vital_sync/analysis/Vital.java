@@ -25,6 +25,8 @@ import com.vitalsync.vital_sync.utils.DoubleUtils;
 import com.vitalsync.vital_sync.utils.RppgUtils;
 import com.paramsen.noise.Noise;
 
+import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
+import org.apache.commons.math3.stat.inference.TestUtils;
 import org.apache.commons.math3.util.MathArrays;
 import org.tensorflow.lite.Interpreter;
 
@@ -549,6 +551,10 @@ public class Vital {
         double[] Hb = MathArrays.ebeAdd(MathArrays.ebeAdd(
                 MathArrays.scale(-0.025, pixel_R), MathArrays.scale(0.165, pixel_G)), MathArrays.scale(-0.140, pixel_B));
 
+        if(TestUtils.tTest(HbO2, Hb) < 0){
+            Hb = MathArrays.scale(-1, Hb);
+        }
+
         HbO2 = butterworth.bandPassFilter(HbO2, 6 , Config.SPO2_LOW_CUTOFF_FREQUENCY, Config.SPO2_HIGH_CUTOFF_FREQUENCY);
         Hb = butterworth.bandPassFilter(Hb, 6 , Config.SPO2_LOW_CUTOFF_FREQUENCY, Config.SPO2_HIGH_CUTOFF_FREQUENCY);
 
@@ -583,10 +589,10 @@ public class Vital {
         ArrayList<Double> v_power = new ArrayList<>();
 
         for(int peak : filtered_peaks){
-            p_power.add(HbO2[peak]);
+            p_power.add(HbO2[peak] + baseline_correction);
         }
         for(int valley : filtered_valleys){
-            v_power.add(HbO2[valley]);
+            v_power.add(HbO2[valley] + baseline_correction);
         }
         double[] divide_HbO2_pv = MathArrays.ebeDivide(p_power.stream().mapToDouble(Double:: doubleValue).toArray()
                 , v_power.stream().mapToDouble(Double:: doubleValue).toArray());
@@ -599,10 +605,10 @@ public class Vital {
         p_power.clear(); v_power.clear();
 
         for(int peak : filtered_peaks){
-            p_power.add(Hb[peak]);
+            p_power.add(Hb[peak] + baseline_correction);
         }
         for(int valley : filtered_valleys){
-            v_power.add(Hb[valley]);
+            v_power.add(Hb[valley] + baseline_correction);
         }
 
         double[] divide_Hb_pv = MathArrays.ebeDivide(p_power.stream().mapToDouble(Double:: doubleValue).toArray()
