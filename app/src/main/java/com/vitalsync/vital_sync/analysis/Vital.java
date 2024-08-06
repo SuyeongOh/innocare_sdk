@@ -1,8 +1,5 @@
 package com.vitalsync.vital_sync.analysis;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.log10;
-
 import android.graphics.Bitmap;
 import android.util.Log;
 
@@ -15,33 +12,33 @@ import com.github.psambit9791.jdsp.transform.DiscreteFourier;
 import com.github.psambit9791.jdsp.transform.FastFourier;
 import com.github.psambit9791.jdsp.transform.Hilbert;
 import com.vitalsync.vital_sync.bvp.BandPassFilter;
-import com.vitalsync.vital_sync.service.vital.VitalClient;
 import com.vitalsync.vital_sync.data.Config;
 import com.vitalsync.vital_sync.data.ResultVitalSign;
 import com.vitalsync.vital_sync.data.Rppg;
 import com.vitalsync.vital_sync.data.VitalChartData;
+import com.vitalsync.vital_sync.service.vital.VitalClient;
 import com.vitalsync.vital_sync.service.vital.VitalResponse;
 import com.vitalsync.vital_sync.utils.DoubleUtils;
 import com.vitalsync.vital_sync.utils.RppgUtils;
-import com.paramsen.noise.Noise;
 
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.apache.commons.math3.stat.inference.TestUtils;
 import org.apache.commons.math3.util.MathArrays;
-import org.tensorflow.lite.Interpreter;
+import org.apache.commons.math3.util.MathUtils;
 
-import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 import jsat.linear.DenseMatrix;
 import jsat.linear.DenseVector;
 import jsat.linear.Matrix;
 import jsat.linear.Vec;
+
+import static java.lang.Math.abs;
+import static java.lang.Math.log10;
 
 public class Vital {
     public static final int BUFFER_SIZE = Config.ANALYSIS_TIME * Config.TARGET_FRAME;
@@ -545,13 +542,14 @@ public class Vital {
                        double[] pixel_B,
                        int VIDEO_FRAME_RATE){
         Butterworth butterworth = new Butterworth((double)VIDEO_FRAME_RATE/2);
+        double scale = 10000;
 
         double[] HbO2 = MathArrays.ebeAdd(MathArrays.ebeAdd(
-                MathArrays.scale(0.125, pixel_R), MathArrays.scale(0.128, pixel_G)), MathArrays.scale(-0.253, pixel_B));
+                MathArrays.scale(0.13214285714285712, pixel_R), MathArrays.scale(0.11964285714285716, pixel_G)), MathArrays.scale(-0.251785714 , pixel_B));
         double[] Hb = MathArrays.ebeAdd(MathArrays.ebeAdd(
-                MathArrays.scale(-0.025, pixel_R), MathArrays.scale(0.165, pixel_G)), MathArrays.scale(-0.140, pixel_B));
+                MathArrays.scale(-0.019642857, pixel_R), MathArrays.scale(-0.0125, pixel_G)), MathArrays.scale(0.032142857, pixel_B));
 
-        if(TestUtils.tTest(HbO2, Hb) < 0){
+        if(new PearsonsCorrelation().correlation(HbO2, Hb) < 0){
             Hb = MathArrays.scale(-1, Hb);
         }
 
@@ -561,8 +559,19 @@ public class Vital {
         Detrend det_HbO2 = new Detrend(HbO2, 6);
         Detrend det_Hb = new Detrend(Hb, 6);
 
-        ArrayList<ArrayList<Integer>> peak_N_valley_HbO2 = get_peak_idx(det_HbO2.detrendSignal(), lastResult.HR_result);
-        ArrayList<ArrayList<Integer>> peak_N_valley_Hb = get_peak_idx(det_Hb.detrendSignal(), lastResult.HR_result);
+        HbO2 = det_HbO2.detrendSignal();
+        Hb = det_Hb.detrendSignal();
+
+        double hbo2_mean = DoubleUtils.calculateMean(HbO2);
+        double hb_mean = DoubleUtils.calculateMean(Hb);
+
+        for(int i = 0; i < HbO2.length; i++){
+            HbO2[i] = (HbO2[i] - hbo2_mean);
+            Hb[i] = (Hb[i] - hb_mean);
+        }
+
+        ArrayList<ArrayList<Integer>> peak_N_valley_HbO2 = get_peak_idx(HbO2, 96);
+        ArrayList<ArrayList<Integer>> peak_N_valley_Hb = get_peak_idx(Hb, 96);
 
         ArrayList<Integer> commonPeaks = RppgUtils.intersect1d(peak_N_valley_HbO2.get(0), peak_N_valley_Hb.get(0));
         ArrayList<Integer> commonValleys = RppgUtils.intersect1d(peak_N_valley_HbO2.get(1), peak_N_valley_Hb.get(1));
@@ -621,7 +630,11 @@ public class Vital {
 
         double RoR = RppgUtils.getSpO2RoR(divide_HbO2_log_pv, divide_Hb_log_pv);
 
-        return -0.7836 * RoR + 102.4280;
+        double spo2 = -0.7836 * RoR + 102.4280;
+        if(spo2 > 100){
+            spo2 = 100;
+        }
+        return spo2;
     }
     public double spo2_lagacy(double[] spo2_pixel_buff_R, double[] spo2_pixel_buff_B, int VIDEO_FRAME_RATE) {
 
