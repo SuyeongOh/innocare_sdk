@@ -73,6 +73,7 @@ Welcome, %1$s!\n
     <string name="analysis_start">Start Measure</string>
     <string name="analysis_record">Measure Record</string>
     <string name="reset_gender">reset gender</string>
+    <string name="connect_polar">connect</string>
     <string name="input_analysis_time">Input Analysis Time</string>
     <string name="select_gender">Select the your gender</string>
     <string name="gender_male">Male</string>

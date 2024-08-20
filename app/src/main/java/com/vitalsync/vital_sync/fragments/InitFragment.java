@@ -1,8 +1,12 @@
 package com.vitalsync.vital_sync.fragments;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -17,6 +21,7 @@ import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.vitalsync.vital_sync.R;
@@ -24,8 +29,15 @@ import com.vitalsync.vital_sync.activities.MainActivity;
 import com.vitalsync.vital_sync.data.Config;
 import com.vitalsync.vital_sync.data.Constant;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.ActivityResultRegistry;
+import androidx.activity.result.contract.ActivityResultContract;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityOptionsCompat;
 import androidx.fragment.app.Fragment;
 
 public class InitFragment extends Fragment {
@@ -42,13 +54,12 @@ public class InitFragment extends Fragment {
     private EditText frameInputView;
     private EditText analysisTimeInputView;
     private EditText localIpInputView;
+    private EditText polarIdInputView;
     private Button applyBtn;
     private Button recordBtn;
+    private Button connectBtn;
     private Button clearGenderBtn;
-    private Switch serverResponseSwitch;
-    private Switch cameraDirectionSwitch;
-    private Switch largeFaceSwitch;
-    private Switch smallFaceSwitch;
+
     private SharedPreferences loginCookie;
     private final String USER_BMI_KEY = "bmi";
     private final String USER_WEIGHT_KEY = "weight";
@@ -57,6 +68,7 @@ public class InitFragment extends Fragment {
     private final String USER_GENDER_KEY = "gender";
     private final String USER_SBP_KEY = "sbp";
     private final String USER_DBP_KEY = "dbp";
+    private final String USER_POLAR_KEY = "polar";
 
     @Nullable
     @Override
@@ -76,14 +88,12 @@ public class InitFragment extends Fragment {
 
         applyBtn = view.findViewById(R.id.init_btn_submit);
         recordBtn = view.findViewById(R.id.init_btn_record);
+        connectBtn = view.findViewById(R.id.init_view_polar_connect);
         clearGenderBtn = view.findViewById(R.id.init_btn_gender_clear);
-        cameraDirectionSwitch = view.findViewById(R.id.init_view_camera_switch);
         frameInputView = view.findViewById(R.id.init_view_frame_input);
-        smallFaceSwitch = view.findViewById(R.id.init_view_small_face_switch);
-        largeFaceSwitch = view.findViewById(R.id.init_view_large_face_switch);
         analysisTimeInputView = view.findViewById(R.id.init_view_analysis_time);
         localIpInputView = view.findViewById(R.id.init_view_ip_input);
-        serverResponseSwitch = view.findViewById(R.id.init_view_server_switch);
+        polarIdInputView = view.findViewById(R.id.init_view_polar_id);
 
         if(Config.USER_ID.equals(getContext().getString(R.string.target_guest))){
             analysisTimeInputView.setVisibility(View.GONE);
@@ -127,6 +137,15 @@ public class InitFragment extends Fragment {
                 ageInputView.setText("");
             }
         });
+        connectBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean isBTenable = checkBT();
+                if(!isBTenable) return;
+
+
+            }
+        });
         return view;
     }
 
@@ -143,7 +162,7 @@ public class InitFragment extends Fragment {
         heightInputView.setText(loginCookie.getString(USER_HEIGHT_KEY, ""));
         sbpInputView.setText(loginCookie.getString(USER_SBP_KEY, ""));
         dbpInputView.setText(loginCookie.getString(USER_DBP_KEY, ""));
-
+        polarIdInputView.setText(loginCookie.getString());
         String gender = loginCookie.getString(USER_GENDER_KEY, "");
 
         if (gender.equals("female")) {
@@ -151,22 +170,6 @@ public class InitFragment extends Fragment {
         } else if (gender.equals("male")) {
             radioGroupGender.check(R.id.init_view_gender_male);
         }
-        largeFaceSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked && smallFaceSwitch.isChecked()) {
-                    smallFaceSwitch.setChecked(false);
-                }
-            }
-        });
-        smallFaceSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked && largeFaceSwitch.isChecked()) {
-                    largeFaceSwitch.setChecked(false);
-                }
-            }
-        });
 
         recordBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -232,6 +235,11 @@ public class InitFragment extends Fragment {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                try {
+                    Config.USER_POLAR_ID = polarIdInputView.getText().toString();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
 
                 editor.putString(USER_GENDER_KEY, Config.USER_GENDER);
                 editor.apply();
@@ -251,13 +259,7 @@ public class InitFragment extends Fragment {
                     Config.LOCAL_SERVER_ADDRESS = localIpInputView.getText().toString();
                 }
 
-
-                Config.SERVER_RESPONSE_MODE = serverResponseSwitch.isChecked();
-                //Config.LARGE_FACE_MODE = largeFaceSwitch.isChecked();
-                Config.SMALL_FACE_MODE = smallFaceSwitch.isChecked();
-                if (cameraDirectionSwitch.isChecked()) {
-                    Config.USE_CAMERA_DIRECTION = Constant.CAMERA_DIRECTION_BACK;
-                }
+                Config.USE_CAMERA_DIRECTION = Constant.CAMERA_DIRECTION_BACK;
 
                 bmiInputView.clearFocus();
                 MainActivity activity = (MainActivity) getActivity();
@@ -287,4 +289,40 @@ public class InitFragment extends Fragment {
             }
         }
     };
+
+    private boolean checkBT() {
+        try{
+            Context context = requireContext();
+            BluetoothManager btManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+            BluetoothAdapter btAdapter = btManager.getAdapter();
+            if(btAdapter  == null){
+                Toast.makeText(context, "Device doesn't support Bluetooth", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+
+            ActivityResultLauncher<Intent> bluetoothOnActivityResultLauncher = getActivity().registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    if(result.getResultCode() != getActivity().RESULT_OK){
+                        Log.w("bluetooth", "Bluetooth off");
+                    }
+                }
+            });
+
+            if(!btAdapter.isEnabled()){
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                bluetoothOnActivityResultLauncher.launch(enableBtIntent);
+            }
+
+            if (Build.VERSION.SDK_INT >= 31) {
+                this.requestPermissions(new String[]{"android.permission.BLUETOOTH_SCAN", "android.permission.BLUETOOTH_CONNECT"}, 1);
+            } else {
+                this.requestPermissions(new String[]{"android.permission.ACCESS_FINE_LOCATION"}, 1);
+            }
+            return true;
+        } catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
