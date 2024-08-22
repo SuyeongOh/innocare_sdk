@@ -50,10 +50,8 @@ public class PolarAnalysisManager {
     public void init(Context context, String id) {
         _context = context;
         deviceId = id;
-        ecgThread.start();
-        hrThread.start();
-        ppgThread.start();
-        ppiThread.start();
+        initInternal();
+
     }
 
     public void initInternal() {
@@ -64,6 +62,27 @@ public class PolarAnalysisManager {
 
         polarApi = PolarBleApiDefaultImpl.defaultImplementation(_context, polarSet);
         polarApi.setApiCallback(polarApiCallback);
+
+        ecgThread.start();
+        hrThread.start();
+        ppgThread.start();
+        ppiThread.start();
+    }
+
+    public void destroy(){
+        ecgThread.quitSafely();
+        hrThread.quitSafely();
+        ppgThread.quitSafely();
+        ppiThread.quitSafely();
+
+        ecgDisposable.dispose();
+        ecgDisposable = null;
+        hrDisposable.dispose();
+        hrDisposable = null;
+        ppiDisposable.dispose();
+        ppiDisposable = null;
+        ppgDisposable.dispose();
+        ppgDisposable = null;
     }
 
     private void streamECG() {
