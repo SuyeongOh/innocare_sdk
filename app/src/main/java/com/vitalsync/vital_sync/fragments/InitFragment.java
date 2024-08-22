@@ -1,6 +1,7 @@
 package com.vitalsync.vital_sync.fragments;
 
 import android.Manifest;
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
@@ -18,43 +19,25 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RadioGroup;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.textfield.TextInputEditText;
-import com.polar.sdk.api.PolarBleApi;
-import com.polar.sdk.api.PolarBleApiCallback;
-import com.polar.sdk.api.PolarBleApiDefaultImpl;
-import com.polar.sdk.api.PolarOfflineRecordingApi;
-import com.polar.sdk.api.errors.PolarInvalidArgument;
-import com.polar.sdk.api.model.PolarDeviceInfo;
-import com.polar.sdk.api.model.PolarEcgData;
-import com.polar.sdk.api.model.PolarSensorSetting;
 import com.vitalsync.vital_sync.R;
 import com.vitalsync.vital_sync.activities.MainActivity;
+import com.vitalsync.vital_sync.analysis.PolarAnalysisManager;
 import com.vitalsync.vital_sync.data.Config;
 import com.vitalsync.vital_sync.data.Constant;
-
-import java.util.UUID;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.ActivityResultRegistry;
-import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-import androidx.core.app.ActivityOptionsCompat;
 import androidx.fragment.app.Fragment;
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.core.Single;
-import kotlin.collections.SetsKt;
 
 public class InitFragment extends Fragment {
 
@@ -76,8 +59,6 @@ public class InitFragment extends Fragment {
     private Button connectBtn;
     private Button clearGenderBtn;
 
-    private PolarBleApi polarApi;
-
     private SharedPreferences loginCookie;
     private final String USER_BMI_KEY = "bmi";
     private final String USER_WEIGHT_KEY = "weight";
@@ -88,6 +69,8 @@ public class InitFragment extends Fragment {
     private final String USER_DBP_KEY = "dbp";
     private final String USER_POLAR_KEY = "polar";
     private String polarDeviceId;
+
+    private PolarAnalysisManager polarManager;
 
     @Nullable
     @Override
@@ -135,56 +118,6 @@ public class InitFragment extends Fragment {
         spannableWelcome.setSpan(
                 new ForegroundColorSpan(Color.BLUE), startIdx, endIdx, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        polarApi = PolarBleApiDefaultImpl.defaultImplementation(getContext(),
-                SetsKt.setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ONLINE_STREAMING,
-                        PolarBleApi.PolarBleSdkFeature.FEATURE_BATTERY_INFO,
-                        PolarBleApi.PolarBleSdkFeature.FEATURE_DEVICE_INFO));
-        polarApi.setApiCallback(new PolarBleApiCallback() {
-            @Override
-            public void batteryLevelReceived(@NonNull String identifier, int level) {
-                super.batteryLevelReceived(identifier, level);
-                //level : 0~100
-                if(level < 10) {
-                    Toast.makeText(getContext(), String.format("Battery is Low :: %d%%", level), Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void blePowerStateChanged(boolean powered) {
-                super.blePowerStateChanged(powered);
-            }
-
-            @Override
-            public void bleSdkFeatureReady(@NonNull String identifier, @NonNull PolarBleApi.PolarBleSdkFeature feature) {
-                super.bleSdkFeatureReady(identifier, feature);
-                Log.d("Polar", "Feature Ready " + feature);
-                if (feature == PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ONLINE_STREAMING) {
-                    streamECG();
-                }
-            }
-
-            @Override
-            public void deviceConnected(@NonNull PolarDeviceInfo polarDeviceInfo) {
-                super.deviceConnected(polarDeviceInfo);
-                Toast.makeText(getContext(), "Connecting to Device : "
-                        + polarIdInputView.getText(), Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void deviceConnecting(@NonNull PolarDeviceInfo polarDeviceInfo) {
-                super.deviceConnecting(polarDeviceInfo);
-            }
-
-            @Override
-            public void deviceDisconnected(@NonNull PolarDeviceInfo polarDeviceInfo) {
-                super.deviceDisconnected(polarDeviceInfo);
-            }
-
-            @Override
-            public void disInformationReceived(@NonNull String identifier, @NonNull UUID uuid, @NonNull String value) {
-                super.disInformationReceived(identifier, uuid, value);
-            }
-        });
         guideTextView.setText(spannableWelcome);
 
         if (Config.USER_ID.equals(getContext().getString(R.string.guest))) {
@@ -208,7 +141,9 @@ public class InitFragment extends Fragment {
                 try {
                     SharedPreferences.Editor editor = loginCookie.edit();
                     Config.USER_POLAR_ID = polarIdInputView.getText().toString();
+                    polarDeviceId = polarIdInputView.getText().toString();
                     editor.putString(USER_POLAR_KEY, Config.USER_POLAR_ID);
+                    editor.apply();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -217,13 +152,9 @@ public class InitFragment extends Fragment {
                     Toast.makeText(getContext(), "Bluetooth status :: off", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                try {
-                    polarApi.connectToDevice(polarIdInputView.getText().toString());
-                    Log.d("Polar", "try to connect device :: " + polarIdInputView.getText().toString());
-                } catch (PolarInvalidArgument e){
-                    e.printStackTrace();
-                    Toast.makeText(getContext(), "Polar Device not connected", Toast.LENGTH_SHORT).show();
-                }
+                Log.d("Polar", "try to connect device :: " + polarDeviceId);
+                polarManager = PolarAnalysisManager.getInstance();
+                polarManager.init(getActivity().getApplicationContext(), polarDeviceId);
             }
         });
         return view;
@@ -374,20 +305,21 @@ public class InitFragment extends Fragment {
                 return false;
             }
 
-            if (Build.VERSION.SDK_INT >= 31) {
-                this.requestPermissions(new String[]{"android.permission.BLUETOOTH_SCAN", "android.permission.BLUETOOTH_CONNECT"}, 1);
-            } else {
-                this.requestPermissions(new String[]{"android.permission.ACCESS_FINE_LOCATION"}, 1);
-            }
-
             if (!btAdapter.isEnabled()) {
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                    return false;
-                }
-                getActivity().startActivityForResult(enableBtIntent, 1);
+                bluetoothOnActivityResultLauncher.launch(enableBtIntent);
             }
 
+            if (Build.VERSION.SDK_INT >= 31) {
+                if(context.checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_DENIED){
+                    return false;
+                }
+                if(context.checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_DENIED) {
+                    return false;
+                }
+            } else {
+                context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION);
+            }
             return true;
         } catch (Exception e){
             e.printStackTrace();
@@ -395,20 +327,15 @@ public class InitFragment extends Fragment {
         }
     }
 
-    private void streamECG() {
-        polarApi.requestStreamSettings(polarDeviceId, PolarBleApi.PolarDeviceDataType.ECG)
-                .toFlowable()
-                .flatMap(polarSensorSetting ->
-                    polarApi.startEcgStreaming(Config.USER_POLAR_ID, polarSensorSetting.maxSettings()))
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        polarEcgData -> {
-                            Log.d("Polar", "ECG update");
-                            //ECG 저장
-                        },
-                        e -> {
-                            Log.e("Polar", e.toString());
+    private final ActivityResultLauncher<Intent> bluetoothOnActivityResultLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                    new ActivityResultCallback<ActivityResult>() {
+                        @Override
+                        public void onActivityResult(ActivityResult result) {
+                            if (result.getResultCode() != Activity.RESULT_OK) {
+                                Log.w("Polar", "Bluetooth off");
+                            }
                         }
-                );
-    }
+                    });
+
 }
