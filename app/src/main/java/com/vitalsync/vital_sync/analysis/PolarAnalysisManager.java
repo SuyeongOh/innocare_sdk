@@ -1,6 +1,7 @@
 package com.vitalsync.vital_sync.analysis;
 
 import android.content.Context;
+import android.os.HandlerThread;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -9,6 +10,7 @@ import com.polar.sdk.api.PolarBleApiCallback;
 import com.polar.sdk.api.PolarBleApiDefaultImpl;
 import com.polar.sdk.api.model.PolarDeviceInfo;
 import com.polar.sdk.api.model.PolarEcgData;
+import com.polar.sdk.api.model.PolarHrData;
 import com.polar.sdk.api.model.PolarPpgData;
 import com.polar.sdk.api.model.PolarPpiData;
 
@@ -17,6 +19,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import androidx.annotation.NonNull;
+
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
 
@@ -32,6 +35,11 @@ public class PolarAnalysisManager {
     private Disposable ppgDisposable;
     private Disposable ppiDisposable;
 
+    private HandlerThread ecgThread = new HandlerThread("ecgThread");
+    private HandlerThread hrThread = new HandlerThread("hrThread");
+    private HandlerThread ppgThread = new HandlerThread("ppgThread");
+    private HandlerThread ppiThread = new HandlerThread("ppiThread");
+
     public static PolarAnalysisManager getInstance() {
         if (sInstance == null) {
             sInstance = new PolarAnalysisManager();
@@ -42,6 +50,10 @@ public class PolarAnalysisManager {
     public void init(Context context, String id) {
         _context = context;
         deviceId = id;
+        ecgThread.start();
+        hrThread.start();
+        ppgThread.start();
+        ppiThread.start();
     }
 
     public void initInternal() {
@@ -60,16 +72,16 @@ public class PolarAnalysisManager {
             ecgDisposable = polarApi.requestStreamSettings(deviceId, PolarBleApi.PolarDeviceDataType.ECG)
                     .toFlowable()
                     .flatMap(polarSensorSetting -> polarApi.startEcgStreaming(deviceId, polarSensorSetting))
-                    .observeOn(AndroidSchedulers.mainThread())
+                    .observeOn(AndroidSchedulers.from(ecgThread.getLooper()))
                     .subscribe(polarEcgData -> {
-                        for (PolarEcgData.PolarEcgDataSample data : polarEcgData.getSamples()) {
-                            //ECG data
-                        }
-                        Log.d(TAG, "ecg update");
-                        },
-                        throwable -> {
-                            Log.e(TAG, "Ecg Stream failed !!");
-                        });
+                                for (PolarEcgData.PolarEcgDataSample data : polarEcgData.getSamples()) {
+                                    //ECG data
+                                }
+                                Log.d(TAG, "ecg update");
+                            },
+                            throwable -> {
+                                Log.e(TAG, "Ecg Stream failed !!");
+                            });
         } else {
             // NOTE stops streaming if it is "running"
             ecgDisposable.dispose();
@@ -83,7 +95,7 @@ public class PolarAnalysisManager {
             ppiDisposable = polarApi.requestStreamSettings(deviceId, PolarBleApi.PolarDeviceDataType.ECG)
                     .toFlowable()
                     .flatMap(polarSensorSetting -> polarApi.startPpiStreaming(deviceId))
-                    .observeOn(AndroidSchedulers.mainThread())
+                    .observeOn(AndroidSchedulers.from(ppiThread.getLooper()))
                     .subscribe(polarPpiData -> {
                                 for (PolarPpiData.PolarPpiSample data : polarPpiData.getSamples()) {
                                     //PPI data
@@ -106,7 +118,7 @@ public class PolarAnalysisManager {
             ppgDisposable = polarApi.requestStreamSettings(deviceId, PolarBleApi.PolarDeviceDataType.ECG)
                     .toFlowable()
                     .flatMap(polarSensorSetting -> polarApi.startPpgStreaming(deviceId, polarSensorSetting))
-                    .observeOn(AndroidSchedulers.mainThread())
+                    .observeOn(AndroidSchedulers.from(ppgThread.getLooper()))
                     .subscribe(polarPpgData -> {
                                 for (PolarPpgData.PolarPpgSample data : polarPpgData.getSamples()) {
                                     //ppg data
@@ -129,15 +141,15 @@ public class PolarAnalysisManager {
             hrDisposable = polarApi.requestStreamSettings(deviceId, PolarBleApi.PolarDeviceDataType.ECG)
                     .toFlowable()
                     .flatMap(polarSensorSetting -> polarApi.startHrStreaming(deviceId))
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(polarEcgData -> {
-                                for (PolarPpgData.PolarPpgSample data : polarEcgData.getSamples()) {
-                                    //ECG data
+                    .observeOn(AndroidSchedulers.from(hrThread.getLooper()))
+                    .subscribe(polarHrData -> {
+                                for (PolarHrData.PolarHrSample data : polarHrData.getSamples()) {
+                                    //Hr data
                                 }
-                                Log.d(TAG, "ecg update");
+                                Log.d(TAG, "hr update");
                             },
                             throwable -> {
-                                Log.e(TAG, "Ecg Stream failed !!");
+                                Log.e(TAG, "Hr Stream failed !!");
                             });
         } else {
             // NOTE stops streaming if it is "running"
@@ -151,7 +163,7 @@ public class PolarAnalysisManager {
         public void batteryLevelReceived(@NonNull String identifier, int level) {
             // level: 0~100
             if (level < 10) {
-                Toast.makeText(_context, "Battery is Low :: $level%", Toast.LENGTH_SHORT).show()
+                Toast.makeText(_context, "Battery is Low :: $level%", Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -173,23 +185,23 @@ public class PolarAnalysisManager {
 
         @Override
         public void deviceConnected(@NonNull PolarDeviceInfo polarDeviceInfo) {
-            Toast.makeText(_context, "Connect to Device : $deviceId", Toast.LENGTH_SHORT).show()
+            Toast.makeText(_context, "Connect to Device : $deviceId", Toast.LENGTH_SHORT).show();
         }
 
         @Override
         public void deviceConnecting(@NonNull PolarDeviceInfo polarDeviceInfo) {
-            Toast.makeText(_context, "Connecting to Device : $deviceId", Toast.LENGTH_SHORT).show()
+            Toast.makeText(_context, "Connecting to Device : $deviceId", Toast.LENGTH_SHORT).show();
         }
 
         @Override
         public void deviceDisconnected(@NonNull PolarDeviceInfo polarDeviceInfo) {
-            Toast.makeText(_context, "Disconnect to Device : $deviceId", Toast.LENGTH_SHORT).show()
+            Toast.makeText(_context, "Disconnect to Device : $deviceId", Toast.LENGTH_SHORT).show();
         }
 
         @Override
         public void disInformationReceived(@NonNull String identifier, @NonNull UUID uuid, @NonNull String value) {
             if (uuid == UUID.fromString("00002a28-0000-1000-8000-00805f9b34fb")) {
-                Toast.makeText(_context, "Device info :: (FW ver - $identifier  ${value.trim()})", Toast.LENGTH_SHORT).show()
+                Toast.makeText(_context, "Device info :: (FW ver - $identifier  ${value.trim()})", Toast.LENGTH_SHORT).show();
             }
         }
     };
