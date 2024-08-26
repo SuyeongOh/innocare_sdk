@@ -20,6 +20,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -39,7 +41,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-public class InitFragment extends Fragment {
+public class InitFragment extends Fragment{
 
     private TextView guideTextView;
     private TextInputEditText bmiInputView;
@@ -58,6 +60,8 @@ public class InitFragment extends Fragment {
     private Button recordBtn;
     private Button connectBtn;
     private Button clearGenderBtn;
+    private ProgressBar polarProgressBar;
+    private ImageView polarConnectResult;
 
     private SharedPreferences loginCookie;
     private final String USER_BMI_KEY = "bmi";
@@ -96,6 +100,9 @@ public class InitFragment extends Fragment {
         analysisTimeInputView = view.findViewById(R.id.init_view_analysis_time);
         localIpInputView = view.findViewById(R.id.init_view_ip_input);
         polarIdInputView = view.findViewById(R.id.init_view_polar_id);
+
+        polarProgressBar = view.findViewById(R.id.init_view_polar_progress);
+        polarConnectResult = view.findViewById(R.id.init_view_connect_result);
 
         loginCookie = getContext().getSharedPreferences("userInfo", Context.MODE_PRIVATE);
 
@@ -155,8 +162,11 @@ public class InitFragment extends Fragment {
                 Log.d("Polar", "try to connect device :: " + polarDeviceId);
                 polarManager = PolarAnalysisManager.getInstance();
                 polarManager.init(getActivity().getApplicationContext(), polarDeviceId);
+                polarManager.setDeviceStatusListener(statusListener);
+                polarManager.connect();
             }
         });
+
         return view;
     }
 
@@ -338,4 +348,33 @@ public class InitFragment extends Fragment {
                         }
                     });
 
+    private PolarAnalysisManager.DeviceStatusListener statusListener = new PolarAnalysisManager.DeviceStatusListener() {
+        @Override
+        public void onConnected() {
+            //연결대기하는데 Polar기기 전원을 뺐다껴줘야함
+            polarProgressBar.setVisibility(View.GONE);
+            polarConnectResult.setVisibility(View.VISIBLE);
+            polarConnectResult.setImageResource(R.drawable.ic_check);
+            Log.d("PolarAnalysisManager", "onConnected() . . .");
+        }
+
+        @Override
+        public void onDisconnect() {
+
+        }
+
+        @Override
+        public void onConnecting() {
+            polarProgressBar.setVisibility(View.VISIBLE);
+            connectBtn.setVisibility(View.GONE);
+            Log.d("PolarAnalysisManager", "onConnecting() . . .");
+        }
+
+        @Override
+        public void onError() {
+            polarProgressBar.setVisibility(View.GONE);
+            connectBtn.setVisibility(View.VISIBLE);
+            Log.d("PolarAnalysisManager", "onError() . . .");
+        }
+    };
 }

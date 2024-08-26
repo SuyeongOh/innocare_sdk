@@ -8,6 +8,7 @@ import android.widget.Toast;
 import com.polar.sdk.api.PolarBleApi;
 import com.polar.sdk.api.PolarBleApiCallback;
 import com.polar.sdk.api.PolarBleApiDefaultImpl;
+import com.polar.sdk.api.errors.PolarInvalidArgument;
 import com.polar.sdk.api.model.PolarDeviceInfo;
 import com.polar.sdk.api.model.PolarEcgData;
 import com.polar.sdk.api.model.PolarHrData;
@@ -35,11 +36,13 @@ public class PolarAnalysisManager {
     private Disposable ppgDisposable;
     private Disposable ppiDisposable;
 
+    private boolean isInitialized = false;
     private HandlerThread ecgThread = new HandlerThread("ecgThread");
     private HandlerThread hrThread = new HandlerThread("hrThread");
     private HandlerThread ppgThread = new HandlerThread("ppgThread");
     private HandlerThread ppiThread = new HandlerThread("ppiThread");
 
+    private DeviceStatusListener statusListener;
     public static PolarAnalysisManager getInstance() {
         if (sInstance == null) {
             sInstance = new PolarAnalysisManager();
@@ -50,8 +53,10 @@ public class PolarAnalysisManager {
     public void init(Context context, String id) {
         _context = context;
         deviceId = id;
-        initInternal();
-
+        if(!isInitialized){
+            isInitialized = true;
+            initInternal();
+        }
     }
 
     public void initInternal() {
@@ -69,6 +74,23 @@ public class PolarAnalysisManager {
         ppiThread.start();
     }
 
+    public void connect(){
+        try {
+            polarApi.connectToDevice(deviceId);
+            statusListener.onConnecting();
+        } catch (PolarInvalidArgument e){
+            e.printStackTrace();
+            statusListener.onError();
+        }
+    }
+
+    public void startStream(){
+        streamECG();
+        streamHR();
+        streamPPG();
+        streamPPI();
+    }
+
     public void destroy(){
         ecgThread.quitSafely();
         hrThread.quitSafely();
@@ -76,12 +98,13 @@ public class PolarAnalysisManager {
         ppiThread.quitSafely();
 
         ecgDisposable.dispose();
-        ecgDisposable = null;
         hrDisposable.dispose();
-        hrDisposable = null;
         ppiDisposable.dispose();
-        ppiDisposable = null;
         ppgDisposable.dispose();
+
+        ecgDisposable = null;
+        hrDisposable = null;
+        ppiDisposable = null;
         ppgDisposable = null;
     }
 
@@ -94,12 +117,13 @@ public class PolarAnalysisManager {
                     .observeOn(AndroidSchedulers.from(ecgThread.getLooper()))
                     .subscribe(polarEcgData -> {
                                 for (PolarEcgData.PolarEcgDataSample data : polarEcgData.getSamples()) {
-                                    //ECG data
+                                    //ECG save data
                                 }
                                 Log.d(TAG, "ecg update");
                             },
                             throwable -> {
                                 Log.e(TAG, "Ecg Stream failed !!");
+                                throwable.printStackTrace();
                             });
         } else {
             // NOTE stops streaming if it is "running"
@@ -123,6 +147,7 @@ public class PolarAnalysisManager {
                             },
                             throwable -> {
                                 Log.e(TAG, "Ppi Stream failed !!");
+                                throwable.printStackTrace();
                             });
         } else {
             // NOTE stops streaming if it is "running"
@@ -146,6 +171,7 @@ public class PolarAnalysisManager {
                             },
                             throwable -> {
                                 Log.e(TAG, "Ppg Stream failed !!");
+                                throwable.printStackTrace();
                             });
         } else {
             // NOTE stops streaming if it is "running"
@@ -169,12 +195,17 @@ public class PolarAnalysisManager {
                             },
                             throwable -> {
                                 Log.e(TAG, "Hr Stream failed !!");
+                                throwable.printStackTrace();
                             });
         } else {
             // NOTE stops streaming if it is "running"
             hrDisposable.dispose();
             hrDisposable = null;
         }
+    }
+
+    public void setDeviceStatusListener(DeviceStatusListener listener){
+        statusListener = listener;
     }
 
     private PolarBleApiCallback polarApiCallback = new PolarBleApiCallback() {
@@ -193,18 +224,16 @@ public class PolarAnalysisManager {
 
         @Override
         public void bleSdkFeatureReady(@NonNull String identifier, @NonNull PolarBleApi.PolarBleSdkFeature feature) {
-            Log.d("Polar", "Feature Ready $feature");
-            if (feature == PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ONLINE_STREAMING) {
-                streamECG();
-                streamHR();
-                streamPPG();
-                streamPPI();
-            }
+            Log.d("Polar", "Feature Ready");
+//            //H10은 지원안함
+//            streamPPG();
+//            streamPPI();
         }
 
         @Override
         public void deviceConnected(@NonNull PolarDeviceInfo polarDeviceInfo) {
-            Toast.makeText(_context, "Connect to Device : $deviceId", Toast.LENGTH_SHORT).show();
+            Toast.makeText(_context, "Connect to Device : " + deviceId, Toast.LENGTH_SHORT).show();
+            statusListener.onConnected();
         }
 
         @Override
@@ -224,4 +253,11 @@ public class PolarAnalysisManager {
             }
         }
     };
+
+    public interface DeviceStatusListener{
+        void onConnected();
+        void onDisconnect();
+        void onConnecting();
+        void onError();
+    }
 }

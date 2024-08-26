@@ -44,8 +44,10 @@ import android.widget.TextView;
 import com.google.mediapipe.framework.image.BitmapImageBuilder;
 import com.google.mediapipe.framework.image.MPImage;
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetectorResult;
+import com.polar.sdk.api.errors.PolarInvalidArgument;
 import com.vitalsync.vital_sync.activities.MainActivity;
 import com.vitalsync.vital_sync.analysis.BpmAnalysisViewModel;
+import com.vitalsync.vital_sync.analysis.PolarAnalysisManager;
 import com.vitalsync.vital_sync.data.Config;
 import com.vitalsync.vital_sync.analysis.EnhanceFaceDetector;
 import com.vitalsync.vital_sync.analysis.FaceImageModel;
@@ -131,6 +133,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private long startTime;
     private final Range<Integer> fpsRange = new Range<>(25, Config.TARGET_FRAME);
 
+    private PolarAnalysisManager polarManager;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -145,6 +149,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
         faceDetector = new EnhanceFaceDetector(requireContext(), this);
         faceDetector.setupFaceDetector();
+
+        polarManager = PolarAnalysisManager.getInstance();
     }
 
     @Nullable
@@ -199,6 +205,12 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         initCalibrationTimer();
 
         homeButton = view.findViewById(R.id.view_home_button);
+
+        try {
+            polarManager.startStream();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
 
         return view;
     }
@@ -694,6 +706,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                     .setPositiveButton("예", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
+                            polarManager.destroy();
                             Intent intent = new Intent(getContext(), ResultActivity.class);
                             getContext().startActivity(intent);
                         }
