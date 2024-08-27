@@ -243,7 +243,7 @@
                 android:id="@+id/init_view_polar_id"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="10"
+                android:layout_weight="8"
                 android:textAlignment="center"
                 android:layout_gravity="center"
                 android:autoSizeTextType="uniform"

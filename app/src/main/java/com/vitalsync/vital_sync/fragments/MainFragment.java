@@ -499,6 +499,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     @Override
     public void onStop() {
         super.onStop();
+        polarManager.destroy();
         cameraHandler.removeCallbacksAndMessages(null);
         imageReaderHandler.removeCallbacksAndMessages(null);
         Camera.close();
@@ -706,7 +707,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                     .setPositiveButton("예", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            polarManager.destroy();
                             Intent intent = new Intent(getContext(), ResultActivity.class);
                             getContext().startActivity(intent);
                         }

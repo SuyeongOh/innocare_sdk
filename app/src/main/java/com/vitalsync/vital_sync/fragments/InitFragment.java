@@ -27,6 +27,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.textfield.TextInputEditText;
+import com.polar.sdk.api.model.PolarEcgData;
+import com.polar.sdk.api.model.PolarHrData;
+import com.polar.sdk.api.model.PolarPpgData;
+import com.polar.sdk.api.model.PolarPpiData;
 import com.vitalsync.vital_sync.R;
 import com.vitalsync.vital_sync.activities.MainActivity;
 import com.vitalsync.vital_sync.analysis.PolarAnalysisManager;
@@ -163,6 +167,7 @@ public class InitFragment extends Fragment{
                 polarManager = PolarAnalysisManager.getInstance();
                 polarManager.init(getActivity().getApplicationContext(), polarDeviceId);
                 polarManager.setDeviceStatusListener(statusListener);
+                polarManager.setDataResponseListener(dataResponseListener);
                 polarManager.connect();
             }
         });
@@ -274,7 +279,7 @@ public class InitFragment extends Fragment{
                     Config.LOCAL_SERVER_ADDRESS = localIpInputView.getText().toString();
                 }
 
-                Config.USE_CAMERA_DIRECTION = Constant.CAMERA_DIRECTION_BACK;
+                Config.USE_CAMERA_DIRECTION = Constant.CAMERA_DIRECTION_FRONT;
 
                 bmiInputView.clearFocus();
                 MainActivity activity = (MainActivity) getActivity();
@@ -375,6 +380,28 @@ public class InitFragment extends Fragment{
             polarProgressBar.setVisibility(View.GONE);
             connectBtn.setVisibility(View.VISIBLE);
             Log.d("PolarAnalysisManager", "onError() . . .");
+        }
+    };
+
+    private PolarAnalysisManager.DataResponseListener dataResponseListener = new PolarAnalysisManager.DataResponseListener() {
+        @Override
+        public void EcgDataReceived(PolarEcgData ecgData) {
+
+        }
+
+        @Override
+        public void HrDataReceived(PolarHrData hrData) {
+
+        }
+
+        @Override
+        public void PpgDataReceived(PolarPpgData ppgData) {
+
+        }
+
+        @Override
+        public void PpiDataReceived(PolarPpiData ppiData) {
+
         }
     };
 }
