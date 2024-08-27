@@ -17,7 +17,7 @@
         android:layout_height="0dp"
         android:background="@drawable/bg_white_border_light_blue_grey_r4"
         android:elevation="2dp"
-        app:layout_constraintEnd_toStartOf="@+id/respiratory_rate_container"
+        app:layout_constraintEnd_toStartOf="@+id/hrv_sdnn_container"
         app:layout_constraintHeight_percent="0.3"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintHorizontal_chainStyle="spread_inside"
@@ -111,12 +111,13 @@
         android:layout_height="0dp"
         android:background="@drawable/bg_white_border_light_blue_grey_r4"
         android:elevation="2dp"
-        app:layout_constraintBottom_toBottomOf="@+id/heart_rate_container"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:visibility="gone"
         app:layout_constraintHeight_percent="0.3"
         app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintBottom_toBottomOf="@+id/heart_rate_container"
         app:layout_constraintStart_toEndOf="@+id/heart_rate_container"
         app:layout_constraintTop_toTopOf="@+id/heart_rate_container"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintWidth_percent="0.45">
 
         <TextView
@@ -207,9 +208,10 @@
         android:elevation="2dp"
         app:layout_constraintHeight_percent="0.3"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/heart_rate_container"
-        app:layout_constraintBottom_toTopOf="@id/oxygen_saturation_container"
+        app:layout_constraintBottom_toBottomOf="@+id/heart_rate_container"
+        app:layout_constraintStart_toEndOf="@+id/heart_rate_container"
+        app:layout_constraintTop_toTopOf="@+id/heart_rate_container"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintWidth_percent="0.45">
 
         <TextView
@@ -301,7 +303,8 @@
         app:layout_constraintHeight_percent="0.3"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintHorizontal_chainStyle="spread_inside"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/heart_rate_container"
+        app:layout_constraintBottom_toTopOf="@id/ecg_container"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintWidth_percent="0.45">
 
@@ -318,7 +321,7 @@
             android:id="@+id/oxygen_saturation_img"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:src="@drawable/ic_heart_rate"
+            android:src="@drawable/ic_oxygen_saturation"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintDimensionRatio="1:1"
             app:layout_constraintHeight_percent="0.5"
@@ -392,7 +395,7 @@
         android:elevation="2dp"
         app:layout_constraintHeight_percent="0.3"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="@+id/respiratory_rate_container"
+        app:layout_constraintStart_toStartOf="@+id/hrv_sdnn_container"
         app:layout_constraintTop_toTopOf="@+id/oxygen_saturation_container"
         app:layout_constraintBottom_toBottomOf="@+id/oxygen_saturation_container"
         app:layout_constraintEnd_toEndOf="parent"
@@ -403,7 +406,7 @@
             android:id="@+id/stress_img"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:src="@drawable/ic_heart_rate"
+            android:src="@drawable/ic_stress"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintDimensionRatio="1:1"
             app:layout_constraintHeight_percent="0.5"
@@ -475,6 +478,7 @@
         android:layout_height="0dp"
         android:background="@drawable/bg_white_border_light_blue_grey_r4"
         android:elevation="2dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/stress_container"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_percent="0.3"
@@ -584,4 +588,19 @@
             tools:visibility="visible"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/ecg_container"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintHeight_percent="0.3"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_chainStyle="spread_inside"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintWidth_percent="0.45">
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
