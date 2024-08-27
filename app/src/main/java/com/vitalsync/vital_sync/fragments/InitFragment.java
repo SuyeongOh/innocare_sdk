@@ -82,8 +82,7 @@ public class InitFragment extends Fragment{
 
     private PolarAnalysisManager polarManager;
 
-    private final ArrayList<Integer> polarEcgData = new ArrayList<>();
-    private final ArrayList<Integer> polarRriData = new ArrayList<>();
+
 
     @Nullable
     @Override
@@ -172,7 +171,6 @@ public class InitFragment extends Fragment{
                 polarManager = PolarAnalysisManager.getInstance();
                 polarManager.init(getActivity().getApplicationContext(), polarDeviceId);
                 polarManager.setDeviceStatusListener(statusListener);
-                polarManager.setDataResponseListener(dataResponseListener);
                 polarManager.connect();
             }
         });
@@ -388,29 +386,5 @@ public class InitFragment extends Fragment{
         }
     };
 
-    private final PolarAnalysisManager.DataResponseListener dataResponseListener = new PolarAnalysisManager.DataResponseListener() {
-        @Override
-        public void EcgDataReceived(PolarEcgData ecgData) {
-            for(PolarEcgData.PolarEcgDataSample data : ecgData.getSamples()){
-                polarEcgData.add(data.getVoltage());
-            }
-        }
 
-        @Override
-        public void HrDataReceived(PolarHrData hrData) {
-            for(PolarHrData.PolarHrSample data : hrData.getSamples()){
-                polarRriData.addAll(data.getRrsMs());
-            }
-        }
-
-        @Override
-        public void PpgDataReceived(PolarPpgData ppgData) {
-
-        }
-
-        @Override
-        public void PpiDataReceived(PolarPpiData ppiData) {
-
-        }
-    };
 }

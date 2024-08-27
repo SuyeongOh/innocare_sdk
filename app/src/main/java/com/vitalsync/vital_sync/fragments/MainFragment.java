@@ -45,6 +45,10 @@ import com.google.mediapipe.framework.image.BitmapImageBuilder;
 import com.google.mediapipe.framework.image.MPImage;
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetectorResult;
 import com.polar.sdk.api.errors.PolarInvalidArgument;
+import com.polar.sdk.api.model.PolarEcgData;
+import com.polar.sdk.api.model.PolarHrData;
+import com.polar.sdk.api.model.PolarPpgData;
+import com.polar.sdk.api.model.PolarPpiData;
 import com.vitalsync.vital_sync.activities.MainActivity;
 import com.vitalsync.vital_sync.analysis.BpmAnalysisViewModel;
 import com.vitalsync.vital_sync.analysis.PolarAnalysisManager;
@@ -62,7 +66,9 @@ import com.vitalsync.vital_sync.ui.CustomCountdownView;
 import com.vitalsync.vital_sync.ui.OverlayView;
 import com.vitalsync.vital_sync.utils.ImageUtils;
 import com.robinhood.ticker.TickerView;
+import com.vitalsync.vital_sync.utils.TimeUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -131,7 +137,10 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private boolean isTablet = false;
     private long faceModelTime;
     private long startTime;
+    private long startTime_2000_1_1 = 0;
     private final Range<Integer> fpsRange = new Range<>(25, Config.TARGET_FRAME);
+    private final ArrayList<Integer> polarEcgData = new ArrayList<>();
+    private final ArrayList<Integer> polarRriData = new ArrayList<>();
 
     private PolarAnalysisManager polarManager;
 
@@ -185,10 +194,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
         vitalValueLayout = view.findViewById(R.id.vital_info_layout);
         vitalValueLayout.setClickable(false);
-        if(Config.USER_ID.equals(getContext().getString(R.string.target_guest))){
-            TextView bpTextView = vitalValueLayout.findViewById(R.id.blood_pressur_text);
-            bpTextView.setText("Signal 2");
-        }
         hrValueView = view.findViewById(R.id.heart_rate_value);
         rrValueView = view.findViewById(R.id.respiratory_rate_value);
         sdnnValueView = view.findViewById(R.id.hrv_sdnn_value);
@@ -207,6 +212,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         homeButton = view.findViewById(R.id.view_home_button);
 
         try {
+            polarManager.setDataResponseListener(dataResponseListener);
             polarManager.startStream();
         } catch (Exception e){
             e.printStackTrace();
@@ -440,6 +446,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                 }
                                 if (sNthFrame == 0) {
                                     startTime = System.currentTimeMillis();
+                                    startTime_2000_1_1 = TimeUtils.getCurrentTimeStamp_by_2000_1_1();
                                 }
                                 faceModelTime = System.currentTimeMillis();
                                 if ((int) ((faceModelTime - startTime) * 100 / (double) 20000)
@@ -457,6 +464,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
                                 sNthFrame++;
                                 if (isFinishAnalysis) {
+                                    startTime_2000_1_1 = 0;
+
                                     if (Config.FLAG_INNER_TEST) {
                                         updateVitalSignValue();
                                         new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -749,6 +758,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         calibrationTimerStart = false;
         isFinishAnalysis = false;
         isFixedFace = false;
+        polarEcgData.clear();
+        polarRriData.clear();
     }
 
     private void initCalibrationTimer() {
@@ -787,4 +798,34 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 .attach(this)
                 .commit();
     }
+
+    private final PolarAnalysisManager.DataResponseListener dataResponseListener = new PolarAnalysisManager.DataResponseListener() {
+        @Override
+        public void EcgDataReceived(PolarEcgData ecgData) {
+            for(PolarEcgData.PolarEcgDataSample data : ecgData.getSamples()){
+                if(startTime_2000_1_1 != 0){
+                    polarEcgData.add(data.getVoltage());
+                }
+            }
+        }
+
+        @Override
+        public void HrDataReceived(PolarHrData hrData) {
+            for(PolarHrData.PolarHrSample data : hrData.getSamples()){
+                if(startTime_2000_1_1 != 0) {
+                    polarRriData.addAll(data.getRrsMs());
+                }
+            }
+        }
+
+        @Override
+        public void PpgDataReceived(PolarPpgData ppgData) {
+
+        }
+
+        @Override
+        public void PpiDataReceived(PolarPpiData ppiData) {
+
+        }
+    };
 }
