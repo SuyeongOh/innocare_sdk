@@ -1,5 +1,7 @@
 package com.vitalsync.vital_sync.service.login;
 
+import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
@@ -11,4 +13,6 @@ public interface LoginService {
     Call<LoginResponse> Login(@Query("user_id") String user_id);
     @POST("/register")
     Call<LoginResponse> postRegister(@Body LoginRequest body);
+    @GET("/user/list")
+    Call<List<UserInfo>> getUserList();
 }

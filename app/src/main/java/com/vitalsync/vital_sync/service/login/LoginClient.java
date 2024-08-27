@@ -1,6 +1,13 @@
 package com.vitalsync.vital_sync.service.login;
 
+import android.util.Log;
+
 import com.vitalsync.vital_sync.data.Config;
+import com.vitalsync.vital_sync.service.vital.VitalRequest;
+import com.vitalsync.vital_sync.service.vital.VitalResponse;
+import com.vitalsync.vital_sync.service.vital.VitalService;
+
+import java.util.List;
 
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -64,10 +71,16 @@ public class LoginClient {
         });
     }
 
+    public Call<List<UserInfo>> getUserList(){
+        LoginService service = retrofit.create(LoginService.class);
+        return service.getUserList();
+    }
+
     public interface LoginResponseListener {
         void onSuccess(LoginResponse response);
         void onError(String message);
     }
+
 
     private static final HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor()
             .setLevel(HttpLoggingInterceptor.Level.BODY);

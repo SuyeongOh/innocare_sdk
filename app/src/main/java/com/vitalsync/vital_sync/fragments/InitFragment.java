@@ -37,6 +37,8 @@ import com.vitalsync.vital_sync.analysis.PolarAnalysisManager;
 import com.vitalsync.vital_sync.data.Config;
 import com.vitalsync.vital_sync.data.Constant;
 
+import java.util.ArrayList;
+
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -79,6 +81,9 @@ public class InitFragment extends Fragment{
     private String polarDeviceId;
 
     private PolarAnalysisManager polarManager;
+
+    private final ArrayList<Integer> polarEcgData = new ArrayList<>();
+    private final ArrayList<Integer> polarRriData = new ArrayList<>();
 
     @Nullable
     @Override
@@ -383,15 +388,19 @@ public class InitFragment extends Fragment{
         }
     };
 
-    private PolarAnalysisManager.DataResponseListener dataResponseListener = new PolarAnalysisManager.DataResponseListener() {
+    private final PolarAnalysisManager.DataResponseListener dataResponseListener = new PolarAnalysisManager.DataResponseListener() {
         @Override
         public void EcgDataReceived(PolarEcgData ecgData) {
-
+            for(PolarEcgData.PolarEcgDataSample data : ecgData.getSamples()){
+                polarEcgData.add(data.getVoltage());
+            }
         }
 
         @Override
         public void HrDataReceived(PolarHrData hrData) {
-
+            for(PolarHrData.PolarHrSample data : hrData.getSamples()){
+                polarRriData.addAll(data.getRrsMs());
+            }
         }
 
         @Override

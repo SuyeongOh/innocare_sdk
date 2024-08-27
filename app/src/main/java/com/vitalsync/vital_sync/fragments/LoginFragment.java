@@ -3,6 +3,8 @@ package com.vitalsync.vital_sync.fragments;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,24 +26,37 @@ import com.vitalsync.vital_sync.service.login.LoginClient;
 import com.vitalsync.vital_sync.data.Config;
 import com.vitalsync.vital_sync.service.login.LoginRequest;
 import com.vitalsync.vital_sync.service.login.LoginResponse;
+import com.vitalsync.vital_sync.service.login.LoginService;
+import com.vitalsync.vital_sync.service.login.UserInfo;
 import com.vitalsync.vital_sync.ui.CommonPopupView;
+import com.vitalsync.vital_sync.ui.UserListAdapter;
+
+import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LoginFragment extends Fragment implements LoginClient.LoginResponseListener {
 
     private static final String USER_ID_KEY = "userID";
     private EditText userIdEditText;
     private Button loginButton;
-    private Button guestButton;
     private ProgressBar loadingView;
     private CommonPopupView popupView;
-
+    private RecyclerView userListView;
 
     private SharedPreferences loginCookie;
     private Balloon mCheckupBallon;
+
+    private List<UserInfo> userInfoList;
+    private UserListAdapter userListAdapter;
+
     public LoginFragment() {
 
     }
@@ -55,8 +70,8 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
         // Initialize views
         userIdEditText = view.findViewById(R.id.view_login_id);
         loginButton = view.findViewById(R.id.view_login_button);
-        guestButton = view.findViewById(R.id.view_login_guest_button);
         loadingView = view.findViewById(R.id.view_login_loading);
+        userListView = view.findViewById(R.id.recyclerUserView);
 
         View viewNoDetectionPopup = inflater.inflate(R.layout.layout_detection_popup, container, false);
         TextView popupTextView = viewNoDetectionPopup.findViewById(R.id.text_face_popup);
@@ -78,14 +93,6 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
             }
         });
 
-        guestButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Config.USER_ID = getContext().getString(R.string.target_guest);
-                loginGuest();
-            }
-        });
-
         mCheckupBallon = new Balloon.Builder(getContext())
                 .setHeight(BalloonSizeSpec.WRAP)
                 .setWidth(BalloonSizeSpec.WRAP)
@@ -104,25 +111,54 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
                 .setFocusable(false)
                 .build();
 
+
+        LoginClient.getInstance().getUserList().enqueue(new Callback<List<UserInfo>>() {
+            @Override
+            public void onResponse(Call<List<UserInfo>> call, Response<List<UserInfo>> response) {
+                userInfoList = response.body();
+                userListAdapter = new UserListAdapter(userInfoList, new UserListAdapter.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(UserInfo user) {
+                        login(user.getUserId());
+                    }
+                });
+                userListView.setLayoutManager(new LinearLayoutManager(getContext()));
+                userListView.setAdapter(userListAdapter);
+                mCheckupBallon.showAlignBottom(userListView);
+            }
+
+            @Override
+            public void onFailure(Call<List<UserInfo>> call, Throwable t) {
+                t.printStackTrace();
+            }
+        });
+
+
         return view;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         loginCookie = getContext().getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         String id = loginCookie.getString(USER_ID_KEY, "");
         if(!id.equals("")){
             userIdEditText.setHint("");
             userIdEditText.setText(id);
         }
-        mCheckupBallon.showAlignBottom(guestButton);
     }
 
     private void login() {
         String userId = userIdEditText.getText().toString();
         //TODO DB서버로 연결 후 진행
         LoginClient.getInstance().login(new LoginRequest(userId, ""), this);
+        loadingView.setVisibility(View.VISIBLE);
+    }
+
+    private void login(String user_id) {
+        //TODO DB서버로 연결 후 진행
+        LoginClient.getInstance().login(new LoginRequest(user_id, ""), this);
         loadingView.setVisibility(View.VISIBLE);
     }
 
