@@ -118,6 +118,8 @@ dependencies {
     //rxjava
     implementation 'io.reactivex.rxjava3:rxjava:3.1.6'
     implementation 'io.reactivex.rxjava3:rxandroid:3.0.2'
+
+    implementation "com.androidplot:androidplot-core:1.5.11"
 }
 
 def getApkName(def variant){

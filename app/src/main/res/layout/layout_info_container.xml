@@ -591,16 +591,42 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/ecg_container"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintHeight_percent="0.3"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintHorizontal_chainStyle="spread_inside"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintWidth_percent="0.45">
+        app:layout_constraintStart_toStartOf="parent">
 
+        <com.androidplot.xy.XYPlot
+            android:id="@+id/ecg_plot"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            app:graphBackgroundColor="@color/colorAccent"
+            app:graphMarginBottom="12dp"
+            app:graphMarginTop="12dp"
+            app:graphMarginLeft="16dp"
+            app:gridInsetLeft="25dp"
+            app:gridBackgroundColor="@color/colorAccent"
+            app:lineLabelInsetLeft="12dp"
+            app:rangeTitleTextColor="@android:color/black"
+            app:rangeTitleTextSize="12dp"
+            app:lineLabels="left"
+            app:rangeTitle="mV"
+            app:renderMode="use_background_thread"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintWidth_percent="0.7"
+            app:title="" />
 
+        <TextView
+            android:id="@+id/ecg_hr"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            app:layout_constraintStart_toEndOf="@id/ecg_plot"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:textSize="14sp"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

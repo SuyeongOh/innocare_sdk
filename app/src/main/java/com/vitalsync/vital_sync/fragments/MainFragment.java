@@ -41,6 +41,9 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.androidplot.xy.BoundaryMode;
+import com.androidplot.xy.StepMode;
+import com.androidplot.xy.XYPlot;
 import com.google.mediapipe.framework.image.BitmapImageBuilder;
 import com.google.mediapipe.framework.image.MPImage;
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetectorResult;
@@ -63,6 +66,7 @@ import com.vitalsync.vital_sync.data.Constant;
 import com.vitalsync.vital_sync.data.ResultVitalSign;
 import com.vitalsync.vital_sync.ui.CommonPopupView;
 import com.vitalsync.vital_sync.ui.CustomCountdownView;
+import com.vitalsync.vital_sync.ui.EcgPlotter;
 import com.vitalsync.vital_sync.ui.OverlayView;
 import com.vitalsync.vital_sync.utils.ImageUtils;
 import com.robinhood.ticker.TickerView;
@@ -118,7 +122,9 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private ImageView homeButton;
     private Button reStartBtn;
     private Button nextPageBtn;
-
+    private XYPlot ecgPlot;
+    private EcgPlotter ecgPlotter;
+    private TextView ecgHrView;
     private View vitalValueLayout;
 
     //Camera Property variable
@@ -139,8 +145,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private long startTime;
     private long startTime_2000_1_1 = 0;
     private final Range<Integer> fpsRange = new Range<>(25, Config.TARGET_FRAME);
-    private final ArrayList<Integer> polarEcgData = new ArrayList<>();
-    private final ArrayList<Integer> polarRriData = new ArrayList<>();
+    private final ArrayList<PolarEcgData.PolarEcgDataSample> polarEcgData = new ArrayList<>();
+    private final ArrayList<PolarHrData.PolarHrSample> polarRriData = new ArrayList<>();
 
     private PolarAnalysisManager polarManager;
 
@@ -203,11 +209,14 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         dbpValueView = view.findViewById(R.id.lowest_blood_pressure_value);
         reStartBtn = view.findViewById(R.id.vital_recheck_btn);
         nextPageBtn = view.findViewById(R.id.vital_next_page);
+        ecgPlot = view.findViewById(R.id.ecg_plot);
+        ecgHrView = view.findViewById(R.id.ecg_hr);
 
         reStartBtn.setVisibility(View.INVISIBLE);
         nextPageBtn.setVisibility(View.INVISIBLE);
         initListener();
         initCalibrationTimer();
+        initPlot();
 
         homeButton = view.findViewById(R.id.view_home_button);
 
@@ -284,6 +293,18 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
             public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
             }
         });
+    }
+
+    private void initPlot(){
+        ecgPlotter = new EcgPlotter("ECG", 130);
+        ecgPlotter.setListener(ecgPlotListener);
+
+        ecgPlot.addSeries(ecgPlotter.getSeries(), ecgPlotter.getFormatter());
+        ecgPlot.setRangeBoundaries(-1.5, 1.5, BoundaryMode.FIXED);
+        ecgPlot.setRangeStep(StepMode.INCREMENT_BY_FIT, 0.25);
+        ecgPlot.setDomainStep(StepMode.INCREMENT_BY_VAL, 130.0);
+        ecgPlot.setDomainBoundaries(0, 650, BoundaryMode.FIXED);
+        ecgPlot.setLinesPerRangeLabel(2);
     }
 
     private void initThread() {
@@ -802,18 +823,22 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private final PolarAnalysisManager.DataResponseListener dataResponseListener = new PolarAnalysisManager.DataResponseListener() {
         @Override
         public void EcgDataReceived(PolarEcgData ecgData) {
+            if(startTime_2000_1_1 != 0){
+                polarEcgData.addAll(ecgData.getSamples());
+            }
             for(PolarEcgData.PolarEcgDataSample data : ecgData.getSamples()){
-                if(startTime_2000_1_1 != 0){
-                    polarEcgData.add(data.getVoltage());
-                }
+                ecgPlotter.sendSingleSample(data.getVoltage()/(float)1000);
             }
         }
 
         @Override
         public void HrDataReceived(PolarHrData hrData) {
+            if(startTime_2000_1_1 != 0) {
+                polarRriData.addAll(hrData.getSamples());
+            }
             for(PolarHrData.PolarHrSample data : hrData.getSamples()){
-                if(startTime_2000_1_1 != 0) {
-                    polarRriData.addAll(data.getRrsMs());
+                if (data.getRrAvailable()){
+                    ecgHrView.setText(String.valueOf(data.getHr()));
                 }
             }
         }
@@ -826,6 +851,18 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         @Override
         public void PpiDataReceived(PolarPpiData ppiData) {
 
+        }
+    };
+
+    private final EcgPlotter.PlotterListener ecgPlotListener = new EcgPlotter.PlotterListener() {
+        @Override
+        public void update() {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    ecgPlot.redraw();
+                }
+            });
         }
     };
 }
