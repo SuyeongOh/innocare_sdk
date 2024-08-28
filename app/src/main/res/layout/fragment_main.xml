@@ -37,18 +37,17 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <com.vitalsync.vital_sync.ui.CustomCountdownView
+        android:id="@+id/countdown"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    </com.vitalsync.vital_sync.ui.CustomCountdownView>
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/top_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent">
-
-        <com.vitalsync.vital_sync.ui.CustomCountdownView
-            android:id="@+id/countdown"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-        </com.vitalsync.vital_sync.ui.CustomCountdownView>
-
         <ImageView
             android:id="@+id/view_home_button"
             android:layout_width="50dp"

@@ -23,6 +23,7 @@ import androidx.annotation.NonNull;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Action;
 
 public class PolarAnalysisManager {
     public static final String TAG = "PolarAnalysisManager";
@@ -77,6 +78,7 @@ public class PolarAnalysisManager {
     }
 
     public void connect(){
+        polarApi.setAutomaticReconnection(true);
         try {
             polarApi.connectToDevice(deviceId);
             statusListener.onConnecting();
@@ -84,6 +86,7 @@ public class PolarAnalysisManager {
             e.printStackTrace();
             statusListener.onError();
         }
+
     }
 
     public void startStream(){
@@ -255,6 +258,7 @@ public class PolarAnalysisManager {
         @Override
         public void deviceDisconnected(@NonNull PolarDeviceInfo polarDeviceInfo) {
             Toast.makeText(_context, "Disconnect to Device : " + deviceId, Toast.LENGTH_SHORT).show();
+            statusListener.onDisconnect();
         }
 
         @Override

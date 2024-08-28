@@ -291,6 +291,12 @@ public class InitFragment extends Fragment{
         });
     }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+        polarManager.destroy();
+    }
+
     private RadioGroup.OnCheckedChangeListener genderChangeListener = new RadioGroup.OnCheckedChangeListener() {
         @Override
         public void onCheckedChanged(RadioGroup group, int checkedId) {
@@ -368,7 +374,7 @@ public class InitFragment extends Fragment{
 
         @Override
         public void onDisconnect() {
-
+            polarConnectResult.setImageResource(R.drawable.ic_error);
         }
 
         @Override

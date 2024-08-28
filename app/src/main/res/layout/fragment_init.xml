@@ -231,8 +231,57 @@
             android:textAlignment="center"
             android:layout_gravity="center"
             android:autoSizeTextType="uniform"
+            android:visibility="gone"
             android:hint="로컬서버 ip를 입력하세요(개발자만 이용)" />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:orientation="horizontal"
+            android:layout_weight="2">
+            <EditText
+                android:id="@+id/init_view_polar_verity_id"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="8"
+                android:textAlignment="center"
+                android:layout_gravity="center"
+                android:autoSizeTextType="uniform"
+                android:hint="Polar Verity 밴드 ID를 입력하세요" />
+
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="2">
+                <Button
+                    android:id="@+id/init_view_polar_verity_connect"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:textSize="14sp"
+                    android:textAlignment="center"
+                    android:background="@drawable/selector_record_button"
+                    android:layout_margin="5dp"
+                    android:gravity="center_vertical"
+                    android:text="@string/connect_polar"
+                    tools:ignore="RtlCompat" />
+
+                <ProgressBar
+                    android:id="@+id/init_view_polar_verity_progress"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:indeterminate="true"
+                    android:progressDrawable="@drawable/circle_progress"
+                    android:visibility="gone"/>
+
+                <ImageView
+                    android:id="@+id/init_view_verity_connect_result"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/ic_check"
+                    android:visibility="gone"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -280,12 +329,7 @@
                     android:layout_height="match_parent"
                     android:src="@drawable/ic_check"
                     android:visibility="gone"/>
-
-
             </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-
         </LinearLayout>
 
         <View
