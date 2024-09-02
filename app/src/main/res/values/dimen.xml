@@ -9,7 +9,7 @@
     <dimen name="vital_analysis_end_margin">20dp</dimen>
     <dimen name="vital_origin_info_margin_top">10dp</dimen>
     <dimen name="vital_origin_info_margin_bottom">10dp</dimen>
-    <dimen name="info_container_h">240dp</dimen>
+    <dimen name="info_container_h">360dp</dimen>
     <dimen name="vital_new_info_margin_top">50dp</dimen>
     <dimen name="vital_new_info_margin_bottom">20dp</dimen>
     <dimen name="main_start_end_margin">45dp</dimen>

@@ -14,6 +14,7 @@ import com.polar.sdk.api.model.PolarEcgData;
 import com.polar.sdk.api.model.PolarHrData;
 import com.polar.sdk.api.model.PolarPpgData;
 import com.polar.sdk.api.model.PolarPpiData;
+import com.polar.sdk.api.model.PolarSensorSetting;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -27,7 +28,8 @@ import io.reactivex.rxjava3.functions.Action;
 
 public class PolarAnalysisManager {
     public static final String TAG = "PolarAnalysisManager";
-    public static PolarAnalysisManager sInstance;
+    public static PolarAnalysisManager sH10Instance;
+    public static PolarAnalysisManager sVerityInstance;
     private Context _context;
     private String deviceId;
     private PolarBleApi polarApi;
@@ -46,11 +48,20 @@ public class PolarAnalysisManager {
     private DeviceStatusListener statusListener;
     private DataResponseListener dataResponseListener;
 
-    public static PolarAnalysisManager getInstance() {
-        if (sInstance == null) {
-            sInstance = new PolarAnalysisManager();
+    private String deviceType = "";
+
+    public static PolarAnalysisManager getH10Instance() {
+        if (sH10Instance == null) {
+            sH10Instance = new PolarAnalysisManager();
         }
-        return sInstance;
+        return sH10Instance;
+    }
+
+    public static PolarAnalysisManager getVerityInstance() {
+        if (sVerityInstance == null) {
+            sVerityInstance = new PolarAnalysisManager();
+        }
+        return sVerityInstance;
     }
 
     public void init(Context context, String id) {
@@ -90,15 +101,15 @@ public class PolarAnalysisManager {
     }
 
     public void startStream(){
-        streamECG();
-        streamHR();
-        streamPPG();
-        streamPPI();
+        if(deviceType.contains("H10")){
+            streamECG();
+            streamHR();
+        } else if(deviceType.contains("Verity")){
+            streamPPG();
+        }
     }
 
     public void destroy(){
-        if(sInstance == null) return;
-
         try {
             polarApi.disconnectFromDevice(deviceId);
         } catch (PolarInvalidArgument e){
@@ -120,8 +131,6 @@ public class PolarAnalysisManager {
         hrDisposable = null;
         ppiDisposable = null;
         ppgDisposable = null;
-
-        sInstance = null;
     }
 
     private void streamECG() {
@@ -171,7 +180,7 @@ public class PolarAnalysisManager {
     private void streamPPI() {
         boolean isDisposed = ppiDisposable == null || ppiDisposable.isDisposed();
         if (isDisposed) {
-            ppiDisposable = polarApi.requestStreamSettings(deviceId, PolarBleApi.PolarDeviceDataType.PPI)
+            ppiDisposable = polarApi.requestStreamSettings(deviceId, PolarBleApi.PolarDeviceDataType.PPG)
                     .toFlowable()
                     .flatMap(polarSensorSetting -> polarApi.startPpiStreaming(deviceId))
                     .observeOn(AndroidSchedulers.from(ppiThread.getLooper()))
@@ -196,7 +205,12 @@ public class PolarAnalysisManager {
         if (isDisposed) {
             ppgDisposable = polarApi.requestStreamSettings(deviceId, PolarBleApi.PolarDeviceDataType.PPG)
                     .toFlowable()
-                    .flatMap(polarSensorSetting -> polarApi.startPpgStreaming(deviceId, polarSensorSetting))
+                    .flatMap(polarSensorSetting -> {
+                        Set<Integer> setFrequency = new HashSet<>();
+                        setFrequency.add(176);
+                        polarSensorSetting.getSettings().put(PolarSensorSetting.SettingType.SAMPLE_RATE, setFrequency);
+                        return polarApi.startPpgStreaming(deviceId, polarSensorSetting);
+                    })
                     .observeOn(AndroidSchedulers.from(ppgThread.getLooper()))
                     .subscribe(polarPpgData -> {
                                 dataResponseListener.PpgDataReceived(polarPpgData);
@@ -247,6 +261,13 @@ public class PolarAnalysisManager {
         @Override
         public void deviceConnected(@NonNull PolarDeviceInfo polarDeviceInfo) {
             Toast.makeText(_context, "Connect to Device : " + deviceId, Toast.LENGTH_SHORT).show();
+            if(polarDeviceInfo.getName().contains("H10")){
+                deviceType = "H10";
+            } else if(polarDeviceInfo.getName().contains("Sense")){
+                deviceType = "Verity";
+            } else{
+                deviceId = "";
+            }
             statusListener.onConnected();
         }
 

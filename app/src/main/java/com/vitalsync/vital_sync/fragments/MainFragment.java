@@ -124,6 +124,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private Button nextPageBtn;
     private XYPlot ecgPlot;
     private EcgPlotter ecgPlotter;
+    private XYPlot ppgPlot;
+    private EcgPlotter ppgPlotter;
     private TextView ecgHrView;
     private View vitalValueLayout;
 
@@ -148,7 +150,10 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private final ArrayList<PolarEcgData.PolarEcgDataSample> polarEcgData = new ArrayList<>();
     private final ArrayList<PolarHrData.PolarHrSample> polarRriData = new ArrayList<>();
 
-    private PolarAnalysisManager polarManager;
+    private final ArrayList<PolarPpgData.PolarPpgSample> polarPpgData = new ArrayList<>();
+    private final ArrayList<PolarPpiData.PolarPpiSample> polarPpiData = new ArrayList<>();
+    private PolarAnalysisManager polarH10Manager;
+    private PolarAnalysisManager polarVerityManager;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -165,7 +170,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         faceDetector = new EnhanceFaceDetector(requireContext(), this);
         faceDetector.setupFaceDetector();
 
-        polarManager = PolarAnalysisManager.getInstance();
+        polarH10Manager = PolarAnalysisManager.getH10Instance();
+        polarVerityManager = PolarAnalysisManager.getVerityInstance();
     }
 
     @Nullable
@@ -221,9 +227,11 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         homeButton = view.findViewById(R.id.view_home_button);
 
         try {
-            polarManager.setDataResponseListener(dataResponseListener);
-            polarManager.startStream();
-        } catch (Exception e){
+            polarH10Manager.setDataResponseListener(dataResponseListener);
+            polarH10Manager.startStream();
+            polarVerityManager.setDataResponseListener(dataVerityResponseListener);
+            polarVerityManager.startStream();
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -295,10 +303,10 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         });
     }
 
-    private void initPlot(){
+    private void initPlot() {
         ecgPlotter = new EcgPlotter("ECG", 130);
         ecgPlotter.setListener(ecgPlotListener);
-
+        //ppgPlotter = new EcgPlotter("PPG", )
         ecgPlot.addSeries(ecgPlotter.getSeries(), ecgPlotter.getFormatter());
         ecgPlot.setRangeBoundaries(-1.5, 1.5, BoundaryMode.FIXED);
         ecgPlot.setRangeStep(StepMode.INCREMENT_BY_FIT, 0.25);
@@ -440,7 +448,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 //                                }
 //                            });
                             autoFitSurfaceView.setBitmap(Bitmap
-                                            .createScaledBitmap(finalBitmapImage, autoFitSurfaceView.getWidth(), autoFitSurfaceView.getHeight(), false));
+                                    .createScaledBitmap(finalBitmapImage, autoFitSurfaceView.getWidth(), autoFitSurfaceView.getHeight(), false));
                             if (sNthFrame == 0 && !calibrationTimerStart) {
                                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                                     @Override
@@ -494,7 +502,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                             @Override
                                             public void run() {
                                                 reStartBtn.setVisibility(View.VISIBLE);
-                                                if(!Config.USER_ID.equals(getContext().getString(R.string.target_guest))){
+                                                if (!Config.USER_ID.equals(getContext().getString(R.string.target_guest))) {
                                                     nextPageBtn.setVisibility(View.VISIBLE);
                                                 }
 
@@ -530,7 +538,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     @Override
     public void onStop() {
         super.onStop();
-        polarManager.destroy();
+        polarH10Manager.destroy();
+        polarVerityManager.destroy();
         cameraHandler.removeCallbacksAndMessages(null);
         imageReaderHandler.removeCallbacksAndMessages(null);
         Camera.close();
@@ -584,10 +593,10 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 isFixedFace = true;
                 float width = box.width();
                 float height = box.height();
-                faceROI.left = (int)(box.left + width/10);
-                faceROI.right = (int) (box.right - width/10);
-                faceROI.top = (int) (box.top + height/10 * 4);
-                faceROI.bottom = (int) (box.bottom - height/10 * 4);
+                faceROI.left = (int) (box.left + width / 10);
+                faceROI.right = (int) (box.right - width / 10);
+                faceROI.top = (int) (box.top + height / 10 * 4);
+                faceROI.bottom = (int) (box.bottom - height / 10 * 4);
 //                if(Config.LARGE_FACE_MODE){
 //                    float width = box.width();
 //                    float height = box.height();
@@ -678,20 +687,20 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 hrValueView.setText(
                         Config.USER_ID.equals(getContext().getString(R.string.target_guest)) ?
                                 String.valueOf(Math.round(ResultVitalSign.vitalSignData.HR)) :
-                        Math.round(ResultVitalSign.vitalSignData.HR) + "/" +
-                                Math.round(ResultVitalSign.vitalSignServerData.HR)
+                                Math.round(ResultVitalSign.vitalSignData.HR) + "/" +
+                                        Math.round(ResultVitalSign.vitalSignServerData.HR)
                 );
                 rrValueView.setText(
                         Config.USER_ID.equals(getContext().getString(R.string.target_guest)) ?
                                 String.valueOf(Math.round(ResultVitalSign.vitalSignData.RR)) :
-                        Math.round(ResultVitalSign.vitalSignData.RR) + "/" +
-                                Math.round(ResultVitalSign.vitalSignServerData.RR)
+                                Math.round(ResultVitalSign.vitalSignData.RR) + "/" +
+                                        Math.round(ResultVitalSign.vitalSignServerData.RR)
                 );
                 sdnnValueView.setText(
                         Config.USER_ID.equals(getContext().getString(R.string.target_guest)) ?
                                 String.valueOf(Math.round(ResultVitalSign.vitalSignData.HRV)) :
-                        Math.round(ResultVitalSign.vitalSignData.HRV) + "/" +
-                                Math.round(ResultVitalSign.vitalSignServerData.HRV)
+                                Math.round(ResultVitalSign.vitalSignData.HRV) + "/" +
+                                        Math.round(ResultVitalSign.vitalSignServerData.HRV)
                 );
                 stressValueView.setText(
                         Config.USER_ID.equals(getContext().getString(R.string.target_guest)) ?
@@ -702,27 +711,27 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 spo2ValueView.setText(
                         Config.USER_ID.equals(getContext().getString(R.string.target_guest)) ?
                                 String.valueOf(Math.round(ResultVitalSign.vitalSignData.RR)) :
-                        Math.round(ResultVitalSign.vitalSignData.SpO2) + "/" +
-                                Math.round(ResultVitalSign.vitalSignServerData.SpO2)
+                                Math.round(ResultVitalSign.vitalSignData.SpO2) + "/" +
+                                        Math.round(ResultVitalSign.vitalSignServerData.SpO2)
                 );
                 sbpValueView.setText(
                         Config.USER_ID.equals(getContext().getString(R.string.target_guest)) ?
                                 "Sys " + Math.round(ResultVitalSign.vitalSignData.SBP) :
-                        "Sys " + Math.round(ResultVitalSign.vitalSignData.SBP) + "/" +
-                                Math.round(ResultVitalSign.vitalSignServerData.SBP)
+                                "Sys " + Math.round(ResultVitalSign.vitalSignData.SBP) + "/" +
+                                        Math.round(ResultVitalSign.vitalSignServerData.SBP)
                 );
                 dbpValueView.setText(
                         Config.USER_ID.equals(getContext().getString(R.string.target_guest)) ?
                                 "Dia " + Math.round(ResultVitalSign.vitalSignData.DBP) :
-                        "Dia " + Math.round(ResultVitalSign.vitalSignData.DBP) + "/" +
-                                Math.round(ResultVitalSign.vitalSignServerData.DBP)
+                                "Dia " + Math.round(ResultVitalSign.vitalSignData.DBP) + "/" +
+                                        Math.round(ResultVitalSign.vitalSignServerData.DBP)
                 );
             }
         });
     }
 
     private void initListener() {
-        if(Config.USER_ID.equals(getContext().getString(R.string.target_guest))){
+        if (Config.USER_ID.equals(getContext().getString(R.string.target_guest))) {
             mFinishPopup = new AlertDialog.Builder(getContext())
                     .setMessage("분석 완료 !!\n")
                     .setNeutralButton("닫기", new DialogInterface.OnClickListener() {
@@ -731,7 +740,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                             dialog.dismiss();
                         }
                     }).create();
-        } else{
+        } else {
             mFinishPopup = new AlertDialog.Builder(getContext())
                     .setTitle("분석 마침")
                     .setMessage("결과화면으로 넘어가시겠습니까?\n")
@@ -824,7 +833,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private final PolarAnalysisManager.DataResponseListener dataResponseListener = new PolarAnalysisManager.DataResponseListener() {
         @Override
         public void EcgDataReceived(PolarEcgData ecgData) {
-            if(startTime_2000_1_1 != 0) {
+            if (startTime_2000_1_1 != 0) {
                 polarEcgData.addAll(ecgData.getSamples());
                 for (PolarEcgData.PolarEcgDataSample data : ecgData.getSamples()) {
                     ecgPlotter.sendSingleSample(data.getVoltage() / (float) 1000);
@@ -834,12 +843,12 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
         @Override
         public void HrDataReceived(PolarHrData hrData) {
-            if(startTime_2000_1_1 != 0) {
+            if (startTime_2000_1_1 != 0) {
                 polarRriData.addAll(hrData.getSamples());
                 for (PolarHrData.PolarHrSample data : hrData.getSamples()) {
                     if (data.getRrAvailable()) {
                         String rriString = "rri : (";
-                        for(int rri : data.getRrsMs()){
+                        for (int rri : data.getRrsMs()) {
                             rriString = rriString.concat(rri + ", ");
                         }
                         rriString = rriString.concat(")");
@@ -858,6 +867,41 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         @Override
         public void PpiDataReceived(PolarPpiData ppiData) {
 
+        }
+    };
+
+    private final PolarAnalysisManager.DataResponseListener dataVerityResponseListener = new PolarAnalysisManager.DataResponseListener() {
+        @Override
+        public void EcgDataReceived(PolarEcgData ecgData) {
+
+        }
+
+        @Override
+        public void HrDataReceived(PolarHrData hrData) {
+
+        }
+
+        @Override
+        public void PpgDataReceived(PolarPpgData ppgData) {
+            if (startTime_2000_1_1 != 0) {
+                polarPpgData.addAll(ppgData.getSamples());
+                for (PolarPpgData.PolarPpgSample data : ppgData.getSamples()) {
+                    for (Integer ppg : data.getChannelSamples()) {
+                        ecgPlotter.sendSingleSample(ppg / (float) 1000);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void PpiDataReceived(PolarPpiData ppiData) {
+            if (startTime_2000_1_1 != 0) {
+                polarPpiData.addAll(ppiData.getSamples());
+                for (PolarPpiData.PolarPpiSample data : ppiData.getSamples()) {
+                    ecgHrView.setText(
+                            String.format("HR : %d\nPPi : %s", data.getHr(), data.getPpi()));
+                }
+            }
         }
     };
 

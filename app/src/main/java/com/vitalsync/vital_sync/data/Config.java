@@ -59,5 +59,6 @@ public class Config {
     public static double USER_SBP = 0;
     public static double USER_DBP = 0;
     public static String USER_POLAR_ID = "";
+    public static String USER_POLAR_VERITY_ID = "";
 }
 

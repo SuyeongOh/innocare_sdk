@@ -62,14 +62,19 @@ public class InitFragment extends Fragment{
     private EditText analysisTimeInputView;
     private EditText localIpInputView;
     private EditText polarIdInputView;
+    private EditText polarVerityIdInputView;
     private Button applyBtn;
     private Button recordBtn;
-    private Button connectBtn;
+    private Button connectVerityBtn;
+    private Button connectH10Btn;
     private Button clearGenderBtn;
     private ProgressBar polarProgressBar;
+    private ProgressBar polarVerityProgressBar;
     private ImageView polarConnectResult;
+    private ImageView polarVerityConnectResult;
 
     private SharedPreferences loginCookie;
+    private final String USER_TABLE_NAME = "userInfo";
     private final String USER_BMI_KEY = "bmi";
     private final String USER_WEIGHT_KEY = "weight";
     private final String USER_HEIGHT_KEY = "height";
@@ -78,9 +83,12 @@ public class InitFragment extends Fragment{
     private final String USER_SBP_KEY = "sbp";
     private final String USER_DBP_KEY = "dbp";
     private final String USER_POLAR_KEY = "polar";
-    private String polarDeviceId;
+    private final String USER_POLAR_VERITY_KEY = "verity";
+    private String polarH10DeviceId;
+    private String polarVerityDeviceId;
 
-    private PolarAnalysisManager polarManager;
+    private PolarAnalysisManager polarH10Manager;
+    private PolarAnalysisManager polarVerityManager;
 
 
 
@@ -102,17 +110,22 @@ public class InitFragment extends Fragment{
 
         applyBtn = view.findViewById(R.id.init_btn_submit);
         recordBtn = view.findViewById(R.id.init_btn_record);
-        connectBtn = view.findViewById(R.id.init_view_polar_connect);
+        connectH10Btn = view.findViewById(R.id.init_view_polar_connect);
+        connectVerityBtn = view.findViewById(R.id.init_view_polar_verity_connect);
         clearGenderBtn = view.findViewById(R.id.init_btn_gender_clear);
         frameInputView = view.findViewById(R.id.init_view_frame_input);
         analysisTimeInputView = view.findViewById(R.id.init_view_analysis_time);
         localIpInputView = view.findViewById(R.id.init_view_ip_input);
-        polarIdInputView = view.findViewById(R.id.init_view_polar_id);
 
+        polarIdInputView = view.findViewById(R.id.init_view_polar_id);
         polarProgressBar = view.findViewById(R.id.init_view_polar_progress);
         polarConnectResult = view.findViewById(R.id.init_view_connect_result);
 
-        loginCookie = getContext().getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+        polarVerityIdInputView = view.findViewById(R.id.init_view_polar_verity_id);
+        polarVerityProgressBar = view.findViewById(R.id.init_view_polar_verity_progress);
+        polarVerityConnectResult = view.findViewById(R.id.init_view_verity_connect_result);
+
+        loginCookie = getContext().getSharedPreferences(USER_TABLE_NAME, Context.MODE_PRIVATE);
 
         if (Config.USER_ID.equals(getContext().getString(R.string.target_guest))) {
             analysisTimeInputView.setVisibility(View.GONE);
@@ -150,13 +163,13 @@ public class InitFragment extends Fragment{
                 ageInputView.setText("");
             }
         });
-        connectBtn.setOnClickListener(new View.OnClickListener() {
+        connectH10Btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 try {
                     SharedPreferences.Editor editor = loginCookie.edit();
                     Config.USER_POLAR_ID = polarIdInputView.getText().toString();
-                    polarDeviceId = polarIdInputView.getText().toString();
+                    polarH10DeviceId = polarIdInputView.getText().toString();
                     editor.putString(USER_POLAR_KEY, Config.USER_POLAR_ID);
                     editor.apply();
                 } catch (Exception e) {
@@ -167,11 +180,36 @@ public class InitFragment extends Fragment{
                     Toast.makeText(getContext(), "Bluetooth status :: off", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                Log.d("Polar", "try to connect device :: " + polarDeviceId);
-                polarManager = PolarAnalysisManager.getInstance();
-                polarManager.init(getActivity().getApplicationContext(), polarDeviceId);
-                polarManager.setDeviceStatusListener(statusListener);
-                polarManager.connect();
+                Log.d("Polar", "try to connect device :: " + polarH10DeviceId);
+                polarH10Manager = PolarAnalysisManager.getH10Instance();
+                polarH10Manager.init(getActivity().getApplicationContext(), polarH10DeviceId);
+                polarH10Manager.setDeviceStatusListener(statusListener);
+                polarH10Manager.connect();
+            }
+        });
+
+        connectVerityBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    SharedPreferences.Editor editor = loginCookie.edit();
+                    Config.USER_POLAR_VERITY_ID = polarVerityIdInputView.getText().toString();
+                    polarVerityDeviceId = polarVerityIdInputView.getText().toString();
+                    editor.putString(USER_POLAR_VERITY_KEY, Config.USER_POLAR_VERITY_ID);
+                    editor.apply();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                if (!checkBT()) {
+                    Toast.makeText(getContext(), "Bluetooth status :: off", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                Log.d("Polar", "try to connect device :: " + polarVerityDeviceId);
+                polarVerityManager = PolarAnalysisManager.getVerityInstance();
+                polarVerityManager.init(getActivity().getApplicationContext(), polarVerityDeviceId);
+                polarVerityManager.setDeviceStatusListener(statusVerityListener);
+                polarVerityManager.connect();
             }
         });
 
@@ -182,7 +220,8 @@ public class InitFragment extends Fragment{
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        polarDeviceId = loginCookie.getString(USER_POLAR_KEY, "");
+        polarH10DeviceId = loginCookie.getString(USER_POLAR_KEY, "");
+        polarVerityDeviceId = loginCookie.getString(USER_POLAR_VERITY_KEY, "");
         //String to Double
         bmiInputView.setText(loginCookie.getString(USER_BMI_KEY, ""));
         ageInputView.setText(loginCookie.getString(USER_AGE_KEY, ""));
@@ -190,7 +229,8 @@ public class InitFragment extends Fragment{
         heightInputView.setText(loginCookie.getString(USER_HEIGHT_KEY, ""));
         sbpInputView.setText(loginCookie.getString(USER_SBP_KEY, ""));
         dbpInputView.setText(loginCookie.getString(USER_DBP_KEY, ""));
-        polarIdInputView.setText(polarDeviceId);
+        polarIdInputView.setText(polarH10DeviceId);
+        polarVerityIdInputView.setText(polarVerityDeviceId);
         String gender = loginCookie.getString(USER_GENDER_KEY, "");
 
         if (gender.equals("female")) {
@@ -294,7 +334,6 @@ public class InitFragment extends Fragment{
     @Override
     public void onStop() {
         super.onStop();
-        polarManager.destroy();
     }
 
     private RadioGroup.OnCheckedChangeListener genderChangeListener = new RadioGroup.OnCheckedChangeListener() {
@@ -380,17 +419,46 @@ public class InitFragment extends Fragment{
         @Override
         public void onConnecting() {
             polarProgressBar.setVisibility(View.VISIBLE);
-            connectBtn.setVisibility(View.GONE);
+            connectH10Btn.setVisibility(View.GONE);
             Log.d("PolarAnalysisManager", "onConnecting() . . .");
         }
 
         @Override
         public void onError() {
             polarProgressBar.setVisibility(View.GONE);
-            connectBtn.setVisibility(View.VISIBLE);
+            connectH10Btn.setVisibility(View.VISIBLE);
             Log.d("PolarAnalysisManager", "onError() . . .");
         }
     };
 
+    private PolarAnalysisManager.DeviceStatusListener statusVerityListener = new PolarAnalysisManager.DeviceStatusListener() {
+        @Override
+        public void onConnected() {
+            //연결대기하는데 Polar기기 전원을 뺐다껴줘야함
+            polarVerityProgressBar.setVisibility(View.GONE);
+            polarVerityConnectResult.setVisibility(View.VISIBLE);
+            polarVerityConnectResult.setImageResource(R.drawable.ic_check);
+            Log.d("PolarAnalysisManager", "onConnected() . . .");
+        }
+
+        @Override
+        public void onDisconnect() {
+            polarVerityConnectResult.setImageResource(R.drawable.ic_error);
+        }
+
+        @Override
+        public void onConnecting() {
+            polarVerityProgressBar.setVisibility(View.VISIBLE);
+            connectVerityBtn.setVisibility(View.GONE);
+            Log.d("PolarAnalysisManager", "onConnecting() . . .");
+        }
+
+        @Override
+        public void onError() {
+            polarVerityProgressBar.setVisibility(View.GONE);
+            connectVerityBtn.setVisibility(View.VISIBLE);
+            Log.d("PolarAnalysisManager", "onError() . . .");
+        }
+    };
 
 }
