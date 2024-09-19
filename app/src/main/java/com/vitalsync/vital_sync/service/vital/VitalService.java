@@ -1,5 +1,8 @@
 package com.vitalsync.vital_sync.service.vital;
 
+import com.vitalsync.vital_sync.service.ecg.EcgRequest;
+import com.vitalsync.vital_sync.service.ecg.EcgResponse;
+
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
@@ -19,5 +22,6 @@ public interface VitalService {
     Call<VitalResponse> postVitalStress(@Body VitalRequest body);
     @POST("/vital/bp")
     Call<VitalResponse> postVitalBp(@Body VitalRequest body);
-
+    @POST("/vital/verity")
+    Call<EcgResponse> postVitalVerity(@Body EcgRequest body);
 }

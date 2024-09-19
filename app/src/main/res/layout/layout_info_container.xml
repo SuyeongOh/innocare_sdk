@@ -18,7 +18,7 @@
         android:background="@drawable/bg_white_border_light_blue_grey_r4"
         android:elevation="2dp"
         app:layout_constraintEnd_toStartOf="@+id/hrv_sdnn_container"
-        app:layout_constraintHeight_percent="0.2"
+        app:layout_constraintHeight_percent="0.4"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintHorizontal_chainStyle="spread_inside"
         app:layout_constraintStart_toStartOf="parent"
@@ -299,11 +299,10 @@
         android:layout_height="0dp"
         android:background="@drawable/bg_white_border_light_blue_grey_r4"
         android:elevation="2dp"
-        app:layout_constraintHeight_percent="0.2"
+        app:layout_constraintHeight_percent="0.4"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintHorizontal_chainStyle="spread_inside"
-        app:layout_constraintTop_toBottomOf="@+id/heart_rate_container"
-        app:layout_constraintBottom_toTopOf="@id/ecg_container"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintWidth_percent="0.45">
 
@@ -585,87 +584,6 @@
             app:layout_constraintBottom_toBottomOf="@+id/blood_pressur_img"
             tools:visibility="visible"/>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/ecg_container"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintHeight_percent="0.2"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintHorizontal_chainStyle="spread_inside"
-        app:layout_constraintTop_toBottomOf="@id/oxygen_saturation_container"
-        app:layout_constraintBottom_toTopOf="@id/ppg_container"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <com.androidplot.xy.XYPlot
-            android:id="@+id/ecg_plot"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            app:graphBackgroundColor="@color/colorAccent"
-            app:graphMarginBottom="12dp"
-            app:graphMarginTop="12dp"
-            app:gridBackgroundColor="@color/colorAccent"
-            app:rangeTitleTextColor="@android:color/black"
-            app:rangeTitleTextSize="8sp"
-            app:lineLabels="left"
-            app:rangeTitle="mV"
-            app:legendTextSize="8sp"
-            app:renderMode="use_background_thread"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="parent"
-            app:layout_constraintWidth_percent="0.7" />
-
-        <TextView
-            android:id="@+id/ecg_hr"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            app:layout_constraintStart_toEndOf="@id/ecg_plot"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:background="@color/white70"
-            android:gravity="center"
-            android:textSize="14sp"
-            tools:text="HR : 90"/>
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/ppg_container"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintHeight_percent="0.2"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintHorizontal_chainStyle="spread_inside"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <com.androidplot.xy.XYPlot
-            android:id="@+id/ppg_plot"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            app:graphBackgroundColor="@color/colorAccent"
-            app:graphMarginBottom="12dp"
-            app:graphMarginTop="12dp"
-            app:gridBackgroundColor="@color/colorAccent"
-            app:rangeTitleTextColor="@android:color/black"
-            app:rangeTitleTextSize="8sp"
-            app:lineLabels="left"
-            app:rangeTitle="mV"
-            app:legendTextSize="8sp"
-            app:renderMode="use_background_thread"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="parent"
-            app:layout_constraintWidth_percent="0.7" />
-
-        <TextView
-            android:id="@+id/ppg_hr"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            app:layout_constraintStart_toEndOf="@id/ppg_plot"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:background="@color/white70"
-            android:gravity="center"
-            android:textSize="14sp"
-            tools:text="HR : 90"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

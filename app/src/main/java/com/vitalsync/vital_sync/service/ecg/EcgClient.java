@@ -2,9 +2,11 @@ package com.vitalsync.vital_sync.service.ecg;
 
 import com.vitalsync.vital_sync.data.Config;
 import com.vitalsync.vital_sync.service.login.LoginClient;
+import com.vitalsync.vital_sync.service.vital.VitalService;
 
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -12,7 +14,7 @@ public class EcgClient {
     private static EcgClient sInstance;
     private static Retrofit retrofit;
 
-    public EcgClient getInstance(){
+    public static EcgClient getInstance(){
         if (sInstance == null) {
             sInstance = new EcgClient();
             OkHttpClient.Builder builder = new OkHttpClient.Builder();
@@ -37,6 +39,19 @@ public class EcgClient {
         return sInstance;
     }
 
+    public Response<EcgResponse> requestPolar(int[] signal, String measureTime){
+        Response<EcgResponse> response = null;
+
+        try {
+            response = retrofit.create(VitalService.class)
+                    .postVitalVerity(new EcgRequest(signal, measureTime))
+                    .execute();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return response;
+    }
 
 
     private static final HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor()

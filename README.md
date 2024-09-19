@@ -3,7 +3,7 @@
 Web Server 연동 추가.
 https://github.com/SuyeongOh/vitalsync_web.git
 
-사용 방법  
+사용 방법
 
 windows -> cmd -> ipconfig 현재 공유기상 ip 주소 확인  
 ubuntu -> terminal -> ifconfig 현재 공유기상 ip 주소 확인  

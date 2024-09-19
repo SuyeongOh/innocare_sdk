@@ -64,6 +64,7 @@ import com.vitalsync.vital_sync.camera.CameraSizes;
 import com.vitalsync.vital_sync.data.Config;
 import com.vitalsync.vital_sync.data.Constant;
 import com.vitalsync.vital_sync.data.ResultVitalSign;
+import com.vitalsync.vital_sync.service.ecg.EcgClient;
 import com.vitalsync.vital_sync.ui.CommonPopupView;
 import com.vitalsync.vital_sync.ui.CustomCountdownView;
 import com.vitalsync.vital_sync.ui.EcgPlotter;
@@ -122,11 +123,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private ImageView homeButton;
     private Button reStartBtn;
     private Button nextPageBtn;
-    private XYPlot ecgPlot;
-    private EcgPlotter ecgPlotter;
-    private XYPlot ppgPlot;
-    private EcgPlotter ppgPlotter;
-    private TextView ecgHrView;
     private View vitalValueLayout;
 
     //Camera Property variable
@@ -215,8 +211,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         dbpValueView = view.findViewById(R.id.lowest_blood_pressure_value);
         reStartBtn = view.findViewById(R.id.vital_recheck_btn);
         nextPageBtn = view.findViewById(R.id.vital_next_page);
-        ecgPlot = view.findViewById(R.id.ecg_plot);
-        ecgHrView = view.findViewById(R.id.ecg_hr);
 
         reStartBtn.setVisibility(View.INVISIBLE);
         nextPageBtn.setVisibility(View.INVISIBLE);
@@ -304,15 +298,15 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     }
 
     private void initPlot() {
-        ecgPlotter = new EcgPlotter("ECG", 130);
-        ecgPlotter.setListener(ecgPlotListener);
-        //ppgPlotter = new EcgPlotter("PPG", )
-        ecgPlot.addSeries(ecgPlotter.getSeries(), ecgPlotter.getFormatter());
-        ecgPlot.setRangeBoundaries(-1.5, 1.5, BoundaryMode.FIXED);
-        ecgPlot.setRangeStep(StepMode.INCREMENT_BY_FIT, 0.25);
-        ecgPlot.setDomainStep(StepMode.INCREMENT_BY_VAL, 130.0);
-        ecgPlot.setDomainBoundaries(0, 650, BoundaryMode.FIXED);
-        ecgPlot.setLinesPerRangeLabel(2);
+//        ecgPlotter = new EcgPlotter("ECG", 130);
+//        ecgPlotter.setListener(ecgPlotListener);
+//        //ppgPlotter = new EcgPlotter("PPG", )
+//        ecgPlot.addSeries(ecgPlotter.getSeries(), ecgPlotter.getFormatter());
+//        ecgPlot.setRangeBoundaries(-1.5, 1.5, BoundaryMode.FIXED);
+//        ecgPlot.setRangeStep(StepMode.INCREMENT_BY_FIT, 0.25);
+//        ecgPlot.setDomainStep(StepMode.INCREMENT_BY_VAL, 130.0);
+//        ecgPlot.setDomainBoundaries(0, 650, BoundaryMode.FIXED);
+//        ecgPlot.setLinesPerRangeLabel(2);
     }
 
     private void initThread() {
@@ -495,7 +489,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                 sNthFrame++;
                                 if (isFinishAnalysis) {
                                     startTime_2000_1_1 = 0;
-
+                                    //EcgClient.getInstance().requestPolar()
                                     if (Config.FLAG_INNER_TEST) {
                                         updateVitalSignValue();
                                         new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -835,9 +829,9 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         public void EcgDataReceived(PolarEcgData ecgData) {
             if (startTime_2000_1_1 != 0) {
                 polarEcgData.addAll(ecgData.getSamples());
-                for (PolarEcgData.PolarEcgDataSample data : ecgData.getSamples()) {
-                    ecgPlotter.sendSingleSample(data.getVoltage() / (float) 1000);
-                }
+//                for (PolarEcgData.PolarEcgDataSample data : ecgData.getSamples()) {
+//                    ecgPlotter.sendSingleSample(data.getVoltage() / (float) 1000);
+//                }
             }
         }
 
@@ -845,17 +839,17 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         public void HrDataReceived(PolarHrData hrData) {
             if (startTime_2000_1_1 != 0) {
                 polarRriData.addAll(hrData.getSamples());
-                for (PolarHrData.PolarHrSample data : hrData.getSamples()) {
-                    if (data.getRrAvailable()) {
-                        String rriString = "rri : (";
-                        for (int rri : data.getRrsMs()) {
-                            rriString = rriString.concat(rri + ", ");
-                        }
-                        rriString = rriString.concat(")");
-                        ecgHrView.setText(
-                                String.format("HR : %d\nRRi : %s", data.getHr(), rriString));
-                    }
-                }
+//                for (PolarHrData.PolarHrSample data : hrData.getSamples()) {
+//                    if (data.getRrAvailable()) {
+//                        String rriString = "rri : (";
+//                        for (int rri : data.getRrsMs()) {
+//                            rriString = rriString.concat(rri + ", ");
+//                        }
+//                        rriString = rriString.concat(")");
+//                        ecgHrView.setText(
+//                                String.format("HR : %d\nRRi : %s", data.getHr(), rriString));
+//                    }
+//                }
             }
         }
 
@@ -885,11 +879,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         public void PpgDataReceived(PolarPpgData ppgData) {
             if (startTime_2000_1_1 != 0) {
                 polarPpgData.addAll(ppgData.getSamples());
-                for (PolarPpgData.PolarPpgSample data : ppgData.getSamples()) {
-                    for (Integer ppg : data.getChannelSamples()) {
-                        ecgPlotter.sendSingleSample(ppg / (float) 1000);
-                    }
-                }
             }
         }
 
@@ -897,10 +886,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         public void PpiDataReceived(PolarPpiData ppiData) {
             if (startTime_2000_1_1 != 0) {
                 polarPpiData.addAll(ppiData.getSamples());
-                for (PolarPpiData.PolarPpiSample data : ppiData.getSamples()) {
-                    ecgHrView.setText(
-                            String.format("HR : %d\nPPi : %s", data.getHr(), data.getPpi()));
-                }
             }
         }
     };
@@ -909,12 +894,12 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         @Override
         public void update() {
             //plotThread.start();
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                @Override
-                public void run() {
-                    ecgPlot.redraw();
-                }
-            });
+//            new Handler(Looper.getMainLooper()).post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    ecgPlot.redraw();
+//                }
+//            });
         }
     };
 }
