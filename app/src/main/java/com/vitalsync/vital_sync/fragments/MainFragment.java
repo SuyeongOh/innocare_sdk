@@ -489,7 +489,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                 sNthFrame++;
                                 if (isFinishAnalysis) {
                                     startTime_2000_1_1 = 0;
-                                    //EcgClient.getInstance().requestPolar()
+                                    EcgClient.getInstance().requestPolar(polarEcgData, polarPpgData, startTime_2000_1_1);
                                     if (Config.FLAG_INNER_TEST) {
                                         updateVitalSignValue();
                                         new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -829,9 +829,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         public void EcgDataReceived(PolarEcgData ecgData) {
             if (startTime_2000_1_1 != 0) {
                 polarEcgData.addAll(ecgData.getSamples());
-//                for (PolarEcgData.PolarEcgDataSample data : ecgData.getSamples()) {
-//                    ecgPlotter.sendSingleSample(data.getVoltage() / (float) 1000);
-//                }
             }
         }
 
@@ -839,17 +836,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         public void HrDataReceived(PolarHrData hrData) {
             if (startTime_2000_1_1 != 0) {
                 polarRriData.addAll(hrData.getSamples());
-//                for (PolarHrData.PolarHrSample data : hrData.getSamples()) {
-//                    if (data.getRrAvailable()) {
-//                        String rriString = "rri : (";
-//                        for (int rri : data.getRrsMs()) {
-//                            rriString = rriString.concat(rri + ", ");
-//                        }
-//                        rriString = rriString.concat(")");
-//                        ecgHrView.setText(
-//                                String.format("HR : %d\nRRi : %s", data.getHr(), rriString));
-//                    }
-//                }
             }
         }
 
@@ -887,19 +873,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
             if (startTime_2000_1_1 != 0) {
                 polarPpiData.addAll(ppiData.getSamples());
             }
-        }
-    };
-
-    private final EcgPlotter.PlotterListener ecgPlotListener = new EcgPlotter.PlotterListener() {
-        @Override
-        public void update() {
-            //plotThread.start();
-//            new Handler(Looper.getMainLooper()).post(new Runnable() {
-//                @Override
-//                public void run() {
-//                    ecgPlot.redraw();
-//                }
-//            });
         }
     };
 }

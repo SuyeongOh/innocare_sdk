@@ -290,6 +290,7 @@ public class PolarAnalysisManager {
         }
     };
 
+
     public interface DeviceStatusListener{
         void onConnected();
         void onDisconnect();

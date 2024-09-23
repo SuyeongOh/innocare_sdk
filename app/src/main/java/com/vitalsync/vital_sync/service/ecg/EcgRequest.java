@@ -1,11 +1,19 @@
 package com.vitalsync.vital_sync.service.ecg;
 
 public class EcgRequest {
-    private int[] signal;
-    private String measureTime;
+    private int[] ecg_signal;
+    private int[] ppg_signal;
+    private long measureTime;
 
-    public EcgRequest(int[] signal, String time){
-        this.signal = signal;
-        measureTime = String.valueOf(time);
+    public EcgRequest(long time){
+        measureTime = time;
+    }
+
+    public void setEcgSignal(int[] signal){
+        ecg_signal = signal;
+    }
+
+    public void setPpgsignal(int[] signal){
+        ppg_signal = signal;
     }
 }
