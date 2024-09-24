@@ -470,7 +470,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                 }
                                 if (sNthFrame == 0) {
                                     startTime = System.currentTimeMillis();
-                                    startTime_2000_1_1 = TimeUtils.getCurrentTimeStamp_by_2000_1_1();
+                                    startTime_2000_1_1 = TimeUtils.getCurrentTimeStamp_by_2000_1_1(startTime);
                                 }
                                 faceModelTime = System.currentTimeMillis();
                                 if ((int) ((faceModelTime - startTime) * 100 / (double) 20000)
@@ -827,14 +827,15 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private final PolarAnalysisManager.DataResponseListener dataResponseListener = new PolarAnalysisManager.DataResponseListener() {
         @Override
         public void EcgDataReceived(PolarEcgData ecgData) {
-            if (startTime_2000_1_1 != 0) {
+            if (startTime_2000_1_1 != 0
+                    && (ecgData.getSamples().get(0).getTimeStamp() > startTime_2000_1_1)) {
                 polarEcgData.addAll(ecgData.getSamples());
             }
         }
 
         @Override
         public void HrDataReceived(PolarHrData hrData) {
-            if (startTime_2000_1_1 != 0) {
+            if ((startTime_2000_1_1 != 0)) {
                 polarRriData.addAll(hrData.getSamples());
             }
         }
@@ -863,7 +864,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
         @Override
         public void PpgDataReceived(PolarPpgData ppgData) {
-            if (startTime_2000_1_1 != 0) {
+            if (startTime_2000_1_1 != 0
+                    && ppgData.getSamples().get(0).getTimeStamp() > startTime_2000_1_1) {
                 polarPpgData.addAll(ppgData.getSamples());
             }
         }
