@@ -103,10 +103,10 @@ public class PolarAnalysisManager {
     public void startStream(){
         if(deviceType.contains("H10")){
             streamECG();
-            streamHR();
         } else if(deviceType.contains("Verity")){
             streamPPG();
         }
+        streamHR();
     }
 
     public void destroy(){
@@ -157,8 +157,11 @@ public class PolarAnalysisManager {
 
     private void streamHR() {
         boolean isDisposed = hrDisposable == null || hrDisposable.isDisposed();
+        PolarBleApi.PolarDeviceDataType deviceDataType = deviceType.contains("Verity")
+                ? PolarBleApi.PolarDeviceDataType.PPG : PolarBleApi.PolarDeviceDataType.ECG;
+
         if (isDisposed) {
-            hrDisposable = polarApi.requestStreamSettings(deviceId, PolarBleApi.PolarDeviceDataType.ECG)
+            hrDisposable = polarApi.requestStreamSettings(deviceId, deviceDataType)
                     .toFlowable()
                     .flatMap(polarSensorSetting -> polarApi.startHrStreaming(deviceId))
                     .observeOn(AndroidSchedulers.from(hrThread.getLooper()))

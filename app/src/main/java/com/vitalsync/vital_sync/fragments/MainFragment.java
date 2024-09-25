@@ -94,6 +94,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private HandlerThread cameraThread;
     private HandlerThread imageReaderThread;
     private HandlerThread thread_preview;
+    private final HandlerThread polarThread = new HandlerThread("polar");
     private CameraDevice Camera;
     private String cameraId;
     private CameraCaptureSession cameraCaptureSession;
@@ -101,7 +102,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private ImageView imageSurfaceView;
     private Handler cameraHandler;
     private Handler imageReaderHandler;
-    private final HandlerThread plotThread = new HandlerThread("plot");
+    private Handler polarHandler;
 
     //View Variable
     private OverlayView mTrackingOverlayView;
@@ -319,6 +320,9 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         imageReaderThread = new HandlerThread("imageReaderThread");
         imageReaderThread.start();
         imageReaderHandler = new Handler(imageReaderThread.getLooper());
+
+        polarThread.start();
+        polarHandler = new Handler(polarThread.getLooper());
     }
 
     private void initCamera() {
@@ -827,17 +831,29 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private final PolarAnalysisManager.DataResponseListener dataResponseListener = new PolarAnalysisManager.DataResponseListener() {
         @Override
         public void EcgDataReceived(PolarEcgData ecgData) {
-            if (startTime_2000_1_1 != 0
-                    && (ecgData.getSamples().get(0).getTimeStamp() > startTime_2000_1_1)) {
-                polarEcgData.addAll(ecgData.getSamples());
-            }
+            polarHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (startTime_2000_1_1 != 0
+                            && (ecgData.getSamples().get(0).getTimeStamp() > startTime_2000_1_1)) {
+                        polarEcgData.addAll(ecgData.getSamples());
+                    }
+                }
+            });
+
         }
 
         @Override
         public void HrDataReceived(PolarHrData hrData) {
-            if ((startTime_2000_1_1 != 0)) {
-                polarRriData.addAll(hrData.getSamples());
-            }
+            polarHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if ((startTime_2000_1_1 != 0)) {
+                        polarRriData.addAll(hrData.getSamples());
+                    }
+                }
+            });
+
         }
 
         @Override
@@ -864,17 +880,28 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
         @Override
         public void PpgDataReceived(PolarPpgData ppgData) {
-            if (startTime_2000_1_1 != 0
-                    && ppgData.getSamples().get(0).getTimeStamp() > startTime_2000_1_1) {
-                polarPpgData.addAll(ppgData.getSamples());
-            }
+            polarHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (startTime_2000_1_1 != 0
+                            && ppgData.getSamples().get(0).getTimeStamp() > startTime_2000_1_1) {
+                        polarPpgData.addAll(ppgData.getSamples());
+                    }
+                }
+            });
+
         }
 
         @Override
         public void PpiDataReceived(PolarPpiData ppiData) {
-            if (startTime_2000_1_1 != 0) {
-                polarPpiData.addAll(ppiData.getSamples());
-            }
+            polarHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (startTime_2000_1_1 != 0) {
+                        polarPpiData.addAll(ppiData.getSamples());
+                    }
+                }
+            });
         }
     };
 }
