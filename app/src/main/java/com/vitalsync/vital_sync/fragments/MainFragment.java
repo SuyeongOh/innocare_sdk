@@ -41,9 +41,6 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.androidplot.xy.BoundaryMode;
-import com.androidplot.xy.StepMode;
-import com.androidplot.xy.XYPlot;
 import com.google.mediapipe.framework.image.BitmapImageBuilder;
 import com.google.mediapipe.framework.image.MPImage;
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetectorResult;
@@ -67,8 +64,8 @@ import com.vitalsync.vital_sync.data.ResultVitalSign;
 import com.vitalsync.vital_sync.service.ecg.EcgClient;
 import com.vitalsync.vital_sync.ui.CommonPopupView;
 import com.vitalsync.vital_sync.ui.CustomCountdownView;
-import com.vitalsync.vital_sync.ui.EcgPlotter;
 import com.vitalsync.vital_sync.ui.OverlayView;
+import com.vitalsync.vital_sync.utils.DoubleUtils;
 import com.vitalsync.vital_sync.utils.ImageUtils;
 import com.vitalsync.vital_sync.utils.TimeUtils;
 
@@ -147,7 +144,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private long startTime_2000_1_1 = 0;
     private final Range<Integer> fpsRange = new Range<>(25, Config.TARGET_FRAME);
     private final ArrayList<PolarEcgData.PolarEcgDataSample> polarEcgData = new ArrayList<>();
-    private final ArrayList<PolarHrData.PolarHrSample> polarRriData = new ArrayList<>();
+    private final ArrayList<PolarHrData.PolarHrSample> polarHrData = new ArrayList<>();
 
     private final ArrayList<PolarPpgData.PolarPpgSample> polarPpgData = new ArrayList<>();
     private final ArrayList<PolarPpiData.PolarPpiSample> polarPpiData = new ArrayList<>();
@@ -156,6 +153,8 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
     private int polarHr = 0;
     private int polarHrv = 0;
+    private final List<Integer> polarHrvList = new ArrayList<>();
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -229,11 +228,11 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         homeButton = view.findViewById(R.id.view_home_button);
 
         try {
-            if(polarH10Manager.getDeviceId() != null) {
+            if (polarH10Manager.getDeviceId() != null) {
                 polarH10Manager.setDataResponseListener(dataResponseListener);
                 polarH10Manager.startStream();
             }
-            if(polarVerityManager.getDeviceId() != null){
+            if (polarVerityManager.getDeviceId() != null) {
                 polarVerityManager.setDataResponseListener(dataVerityResponseListener);
                 polarVerityManager.startStream();
             }
@@ -504,8 +503,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                 sNthFrame++;
                                 if (isFinishAnalysis) {
                                     startTime_2000_1_1 = 0;
-                                    polarVerityManager.stopStream();
-                                    polarH10Manager.stopStream();
                                     EcgClient.getInstance().requestPolar(polarEcgData, polarPpgData, startTime_2000_1_1);
                                     if (Config.FLAG_INNER_TEST) {
                                         updateVitalSignValue();
@@ -798,7 +795,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         isFinishAnalysis = false;
         isFixedFace = false;
         polarEcgData.clear();
-        polarRriData.clear();
+        polarHrData.clear();
     }
 
     private void initCalibrationTimer() {
@@ -859,7 +856,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 @Override
                 public void run() {
                     if ((startTime_2000_1_1 != 0)) {
-                        polarRriData.addAll(hrData.getSamples());
+                        polarHrData.addAll(hrData.getSamples());
                     }
                 }
             });
@@ -886,25 +883,24 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         @Override
         public void HrDataReceived(PolarHrData hrData) {
             if ((startTime_2000_1_1 != 0)) {
-                List<PolarHrData.PolarHrSample> sample = hrData.getSamples();
+                List<PolarHrData.PolarHrSample> samples = hrData.getSamples();
                 polarHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        polarRriData.addAll(sample);
+                        polarHrData.addAll(samples);
+                        Log.d("Polar", "Save Hr Data");
+
                         int totalHr = 0;
-                        double totalHrv = 0;
-                        for(PolarHrData.PolarHrSample data : sample){
-                            totalHr += data.getHr();
-                            totalHrv += data.getRrsMs().stream().mapToDouble(e -> e).average().orElse(0.0);
+                        for(PolarHrData.PolarHrSample sample: samples){
+                            totalHr += sample.getHr();
                         }
-                        polarHr = totalHr/sample.size();
-                        polarHrv = (int)totalHrv/sample.size();
+                        polarHr = totalHr/ samples.size();
 
                         new Handler(Looper.getMainLooper()).post(new Runnable() {
                             @Override
                             public void run() {
                                 polarHrValueView.setText(String.valueOf(polarHr));
-                                polarHrvValueView.setText(String.valueOf(polarHrv));
+                                Log.d("Polar", "Display Hr Data :: " + polarHr);
                             }
                         });
                     }
@@ -927,14 +923,27 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
         @Override
         public void PpiDataReceived(PolarPpiData ppiData) {
-            polarHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (startTime_2000_1_1 != 0) {
+            if ((startTime_2000_1_1 != 0)) {
+                polarHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
                         polarPpiData.addAll(ppiData.getSamples());
+                        Log.d("Polar", "Save Ppi Data");
+                        for (int i = 0; i < ppiData.getSamples().size(); i++) {
+                            polarHrvList.add(ppiData.getSamples().get(i).getPpi());
+                        }
+                        double[] hrv_array = polarHrvList.stream().mapToDouble(e -> e).toArray();
+                        polarHrv = (int) DoubleUtils.calculateStd(hrv_array);
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                polarHrvValueView.setText(String.valueOf(polarHrv));
+                                Log.d("Polar", "Display Ppi Data");
+                            }
+                        });
                     }
-                }
-            });
+                });
+            }
         }
     };
 }

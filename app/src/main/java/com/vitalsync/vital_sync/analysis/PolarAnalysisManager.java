@@ -78,7 +78,7 @@ public class PolarAnalysisManager {
         polarSet.add(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ONLINE_STREAMING);
         polarSet.add(PolarBleApi.PolarBleSdkFeature.FEATURE_BATTERY_INFO);
         polarSet.add(PolarBleApi.PolarBleSdkFeature.FEATURE_DEVICE_INFO);
-
+        polarSet.add(PolarBleApi.PolarBleSdkFeature.FEATURE_HR);
         polarApi = PolarBleApiDefaultImpl.defaultImplementation(_context, polarSet);
         polarApi.setApiCallback(polarApiCallback);
 
@@ -101,12 +101,14 @@ public class PolarAnalysisManager {
     }
 
     public void startStream(){
+        streamHR();
         if(deviceType.contains("H10")){
             streamECG();
-        } else if(deviceType.contains("Verity")){
-            streamPPG();
+            return;
         }
-        streamHR();
+        streamPPG();
+        streamPPI();
+
     }
 
     public void stopStream(){
@@ -169,9 +171,7 @@ public class PolarAnalysisManager {
         }
 
         if (isDisposed) {
-            hrDisposable = polarApi.requestStreamSettings(deviceId, deviceDataType)
-                    .toFlowable()
-                    .flatMap(polarSensorSetting -> polarApi.startHrStreaming(deviceId))
+            hrDisposable = polarApi.startHrStreaming(deviceId)
                     .observeOn(AndroidSchedulers.from(hrThread.getLooper()))
                     .subscribe(polarHrData -> {
                                 if(dataResponseListener != null) dataResponseListener.HrDataReceived(polarHrData);
@@ -191,9 +191,7 @@ public class PolarAnalysisManager {
     private void streamPPI() {
         boolean isDisposed = ppiDisposable == null || ppiDisposable.isDisposed();
         if (isDisposed) {
-            ppiDisposable = polarApi.requestStreamSettings(deviceId, PolarBleApi.PolarDeviceDataType.PPG)
-                    .toFlowable()
-                    .flatMap(polarSensorSetting -> polarApi.startPpiStreaming(deviceId))
+            ppiDisposable = polarApi.startPpiStreaming(deviceId)
                     .observeOn(AndroidSchedulers.from(ppiThread.getLooper()))
                     .subscribe(polarPpiData -> {
                                 dataResponseListener.PpiDataReceived(polarPpiData);
