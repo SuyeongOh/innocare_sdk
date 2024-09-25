@@ -37,6 +37,8 @@
     <string name="hrv_sdnn_unit">ms</string>
     <string name="oxygen_saturation">SpO2</string>
     <string name="oxygen_saturation_unit">%</string>
+    <string name="polar_hr">Polar HR</string>
+    <string name="polar_hrv">Polar HRV</string>
     <string name="stress">Stress</string>
     <string name="blood_pressure">혈압</string>
     <string name="blood_pressure_unit">mmHg</string>

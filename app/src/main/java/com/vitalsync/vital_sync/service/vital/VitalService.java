@@ -22,6 +22,6 @@ public interface VitalService {
     Call<VitalResponse> postVitalStress(@Body VitalRequest body);
     @POST("/vital/bp")
     Call<VitalResponse> postVitalBp(@Body VitalRequest body);
-    @POST("/vital/verity")
-    Call<EcgResponse> postVitalVerity(@Body EcgRequest body);
+    @POST("/vital/polar")
+    Call<EcgResponse> postVitalPolar(@Body EcgRequest body);
 }

@@ -109,6 +109,12 @@ public class PolarAnalysisManager {
         streamHR();
     }
 
+    public void stopStream(){
+        if(ecgDisposable != null) ecgDisposable.dispose();
+        if(hrDisposable != null) hrDisposable.dispose();
+        if(ppiDisposable != null) ppiDisposable.dispose();
+        if(ppgDisposable != null) ppgDisposable.dispose();
+    }
     public void destroy(){
         try {
             polarApi.disconnectFromDevice(deviceId);
@@ -157,8 +163,10 @@ public class PolarAnalysisManager {
 
     private void streamHR() {
         boolean isDisposed = hrDisposable == null || hrDisposable.isDisposed();
-        PolarBleApi.PolarDeviceDataType deviceDataType = deviceType.contains("Verity")
-                ? PolarBleApi.PolarDeviceDataType.PPG : PolarBleApi.PolarDeviceDataType.ECG;
+        PolarBleApi.PolarDeviceDataType deviceDataType = PolarBleApi.PolarDeviceDataType.PPG;
+        if(deviceType.contains("H10")){
+            deviceDataType = PolarBleApi.PolarDeviceDataType.ECG;
+        }
 
         if (isDisposed) {
             hrDisposable = polarApi.requestStreamSettings(deviceId, deviceDataType)
@@ -206,14 +214,11 @@ public class PolarAnalysisManager {
     private void streamPPG() {
         boolean isDisposed = ppgDisposable == null || ppgDisposable.isDisposed();
         if (isDisposed) {
+            //verity sampling_rate = 55Hz
             ppgDisposable = polarApi.requestStreamSettings(deviceId, PolarBleApi.PolarDeviceDataType.PPG)
                     .toFlowable()
-                    .flatMap(polarSensorSetting -> {
-                        Set<Integer> setFrequency = new HashSet<>();
-                        setFrequency.add(176);
-                        polarSensorSetting.getSettings().put(PolarSensorSetting.SettingType.SAMPLE_RATE, setFrequency);
-                        return polarApi.startPpgStreaming(deviceId, polarSensorSetting);
-                    })
+                    .flatMap(polarSensorSetting ->
+                            polarApi.startPpgStreaming(deviceId, polarSensorSetting.maxSettings()))
                     .observeOn(AndroidSchedulers.from(ppgThread.getLooper()))
                     .subscribe(polarPpgData -> {
                                 dataResponseListener.PpgDataReceived(polarPpgData);
@@ -231,6 +236,9 @@ public class PolarAnalysisManager {
         }
     }
 
+    public String getDeviceId(){
+        return deviceId;
+    }
     public void setDeviceStatusListener(DeviceStatusListener listener){
         statusListener = listener;
     }

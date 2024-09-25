@@ -33,7 +33,7 @@ public class EcgClient {
             if(Config.LOCAL_SERVER_ADDRESS.equals("")){
                 retrofit = new Retrofit.Builder()
                         .baseUrl(Config.CLOUD_SERVER_ADDRESS + Config.SERVER_PORT_HEADER
-                                + Config.SERVER_LOGIN_PORT + Config.SERVER_PORT_FOOTER)
+                                + Config.SERVER_VITAL_PORT + Config.SERVER_PORT_FOOTER)
                         .client(builder.build())
                         .addConverterFactory(GsonConverterFactory.create())
                         .build();
@@ -53,7 +53,7 @@ public class EcgClient {
             , ArrayList<PolarPpgData.PolarPpgSample> ppg_list
             , long measureTime){
 
-        EcgRequest request = new EcgRequest(measureTime);
+        EcgRequest request = new EcgRequest(measureTime, Config.USER_ID);
 
         ArrayList<Integer> ecg_data = new ArrayList<>();
 
@@ -82,7 +82,7 @@ public class EcgClient {
             }
             try {
                 retrofit.create(VitalService.class)
-                        .postVitalVerity(request)
+                        .postVitalPolar(request)
                         .enqueue(new Callback<EcgResponse>() {
                             @Override
                             public void onResponse(Call<EcgResponse> call, Response<EcgResponse> response) {
