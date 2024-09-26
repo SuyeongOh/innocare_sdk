@@ -315,7 +315,7 @@ public class InitFragment extends Fragment{
                 try {
                     Config.ANALYSIS_TIME = Integer.parseInt(time);
                 } catch (Exception e) {
-                    Config.ANALYSIS_TIME = 20;
+                    Config.ANALYSIS_TIME = 60;
                 }
 
                 if (!localIpInputView.getText().toString().equals("")) {

@@ -4,7 +4,7 @@ public class Config {
     public static final float THRESHOLD_DEFAULT = 0.5F;
     public static int USE_CAMERA_DIRECTION = Constant.CAMERA_DIRECTION_FRONT;
     public static int TARGET_FRAME = 30;
-    public static int ANALYSIS_TIME = 20;
+    public static int ANALYSIS_TIME = 60;
 
 
     public static final boolean FLAG_INNER_TEST = true;

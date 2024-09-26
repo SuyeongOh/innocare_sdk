@@ -91,7 +91,11 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private HandlerThread cameraThread;
     private HandlerThread imageReaderThread;
     private HandlerThread thread_preview;
-    private final HandlerThread polarThread = new HandlerThread("polar");
+    private final HandlerThread polarEcgThread = new HandlerThread("polarEcg");
+    private final HandlerThread polarPpgThread = new HandlerThread("polarPpg");
+    private final HandlerThread polarHrThread = new HandlerThread("polarHr");
+    private final HandlerThread polarPpiThread = new HandlerThread("polarPpi");
+
     private CameraDevice Camera;
     private String cameraId;
     private CameraCaptureSession cameraCaptureSession;
@@ -99,7 +103,10 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private ImageView imageSurfaceView;
     private Handler cameraHandler;
     private Handler imageReaderHandler;
-    private Handler polarHandler;
+    private Handler polarEcgHandler;
+    private Handler polarPpgHandler;
+    private Handler polarHrHandler;
+    private Handler polarPpiHandler;
 
     //View Variable
     private OverlayView mTrackingOverlayView;
@@ -331,8 +338,14 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         imageReaderThread.start();
         imageReaderHandler = new Handler(imageReaderThread.getLooper());
 
-        polarThread.start();
-        polarHandler = new Handler(polarThread.getLooper());
+        polarEcgThread.start();
+        polarEcgHandler = new Handler(polarEcgThread.getLooper());
+        polarPpgThread.start();
+        polarPpgHandler = new Handler(polarPpgThread.getLooper());
+        polarHrThread.start();
+        polarHrHandler = new Handler(polarHrThread.getLooper());
+        polarPpiThread.start();
+        polarPpiHandler = new Handler(polarPpiThread.getLooper());
     }
 
     private void initCamera() {
@@ -487,9 +500,9 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                     startTime_2000_1_1 = TimeUtils.getCurrentTimeStamp_by_2000_1_1(startTime);
                                 }
                                 faceModelTime = System.currentTimeMillis();
-                                if ((int) ((faceModelTime - startTime) * 100 / (double) 20000)
+                                if ((int) ((faceModelTime - startTime) * 100 / ((double) Config.ANALYSIS_TIME * TimeUtils.SEC_TO_MILLISEC))
                                         > sNthFrame / (double) (Config.TARGET_FRAME * Config.ANALYSIS_TIME - 1)) {
-                                    updateProgressBar((int) ((faceModelTime - startTime) * 100 / (double) 20000));
+                                    updateProgressBar((int) ((faceModelTime - startTime) * 100 / ((double) Config.ANALYSIS_TIME * TimeUtils.SEC_TO_MILLISEC)));
                                 } else {
                                     updateProgressBar((int) (sNthFrame / (double) (Config.TARGET_FRAME * Config.ANALYSIS_TIME - 1)));
                                 }
@@ -796,6 +809,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         isFixedFace = false;
         polarEcgData.clear();
         polarHrData.clear();
+        polarHrvList.clear();
     }
 
     private void initCalibrationTimer() {
@@ -806,7 +820,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        mCountDownView.setCountDownText(String.valueOf(millisUntilFinished / 1000));
+                        mCountDownView.setCountDownText(String.valueOf(millisUntilFinished / TimeUtils.SEC_TO_MILLISEC));
                     }
                 });
 
@@ -838,7 +852,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private final PolarAnalysisManager.DataResponseListener dataResponseListener = new PolarAnalysisManager.DataResponseListener() {
         @Override
         public void EcgDataReceived(PolarEcgData ecgData) {
-            polarHandler.post(new Runnable() {
+            polarEcgHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     if (startTime_2000_1_1 != 0
@@ -852,7 +866,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
         @Override
         public void HrDataReceived(PolarHrData hrData) {
-            polarHandler.post(new Runnable() {
+            polarHrHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     if ((startTime_2000_1_1 != 0)) {
@@ -884,17 +898,13 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         public void HrDataReceived(PolarHrData hrData) {
             if ((startTime_2000_1_1 != 0)) {
                 List<PolarHrData.PolarHrSample> samples = hrData.getSamples();
-                polarHandler.post(new Runnable() {
+                polarHrHandler.post(new Runnable() {
                     @Override
                     public void run() {
                         polarHrData.addAll(samples);
                         Log.d("Polar", "Save Hr Data");
 
-                        int totalHr = 0;
-                        for(PolarHrData.PolarHrSample sample: samples){
-                            totalHr += sample.getHr();
-                        }
-                        polarHr = totalHr/ samples.size();
+                        polarHr = samples.get(0).getHr();
 
                         new Handler(Looper.getMainLooper()).post(new Runnable() {
                             @Override
@@ -910,7 +920,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
         @Override
         public void PpgDataReceived(PolarPpgData ppgData) {
-            polarHandler.post(new Runnable() {
+            polarPpgHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     if (startTime_2000_1_1 != 0
@@ -924,13 +934,15 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         @Override
         public void PpiDataReceived(PolarPpiData ppiData) {
             if ((startTime_2000_1_1 != 0)) {
-                polarHandler.post(new Runnable() {
+                polarPpiHandler.post(new Runnable() {
                     @Override
                     public void run() {
                         polarPpiData.addAll(ppiData.getSamples());
                         Log.d("Polar", "Save Ppi Data");
                         for (int i = 0; i < ppiData.getSamples().size(); i++) {
-                            polarHrvList.add(ppiData.getSamples().get(i).getPpi());
+                            if(ppiData.getSamples().get(i).getErrorEstimate() < 30){
+                                polarHrvList.add(ppiData.getSamples().get(i).getPpi());
+                            }
                         }
                         double[] hrv_array = polarHrvList.stream().mapToDouble(e -> e).toArray();
                         polarHrv = (int) DoubleUtils.calculateStd(hrv_array);

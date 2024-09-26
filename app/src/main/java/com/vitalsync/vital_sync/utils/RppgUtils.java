@@ -23,7 +23,7 @@ public class RppgUtils {
 
         long firstEventTime = eventTimes[0];
         for (int index = 0; index < eventTimes.length; index++) {
-            if (eventTimes[index] - firstEventTime > seconds * 1000) { // 1.0 초 차이를 밀리초 단위로 계산
+            if (eventTimes[index] - firstEventTime > seconds * TimeUtils.SEC_TO_MILLISEC) { // 1.0 초 차이를 밀리초 단위로 계산
                 return index;
             }
         }

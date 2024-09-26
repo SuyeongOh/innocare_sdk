@@ -20,6 +20,7 @@ import com.vitalsync.vital_sync.service.vital.VitalClient;
 import com.vitalsync.vital_sync.service.vital.VitalResponse;
 import com.vitalsync.vital_sync.utils.DoubleUtils;
 import com.vitalsync.vital_sync.utils.RppgUtils;
+import com.vitalsync.vital_sync.utils.TimeUtils;
 
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.apache.commons.math3.stat.inference.TestUtils;
@@ -98,91 +99,100 @@ public class Vital {
         rPPG.f_pixel_buff[1][pixelIndex] = totalG;
         rPPG.f_pixel_buff[2][pixelIndex] = totalB;
 
-        if (model.isFinish) {
-            lastFrameTime = model.frameUtcTimeMs;
-            VIDEO_FRAME_RATE = (int) (1000 / ((float) ((lastFrameTime - firstFrameTime) / (float) pixelIndex)));
-            //TODO interpolation
-            long[] interpolatedTimeArray = RppgUtils.interpolateTime(rPPG.frameTimeArray, VIDEO_FRAME_RATE);
-            double[][] interpolatedSignal = RppgUtils.interpolateSignal(rPPG.f_pixel_buff, rPPG.frameTimeArray, interpolatedTimeArray, VIDEO_FRAME_RATE);
-            VitalChartData.frameTimeArray = rPPG.frameTimeArray;
-
-            //TODO preprocessing은 interpolated signal을 이용
-
-            requestToServer();
-
-            double[] pre_processed = preprocessing_omit(interpolatedSignal, interpolatedTimeArray);
-            VitalChartData.FFT_SIGNAL = pre_processed;
-            rPPG.lastHrSignal = pre_processed;
-            lastResult.HR_result = get_HR(pre_processed);
-            lastResult.RR_result = get_RR(rPPG.lastRrSignal);
-            Log.d("BPM", "HR : " + lastResult.HR_result);
-            Log.d("BPM", "RR : " + lastResult.RR_result);
-
-
-            //--------SDNN --------------------//
-            lastResult.sdnn_result = HRV_IBI(rPPG.lastBvpSignal, rPPG, lastResult.HR_result);
-            lastResult.sdnn_result = Math.round(lastResult.sdnn_result);
-            //--------SDNN --------------------//
-            lastResult.LF_HF_ratio = LF_HF_ratio(VitalChartData.DETREND_SIGNAL);
-
-            Log.d("vital", String.format(
-                    "HR : %f, hrv : %f"
-                    , lastResult.HR_result, lastResult.sdnn_result));
-
-            try {
-                lastResult.spo2_result = spo2(rPPG.f_pixel_buff[0], rPPG.f_pixel_buff[1], rPPG.f_pixel_buff[2], VIDEO_FRAME_RATE);
-                lastResult.spo2_result = Math.round(lastResult.spo2_result);
-            } catch (Exception e) {
-                lastResult.spo2_result = 0;
-            }
-
-
-            double[] avg = get_peak_avg(VitalChartData.DETREND_SIGNAL, lastResult.HR_result);
-            double peak_avg = avg[0];
-            double valley_avg = avg[1];
-            Log.d("BP", "" + peak_avg + ":" + valley_avg);
-            double bmi = Config.USER_BMI;
-
-            if (bmi == 0) bmi = 20.1f;
-
-            //Resistivity of blood https://github.com/miller619/bloodPressure_FYP2_2017
-            double ROB = 18.31;
-            //Ejection Time
-            double ET = (364.5-1.23 * lastResult.HR_result);
-            //Body Surface Area
-            double BSA = 0.007184*(Math.pow(Config.USER_WEIGHT,0.425))*(Math.pow(Config.USER_HEIGHT,0.725));
-            //Stroke volume
-            double SV = (-6.6 + (0.25*(ET-35)) - (0.62*lastResult.HR_result) + (40.4*BSA) - (0.51*Config.USER_AGE));
-            //Pulse Pressure
-            double PP = SV / ((0.013 * Config.USER_WEIGHT - 0.007*Config.USER_AGE-0.004 * lastResult.HR_result)+1.307);
-
-            //심박출량 : 각 심실에서 1분에 폐나 순환계로 뿜 어 내보내는 이완기 혈액의 양(정상치: 4-8L/min)
-            double user_cardiac_output = 6;
-            double MAP = user_cardiac_output * ROB;
-
-            double user_mbp = (Config.USER_SBP + Config.USER_DBP * 2) / 3;
-
-            MAP = (user_mbp == 0) ? MAP : user_mbp;
-
-            int SP = (int) (MAP + 3/2*PP);
-            int DP = (int) (MAP - PP/3);
-
-            Log.d("BPM ", "Sys "+SP+" Dys "+DP+" Beats "+lastResult.HR_result);
-            lastResult.SBP = SP;
-            lastResult.DBP = DP;
-
-//            lastResult.SBP = 23.7889 + (95.4335 * peak_avg) + (4.5958 * bmi) - (5.109 * peak_avg * bmi);
-//            lastResult.DBP = -17.3772 - (115.1747 * valley_avg) + (4.0251 * bmi) + (5.2825 * valley_avg * bmi);
-            lastResult.BP = lastResult.SBP * 0.33 + lastResult.DBP * 0.66;
-
+        if(pixelIndex == Config.ANALYSIS_TIME * Config.TARGET_FRAME / 3){
+            Date currentDate = new Date(firstFrameTime);
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+            String measureTime = sdf.format(currentDate);
+            VitalClient.getInstance().requestAnalysis(rPPG.f_pixel_buff, measureTime);
         }
+        if(model.isFinish){
+            requestToServer();
+        }
+
+
+//        if (model.isFinish) {
+//            requestToServer();
+//            lastFrameTime = model.frameUtcTimeMs;
+//            VIDEO_FRAME_RATE = (int) (1000 / ((float) ((lastFrameTime - firstFrameTime) / (float) pixelIndex)));
+//            //TODO interpolation
+//            long[] interpolatedTimeArray = RppgUtils.interpolateTime(rPPG.frameTimeArray, VIDEO_FRAME_RATE);
+//            double[][] interpolatedSignal = RppgUtils.interpolateSignal(rPPG.f_pixel_buff, rPPG.frameTimeArray, interpolatedTimeArray, VIDEO_FRAME_RATE);
+//            VitalChartData.frameTimeArray = rPPG.frameTimeArray;
+//
+//            //TODO preprocessing은 interpolated signal을 이용
+//
+//            double[] pre_processed = preprocessing_omit(interpolatedSignal, interpolatedTimeArray);
+//            VitalChartData.FFT_SIGNAL = pre_processed;
+//            rPPG.lastHrSignal = pre_processed;
+//            lastResult.HR_result = get_HR(pre_processed);
+//            lastResult.RR_result = get_RR(rPPG.lastRrSignal);
+//            Log.d("BPM", "HR : " + lastResult.HR_result);
+//            Log.d("BPM", "RR : " + lastResult.RR_result);
+//
+//
+//            //--------SDNN --------------------//
+//            lastResult.sdnn_result = HRV_IBI(rPPG.lastBvpSignal, rPPG, lastResult.HR_result);
+//            lastResult.sdnn_result = Math.round(lastResult.sdnn_result);
+//            //--------SDNN --------------------//
+//            lastResult.LF_HF_ratio = LF_HF_ratio(VitalChartData.DETREND_SIGNAL);
+//
+//            Log.d("vital", String.format(
+//                    "HR : %f, hrv : %f"
+//                    , lastResult.HR_result, lastResult.sdnn_result));
+//
+//            try {
+//                lastResult.spo2_result = spo2(rPPG.f_pixel_buff[0], rPPG.f_pixel_buff[1], rPPG.f_pixel_buff[2], VIDEO_FRAME_RATE);
+//                lastResult.spo2_result = Math.round(lastResult.spo2_result);
+//            } catch (Exception e) {
+//                lastResult.spo2_result = 0;
+//            }
+//
+//
+//            double[] avg = get_peak_avg(VitalChartData.DETREND_SIGNAL, lastResult.HR_result);
+//            double peak_avg = avg[0];
+//            double valley_avg = avg[1];
+//            Log.d("BP", "" + peak_avg + ":" + valley_avg);
+//            double bmi = Config.USER_BMI;
+//
+//            if (bmi == 0) bmi = 20.1f;
+//
+//            //Resistivity of blood https://github.com/miller619/bloodPressure_FYP2_2017
+//            double ROB = 18.31;
+//            //Ejection Time
+//            double ET = (364.5-1.23 * lastResult.HR_result);
+//            //Body Surface Area
+//            double BSA = 0.007184*(Math.pow(Config.USER_WEIGHT,0.425))*(Math.pow(Config.USER_HEIGHT,0.725));
+//            //Stroke volume
+//            double SV = (-6.6 + (0.25*(ET-35)) - (0.62*lastResult.HR_result) + (40.4*BSA) - (0.51*Config.USER_AGE));
+//            //Pulse Pressure
+//            double PP = SV / ((0.013 * Config.USER_WEIGHT - 0.007*Config.USER_AGE-0.004 * lastResult.HR_result)+1.307);
+//
+//            //심박출량 : 각 심실에서 1분에 폐나 순환계로 뿜 어 내보내는 이완기 혈액의 양(정상치: 4-8L/min)
+//            double user_cardiac_output = 6;
+//            double MAP = user_cardiac_output * ROB;
+//
+//            double user_mbp = (Config.USER_SBP + Config.USER_DBP * 2) / 3;
+//
+//            MAP = (user_mbp == 0) ? MAP : user_mbp;
+//
+//            int SP = (int) (MAP + 3/2*PP);
+//            int DP = (int) (MAP - PP/3);
+//
+//            Log.d("BPM ", "Sys "+SP+" Dys "+DP+" Beats "+lastResult.HR_result);
+//            lastResult.SBP = SP;
+//            lastResult.DBP = DP;
+//
+////            lastResult.SBP = 23.7889 + (95.4335 * peak_avg) + (4.5958 * bmi) - (5.109 * peak_avg * bmi);
+////            lastResult.DBP = -17.3772 - (115.1747 * valley_avg) + (4.0251 * bmi) + (5.2825 * valley_avg * bmi);
+//            lastResult.BP = lastResult.SBP * 0.33 + lastResult.DBP * 0.66;
+//
+//        }
         pixelIndex++;
         return lastResult;
     }
 
     private void requestToServer(){
-        long currentTimeMillis = System.currentTimeMillis();
-        Date currentDate = new Date(currentTimeMillis);
+        Date currentDate = new Date(firstFrameTime);
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
         String measureTime = sdf.format(currentDate);
@@ -518,8 +528,8 @@ public class Vital {
 
         int upperBound;
         int lowerBound;
-        upperBound = Math.min(1300, (int) (1.2 * 60 / hr * 1000));
-        lowerBound = Math.max(400, (int) (0.8 * 60 / hr * 1000));
+        upperBound = Math.min(1300, (int) (1.2 * 60 / (hr * TimeUtils.SEC_TO_MILLISEC)));
+        lowerBound = Math.max(400, (int) (0.8 * 60 / (hr * TimeUtils.SEC_TO_MILLISEC)));
         for (int i = 0; i < rrIntervals.size(); i++) {
             long interval = rrIntervals.get(i);
             if (interval > lowerBound && interval < upperBound) {

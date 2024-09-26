@@ -4,6 +4,8 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 public class TimeUtils {
+    public static final long SEC_TO_MILLISEC = 1000;
+
     // 2000년 1월 1일을 기준으로 한 epoch 타임스탬프 계산
     public static long getEpochTimeStamp_2000_1_1(){
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));

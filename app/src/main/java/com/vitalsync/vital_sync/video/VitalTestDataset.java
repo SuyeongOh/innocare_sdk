@@ -12,6 +12,7 @@ import com.vitalsync.vital_sync.analysis.BpmAnalysisViewModel;
 import com.vitalsync.vital_sync.data.Config;
 import com.vitalsync.vital_sync.analysis.FaceImageModel;
 import com.vitalsync.vital_sync.utils.FileUtils;
+import com.vitalsync.vital_sync.utils.TimeUtils;
 
 import java.io.File;
 
@@ -72,7 +73,7 @@ public class VitalTestDataset {
         for(int i = 0; i < Config.ANALYSIS_TIME * Config.TARGET_FRAME; i++){
             try{
                 Bitmap curFrame = retriever.getFrameAtIndex(i);
-                faceImageModel = new FaceImageModel(curFrame, (long)(i * 1000L /(float)30), i==600);
+                faceImageModel = new FaceImageModel(curFrame, (long)(i * TimeUtils.SEC_TO_MILLISEC /(float)30), i==600);
                 bpmAnalysisViewModel.addFaceImageModel(faceImageModel);
                 if(i == 600){
                     return true;
