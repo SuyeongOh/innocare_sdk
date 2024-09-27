@@ -523,9 +523,9 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                                             @Override
                                             public void run() {
                                                 reStartBtn.setVisibility(View.VISIBLE);
-                                                if (!Config.USER_ID.equals(getContext().getString(R.string.target_guest))) {
-                                                    nextPageBtn.setVisibility(View.VISIBLE);
-                                                }
+//                                                if (!Config.USER_ID.equals(getContext().getString(R.string.target_guest))) {
+//                                                    nextPageBtn.setVisibility(View.VISIBLE);
+//                                                }
 
                                                 mFinishPopup.show();
                                             }
@@ -749,34 +749,14 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     }
 
     private void initListener() {
-        if (Config.USER_ID.equals(getContext().getString(R.string.target_guest))) {
-            mFinishPopup = new AlertDialog.Builder(getContext())
-                    .setMessage("분석 완료 !!\n")
-                    .setNeutralButton("닫기", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    }).create();
-        } else {
-            mFinishPopup = new AlertDialog.Builder(getContext())
-                    .setTitle("분석 마침")
-                    .setMessage("결과화면으로 넘어가시겠습니까?\n")
-                    .setPositiveButton("예", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            Intent intent = new Intent(getContext(), ResultActivity.class);
-                            getContext().startActivity(intent);
-                        }
-                    })
-                    .setNegativeButton("아니오", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    }).create();
-        }
-
+        mFinishPopup = new AlertDialog.Builder(getContext())
+                .setMessage("분석 완료 !!\n")
+                .setNeutralButton("닫기", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                }).create();
 
         reStartBtn.setOnClickListener(new View.OnClickListener() {
             @Override
