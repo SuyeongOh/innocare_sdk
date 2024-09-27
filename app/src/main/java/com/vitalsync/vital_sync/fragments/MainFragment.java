@@ -816,7 +816,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         mCalibrationTimer = new CountDownTimer(3999, 1) {
             @Override
             public void onTick(long millisUntilFinished) {
-                Log.d("vital", "Timer :: " + millisUntilFinished);
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {

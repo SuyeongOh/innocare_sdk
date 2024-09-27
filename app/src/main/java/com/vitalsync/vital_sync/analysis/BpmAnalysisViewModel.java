@@ -19,7 +19,7 @@ public class BpmAnalysisViewModel extends AndroidViewModel {
     }
 
     public void addFaceImageModel(@NonNull FaceImageModel faceImageModel){
-        ResultVitalSign.vitalSignData = Vital.toResultVitalSign(vital.calculateVital(faceImageModel));
+        vital.calculateVital(faceImageModel);
     }
 
     public void clearAnalysis(){

@@ -1,6 +1,7 @@
 package com.vitalsync.vital_sync.analysis;
 
 import android.graphics.Bitmap;
+import android.os.Handler;
 import android.util.Log;
 
 import com.github.psambit9791.jdsp.filter.Butterworth;
@@ -100,10 +101,22 @@ public class Vital {
         rPPG.f_pixel_buff[2][pixelIndex] = totalB;
 
         if(pixelIndex == Config.ANALYSIS_TIME * Config.TARGET_FRAME / 3){
-            Date currentDate = new Date(firstFrameTime);
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-            String measureTime = sdf.format(currentDate);
-            VitalClient.getInstance().requestAnalysis(rPPG.f_pixel_buff, measureTime);
+            final double[][] middleAnalysis = rPPG.f_pixel_buff;
+            new Handler().post(new Runnable() {
+                @Override
+                public void run() {
+                    double[][] removeZeroArray = new double[3][600];
+                    removeZeroArray[0] = Arrays.copyOfRange(middleAnalysis[0], 0, 600);
+                    removeZeroArray[1] = Arrays.copyOfRange(middleAnalysis[1], 0, 600);
+                    removeZeroArray[2] = Arrays.copyOfRange(middleAnalysis[2], 0, 600);
+
+                    Date currentDate = new Date(firstFrameTime);
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+                    String measureTime = sdf.format(currentDate);
+
+                    VitalClient.getInstance().requestAnalysis(removeZeroArray, measureTime);
+                }
+            });
         }
         if(model.isFinish){
             requestToServer();
