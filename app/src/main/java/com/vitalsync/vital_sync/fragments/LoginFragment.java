@@ -15,6 +15,7 @@ import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.skydoves.balloon.ArrowOrientation;
 import com.skydoves.balloon.ArrowPositionRules;
 import com.skydoves.balloon.Balloon;
 import com.skydoves.balloon.BalloonAnimation;
@@ -31,6 +32,7 @@ import com.vitalsync.vital_sync.service.login.UserInfo;
 import com.vitalsync.vital_sync.ui.CommonPopupView;
 import com.vitalsync.vital_sync.ui.UserListAdapter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -54,9 +56,10 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
     private SharedPreferences loginCookie;
     private Balloon mCheckupBallon;
 
-    private List<UserInfo> userInfoList;
+    private final List<UserInfo> userInfoList = new ArrayList<>();
     private UserListAdapter userListAdapter;
 
+    String userId = "";
     public LoginFragment() {
 
     }
@@ -115,7 +118,11 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
         LoginClient.getInstance().getUserList().enqueue(new Callback<List<UserInfo>>() {
             @Override
             public void onResponse(Call<List<UserInfo>> call, Response<List<UserInfo>> response) {
-                userInfoList = response.body();
+                for(UserInfo user : response.body()){
+                    if(user.getUserId().contains("ku")){
+                        userInfoList.add(user);
+                    }
+                }
                 userListAdapter = new UserListAdapter(userInfoList, new UserListAdapter.OnItemClickListener() {
                     @Override
                     public void onItemClick(UserInfo user) {
@@ -124,7 +131,7 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
                 });
                 userListView.setLayoutManager(new LinearLayoutManager(getContext()));
                 userListView.setAdapter(userListAdapter);
-                mCheckupBallon.showAlignBottom(userListView);
+                mCheckupBallon.showAlignTop(userListView);
             }
 
             @Override
@@ -150,7 +157,7 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
     }
 
     private void login() {
-        String userId = userIdEditText.getText().toString();
+        userId = userIdEditText.getText().toString();
         //TODO DB서버로 연결 후 진행
         LoginClient.getInstance().login(new LoginRequest(userId, ""), this);
         loadingView.setVisibility(View.VISIBLE);
@@ -158,6 +165,7 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
 
     private void login(String user_id) {
         //TODO DB서버로 연결 후 진행
+        user_id = user_id;
         LoginClient.getInstance().login(new LoginRequest(user_id, ""), this);
         loadingView.setVisibility(View.VISIBLE);
     }
@@ -169,13 +177,12 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
     }
 
     @Override
-    public void onSuccess(LoginResponse response) {
+    public void onSuccess(LoginResponse response, String userId) {
         loadingView.setVisibility(View.GONE);
-        String inputID = userIdEditText.getText().toString();
-        if(!Config.USER_ID.equals(inputID)){
-            saveID(inputID);
+        if(!Config.USER_ID.equals(userId)){
+            saveID(userId);
         }
-        Config.USER_ID = inputID;
+        Config.USER_ID = userId;
         MainActivity activity = (MainActivity) getActivity();
         activity.replaceFragment(new InitFragment());
     }

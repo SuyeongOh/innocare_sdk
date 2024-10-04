@@ -56,7 +56,7 @@ public class LoginClient {
                 if (response.isSuccessful()) {
                     // 서버에서 성공적으로 응답을 받았을 때
                     LoginResponse loginResponse = response.body();
-                    listener.onSuccess(loginResponse);
+                    listener.onSuccess(loginResponse, request.id);
                 } else {
                     // 서버에서 오류 응답을 받았을 때
                     listener.onError("로그인 실패");
@@ -77,7 +77,7 @@ public class LoginClient {
     }
 
     public interface LoginResponseListener {
-        void onSuccess(LoginResponse response);
+        void onSuccess(LoginResponse response, String user_id);
         void onError(String message);
     }
 
