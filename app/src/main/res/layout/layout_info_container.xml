@@ -254,12 +254,11 @@
         android:layout_height="0dp"
         android:background="@drawable/bg_white_border_light_blue_grey_r4"
         android:elevation="2dp"
-        android:visibility="gone"
-        app:layout_constraintHeight_percent="0.3"
+        android:visibility="visible"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintBottom_toBottomOf="@+id/heart_rate_container"
-        app:layout_constraintStart_toEndOf="@+id/heart_rate_container"
-        app:layout_constraintTop_toTopOf="@+id/heart_rate_container"
+        app:layout_constraintStart_toStartOf="@+id/hrv_sdnn_container"
+        app:layout_constraintTop_toTopOf="@+id/oxygen_saturation_container"
+        app:layout_constraintBottom_toBottomOf="@+id/oxygen_saturation_container"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintWidth_percent="0.45">
 
@@ -528,12 +527,14 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/stress_container"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@drawable/bg_white_border_light_blue_grey_r4"
         android:elevation="2dp"
+        android:visibility="gone"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="@+id/hrv_sdnn_container"
         app:layout_constraintTop_toTopOf="@+id/oxygen_saturation_container"
