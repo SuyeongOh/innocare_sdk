@@ -24,7 +24,10 @@ public class MainActivity extends FragmentActivity {
             Manifest.permission.READ_MEDIA_VIDEO,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.MANAGE_EXTERNAL_STORAGE
+            Manifest.permission.MANAGE_EXTERNAL_STORAGE,
+            Manifest.permission.BLUETOOTH_SCAN,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.BLUETOOTH_CONNECT
     };
 
     @Override
