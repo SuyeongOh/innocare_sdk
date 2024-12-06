@@ -200,24 +200,8 @@ public class Vital {
                 ResultVitalSign.vitalSignServerData.DBP = response.dbp;
                 ResultVitalSign.vitalSignServerData.BP = response.bp;
             } catch (Exception e){
-                ResultVitalSign.vitalSignServerData.HR = 0;
-                ResultVitalSign.vitalSignServerData.RR = 0;
-                ResultVitalSign.vitalSignServerData.HRV = 0;
-                ResultVitalSign.vitalSignServerData.SpO2 = 0;
-                ResultVitalSign.vitalSignServerData.STRESS = 0;
-                ResultVitalSign.vitalSignServerData.SBP = 0;
-                ResultVitalSign.vitalSignServerData.DBP = 0;
-                ResultVitalSign.vitalSignServerData.BP = 0;
+                Log.e("VitalServer", e.getMessage());
             }
-        } else{
-            ResultVitalSign.vitalSignServerData.HR = 0;
-            ResultVitalSign.vitalSignServerData.RR = 0;
-            ResultVitalSign.vitalSignServerData.HRV = 0;
-            ResultVitalSign.vitalSignServerData.SpO2 = 0;
-            ResultVitalSign.vitalSignServerData.STRESS = 0;
-            ResultVitalSign.vitalSignServerData.SBP = 0;
-            ResultVitalSign.vitalSignServerData.DBP = 0;
-            ResultVitalSign.vitalSignServerData.BP = 0;
         }
     }
     public double[] preprocessing_omit(double[][] pixel, long[] InterpolatedFrameTime) {
