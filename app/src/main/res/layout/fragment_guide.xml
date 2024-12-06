@@ -1,40 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <TextView
         android:id="@+id/view_login_caution_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintWidth_percent="0.4"
+        app:layout_constraintHeight_percent="0.05"
         android:text="@string/caution"
         android:textAlignment="center"
-        android:textSize="30sp"
+        android:autoSizeTextType="uniform"
         android:textColor="@color/color_text_caution"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintVertical_bias="0.2"/>
+        app:layout_constraintVertical_bias="0.1"/>
 
     <TextView
         android:id="@+id/view_login_caution"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_margin="30dp"
+        android:layout_marginTop="28dp"
         android:text="@string/app_caution"
         android:textAlignment="center"
-        android:textSize="15sp"
-        android:textStyle="bold"
         android:textColor="@color/color_text_guide"
-        android:layout_margin="30dp"
-        app:layout_constraintTop_toBottomOf="@id/view_login_caution_title" />
+        android:autoSizeTextType="uniform"
+        android:textStyle="bold"
+        app:layout_constraintHeight_percent="0.4"
+        app:layout_constraintTop_toBottomOf="@id/view_login_caution_title"
+        tools:layout_editor_absoluteX="30dp" />
 
     <Button
         android:id="@+id/btn_guide_confirm"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintWidth_percent="0.5"
+        app:layout_constraintHeight_percent="0.07"
         android:background="@drawable/drawable_btn_bg"
         android:textAllCaps="false"
         android:textColor="@drawable/selector_text_confirm"
@@ -48,13 +56,15 @@
 
     <TextView
         android:id="@+id/view_login_policy"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintWidth_percent="0.5"
+        app:layout_constraintHeight_percent="0.05"
         android:background="@drawable/text_selector_policy"
         android:gravity="center"
         android:text="@string/privacy_policy"
         android:textAlignment="center"
-        android:textSize="20sp"
+        android:autoSizeTextType="uniform"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btn_guide_confirm"
