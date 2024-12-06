@@ -114,8 +114,8 @@ public class Vital {
             VitalChartData.FFT_SIGNAL = pre_processed;
             rPPG.lastHrSignal = pre_processed;
             lastResult.HR_result = get_HR(pre_processed);
-            lastResult.RR_result = get_RR(rPPG.lastRrSignal);
             Log.d("BPM", "HR : " + lastResult.HR_result);
+            lastResult.RR_result = get_RR(rPPG.lastRrSignal);
             Log.d("BPM", "RR : " + lastResult.RR_result);
 
 

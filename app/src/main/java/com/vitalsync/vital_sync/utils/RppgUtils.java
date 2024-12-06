@@ -62,7 +62,7 @@ public class RppgUtils {
         long startTime = timeArray[0];
         long endTime = 0;
 
-        int dataLen = Config.ANALYSIS_TIME * Config.TARGET_FRAME;;
+        int dataLen = Config.ANALYSIS_TIME * Config.TARGET_FRAME;
         for(int i = 0; i < timeArray.length; i++){
             if(timeArray[i] == 0){
                 endTime = timeArray[i-1];
@@ -122,8 +122,7 @@ public class RppgUtils {
 
             return newSignal;
         }
-        for (int i = 1; i < rgb[0].length; i++) {
-
+        for (int i = 1; (i < rgb[0].length) && (rgb[0][i] != 0); i++) {
             double v1 = originalTimeArray[i] - originalTimeArray[i-1];
             double v2 = procTimeArray[i] - originalTimeArray[i-1];
 
