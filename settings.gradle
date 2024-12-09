@@ -14,5 +14,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "funnylabs_sdk"
+rootProject.name = "innocare_sdk"
 include ':app'
+include ':openCVLibrary348'

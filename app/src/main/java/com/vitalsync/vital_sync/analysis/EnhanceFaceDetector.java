@@ -33,8 +33,6 @@ public class EnhanceFaceDetector {
 
     private FaceDetector faceDetector;
 
-    private android.media.FaceDetector detector;
-
     public EnhanceFaceDetector(Context context, DetectorListener listener){
         mContext = context;
         mDetectorListener = listener;
