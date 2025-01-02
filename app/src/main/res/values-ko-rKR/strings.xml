@@ -77,4 +77,16 @@
     <string name="gender_male">남성</string>
     <string name="gender_female">여성</string>
     <string name="rule_measure">분석을 시작하면 얼굴을 움직이지 마세요.</string>
+    <string name="hint_account_id">이메일</string>
+    <string name="hint_password">비밀번호</string>
+    <string name="hint_confirm_password">비밀번호 확인</string>
+    <string name="btn_text_guide_guest">테스트 해보세요!</string>
+    <string name="hint_create_account">계정이 없으신가요?</string>
+
+    <string name="checkup_guest">검사  \n시작  </string>
+    <string name="checkup_member">검사  \n시작  </string>
+    <string name="record_member">측정 기록</string>
+    <string name="profile_member">건강 프로필</string>
+    <string name="manual_member">사용 방법</string>
+    <string name="preference_member">설정</string>
 </resources>

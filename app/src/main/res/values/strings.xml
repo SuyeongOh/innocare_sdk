@@ -78,4 +78,16 @@ Welcome, %1$s!\n
     <string name="gender_male">Male</string>
     <string name="gender_female">Female</string>
     <string name="rule_measure">Starting analyzing, don\'t move your face!!</string>
+    <string name="hint_account_id">E-mail</string>
+    <string name="hint_password">Password</string>
+    <string name="hint_confirm_password">Comfirm password</string>
+    <string name="btn_text_guide_guest">Play the Demo!</string>
+    <string name="hint_create_account">Don\'t you have an account?</string>
+
+    <string name="checkup_guest">NEW  \nCheckup  </string>
+    <string name="checkup_member">Start Checkup</string>
+    <string name="record_member">Measurement Records</string>
+    <string name="profile_member">Health Profile</string>
+    <string name="manual_member">User Manual</string>
+    <string name="preference_member">Preference</string>
 </resources>

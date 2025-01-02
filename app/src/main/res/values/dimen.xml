@@ -13,4 +13,6 @@
     <dimen name="vital_new_info_margin_top">50dp</dimen>
     <dimen name="vital_new_info_margin_bottom">20dp</dimen>
     <dimen name="main_start_end_margin">45dp</dimen>
+    <dimen name="edit_text_margin_bottom">12dp</dimen>
+    <dimen name="edit_text_line_margin_top">60dp</dimen>
 </resources>

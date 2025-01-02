@@ -32,7 +32,6 @@ public class SplashFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-
         // Load the animation
         Animation anim = AnimationUtils.loadAnimation(getContext(), R.anim.animation_splash);
         splashLayout.startAnimation(anim);

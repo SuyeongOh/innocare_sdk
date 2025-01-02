@@ -35,13 +35,11 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
     private static final String USER_ID_KEY = "userID";
     private EditText userIdEditText;
     private Button loginButton;
-    private Button guestButton;
     private ProgressBar loadingView;
     private CommonPopupView popupView;
 
-
     private SharedPreferences loginCookie;
-    private Balloon mCheckupBallon;
+
     public LoginFragment() {
 
     }
@@ -53,9 +51,8 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
         View view = inflater.inflate(R.layout.fragment_login, container, false);
 
         // Initialize views
-        userIdEditText = view.findViewById(R.id.view_login_id);
+        userIdEditText = view.findViewById(R.id.editTextAccountId);
         loginButton = view.findViewById(R.id.view_login_button);
-        guestButton = view.findViewById(R.id.view_login_guest_button);
         loadingView = view.findViewById(R.id.view_login_loading);
 
         View viewNoDetectionPopup = inflater.inflate(R.layout.layout_detection_popup, container, false);
@@ -78,32 +75,6 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
             }
         });
 
-        guestButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Config.USER_ID = getContext().getString(R.string.target_guest);
-                loginGuest();
-            }
-        });
-
-        mCheckupBallon = new Balloon.Builder(getContext())
-                .setHeight(BalloonSizeSpec.WRAP)
-                .setWidth(BalloonSizeSpec.WRAP)
-                .setText(getString(R.string.rule_measure))
-                .setTextColorResource(R.color.color_btn_text_default_1)
-                .setTextSize(15f)
-                .setArrowPositionRules(ArrowPositionRules.ALIGN_ANCHOR)
-                .setArrowSize(10)
-                .setArrowPosition(0.5f)
-                .setPadding(12)
-                .setCornerRadius(8f)
-                .setBackgroundColorResource(R.color.lightBlueGrey)
-                .setBalloonAnimation(BalloonAnimation.FADE)
-                .setBalloonHighlightAnimation(BalloonHighlightAnimation.HEARTBEAT)
-                .setLifecycleOwner(this)
-                .setFocusable(false)
-                .build();
-
         return view;
     }
 
@@ -116,7 +87,6 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
             userIdEditText.setHint("");
             userIdEditText.setText(id);
         }
-        mCheckupBallon.showAlignBottom(guestButton);
     }
 
     private void login() {
@@ -124,12 +94,6 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
         //TODO DB서버로 연결 후 진행
         LoginClient.getInstance().login(new LoginRequest(userId, ""), this);
         loadingView.setVisibility(View.VISIBLE);
-    }
-
-    private void loginGuest() {
-        MainActivity activity = (MainActivity) getActivity();
-        activity.replaceFragment(new MainFragment()
-        );
     }
 
     @Override
