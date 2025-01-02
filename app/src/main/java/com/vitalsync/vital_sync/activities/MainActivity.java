@@ -69,6 +69,7 @@ public class MainActivity extends FragmentActivity {
     public void replaceFragment(Fragment fragment){
         currentFragment = fragment;
         getSupportFragmentManager().beginTransaction()
+                .setCustomAnimations(R.anim.animation_fade_in, R.anim.animation_fade_out)
                 .replace(R.id.fragmentContainerView, fragment)
                 .commit();
     }
