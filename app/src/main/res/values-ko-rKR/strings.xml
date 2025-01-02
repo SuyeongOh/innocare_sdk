@@ -16,6 +16,7 @@
 \n-  준비되시면 측정시작 버튼을 눌러주세요.</string>
     <string name="privacy_policy">개인정보 처리방침</string>
 
+    <string name="submit">적용</string>
     <string name="enter">입력완료</string>
     <string name="sync_data">데이터 동기화</string>
     <string name="app_name">VitalSync</string>
@@ -83,10 +84,15 @@
     <string name="btn_text_guide_guest">테스트 해보세요!</string>
     <string name="hint_create_account">계정이 없으신가요?</string>
 
+    <!--ㅡmember -->
     <string name="checkup_guest">검사  \n시작  </string>
     <string name="checkup_member">검사  \n시작  </string>
     <string name="record_member">측정 기록</string>
     <string name="profile_member">건강 프로필</string>
     <string name="manual_member">사용 방법</string>
     <string name="preference_member">설정</string>
+
+    <!--profile -->
+    <string name="profile_title">건강 정보</string>
+
 </resources>

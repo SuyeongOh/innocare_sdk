@@ -17,6 +17,7 @@
     <string name="privacy_policy">Privacy Policy</string>
 
     <!--ui text-->
+    <string name="submit">Submit</string>
     <string name="enter">Input</string>
     <string name="gt_header">Reference Result</string>
     <string name="welcome_message">
@@ -84,10 +85,14 @@ Welcome, %1$s!\n
     <string name="btn_text_guide_guest">Play the Demo!</string>
     <string name="hint_create_account">Don\'t you have an account?</string>
 
+    <!--ㅡmember -->
     <string name="checkup_guest">NEW  \nCheckup  </string>
     <string name="checkup_member">Start Checkup</string>
     <string name="record_member">Measurement Records</string>
     <string name="profile_member">Health Profile</string>
     <string name="manual_member">User Manual</string>
     <string name="preference_member">Preference</string>
+
+    <!--profile -->
+    <string name="profile_title">Health Profile</string>
 </resources>
