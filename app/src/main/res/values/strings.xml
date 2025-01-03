@@ -95,4 +95,9 @@ Welcome, %1$s!\n
 
     <!--profile -->
     <string name="profile_title">Health Profile</string>
+    <string name="profile_height">HEIGHT</string>
+    <string name="profile_weight">WEIGHT</string>
+    <string name="profile_age">AGE</string>
+    <string name="profile_SBP">Systolic BP</string>
+    <string name="profile_DBP">Diastolic BP</string>
 </resources>

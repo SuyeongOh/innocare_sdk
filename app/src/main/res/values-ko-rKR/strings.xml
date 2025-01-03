@@ -94,5 +94,10 @@
 
     <!--profile -->
     <string name="profile_title">건강 정보</string>
+    <string name="profile_height">키</string>
+    <string name="profile_weight">몸무게</string>
+    <string name="profile_age">나이</string>
+    <string name="profile_SBP">이완기 혈압</string>
+    <string name="profile_DBP">수축기 혈압</string>
 
 </resources>
