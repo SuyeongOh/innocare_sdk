@@ -3,22 +3,36 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_gravity="center"
-    android:padding="10dp">
-
-    <ProgressBar
+    android:layout_gravity="center">
+    <FrameLayout
         android:id="@+id/view_login_loading"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:indeterminate="true"
-        android:progressDrawable="@drawable/circle_progress"
-        android:visibility="gone" />
+        android:visibility="gone"
+        android:background="#80000000">
+
+        <ProgressBar
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintWidth_percent="0.1"
+            app:layout_constraintHeight_percent="0.1"
+            app:layout_constraintVertical_bias="0.5"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:indeterminate="true"
+            android:progressDrawable="@drawable/circle_progress" />
+    </FrameLayout>
+
 
     <include
         android:id="@+id/view_login_info"
         layout="@layout/layout_account_info_container"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="10dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"

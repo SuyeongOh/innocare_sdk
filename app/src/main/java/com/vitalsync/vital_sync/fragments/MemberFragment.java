@@ -21,6 +21,7 @@ public class MemberFragment extends Fragment {
     private View recordButton;
     private View profileButton;
     private View manualButton;
+    private View preferenceButton;
 
     @Nullable
     @Override
@@ -30,6 +31,7 @@ public class MemberFragment extends Fragment {
         recordButton = view.findViewById(R.id.member_record);
         profileButton = view.findViewById(R.id.member_profile);
         manualButton = view.findViewById(R.id.member_manual);
+        preferenceButton = view.findViewById(R.id.member_preference);
 
         checkupButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -71,7 +73,17 @@ public class MemberFragment extends Fragment {
                 startActivity(intent);
             }
         });
-
+        preferenceButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    MainActivity activity = (MainActivity) getActivity();
+                    activity.replaceFragment(new PreferenceFragment());
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
         return view;
     }
 }

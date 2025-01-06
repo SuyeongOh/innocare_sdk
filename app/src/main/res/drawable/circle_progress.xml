@@ -6,7 +6,7 @@
     android:toDegrees="360" >
     <shape
         android:innerRadiusRatio="3"
-        android:shape="ring"
+        android:shape="oval"
         android:thicknessRatio="8"
         android:useLevel="false">
 
