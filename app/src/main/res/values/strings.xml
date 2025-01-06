@@ -100,4 +100,15 @@ Welcome, %1$s!\n
     <string name="profile_age">AGE</string>
     <string name="profile_SBP">Systolic BP</string>
     <string name="profile_DBP">Diastolic BP</string>
+
+    <!--preference -->
+    <string name="preference_title">Preference</string>
+    <string name="preference_analysis_time">Analysis Time</string>
+    <string name="preference_ip">Dev IP</string>
+    <string name="preference_camera">Rear Camera Mode</string>
+    <string name="preference_tracking">Tracking Face Mode(Experimental)</string>
+
+    <!--record -->
+    <string name="record_title">Measurement History</string>
+
 </resources>

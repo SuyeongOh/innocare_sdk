@@ -100,4 +100,13 @@
     <string name="profile_SBP">이완기 혈압</string>
     <string name="profile_DBP">수축기 혈압</string>
 
+    <!--preference -->
+    <string name="preference_title">설정</string>
+    <string name="preference_analysis_time">측정 시간</string>
+    <string name="preference_ip">개발서버 IP</string>
+    <string name="preference_camera">후면카메라 모드</string>
+    <string name="preference_tracking">얼굴 추적 모드(실험적)</string>
+
+    <!--record -->
+    <string name="record_title">측정 이력</string>
 </resources>
