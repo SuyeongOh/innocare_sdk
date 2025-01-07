@@ -5,13 +5,14 @@
     android:layout_height="match_parent"
     android:layout_gravity="center">
     <FrameLayout
-        android:id="@+id/view_login_loading"
+        android:id="@+id/view_login_loading_group"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone"
         android:background="#80000000">
 
         <ProgressBar
+            android:id="@+id/view_login_loading"
             android:layout_width="0dp"
             android:layout_height="0dp"
             app:layout_constraintWidth_percent="0.1"
@@ -49,7 +50,7 @@
         android:fontFamily="@font/pretendard_bold"
         android:text="@string/login"
         android:textAllCaps="false"
-        android:textColor="@color/color_btn_text_2"
+        android:textColor="@drawable/selector_text_confirm"
         android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"

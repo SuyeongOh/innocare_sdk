@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -35,6 +36,8 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
     private static final String USER_ID_KEY = "userID";
     private EditText userIdEditText;
     private Button loginButton;
+    private Button guestButton;
+    private FrameLayout loadingViewGroup;
     private ProgressBar loadingView;
     private CommonPopupView popupView;
 
@@ -54,6 +57,8 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
         userIdEditText = view.findViewById(R.id.editTextAccountId);
         loginButton = view.findViewById(R.id.view_login_button);
         loadingView = view.findViewById(R.id.view_login_loading);
+        loadingViewGroup = view.findViewById(R.id.view_login_loading_group);
+        guestButton = view.findViewById(R.id.view_login_guest);
 
         View viewNoDetectionPopup = inflater.inflate(R.layout.layout_detection_popup, container, false);
         TextView popupTextView = viewNoDetectionPopup.findViewById(R.id.text_face_popup);
@@ -75,6 +80,13 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
             }
         });
 
+        guestButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MainActivity activity = (MainActivity) getActivity();
+                activity.replaceFragment(new GuestFragment());
+            }
+        });
         return view;
     }
 
@@ -94,11 +106,13 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
         //TODO DB서버로 연결 후 진행
         LoginClient.getInstance().login(new LoginRequest(userId, ""), this);
         loadingView.setVisibility(View.VISIBLE);
+        loadingViewGroup.setVisibility(View.VISIBLE);
     }
 
     @Override
     public void onSuccess(LoginResponse response) {
         loadingView.setVisibility(View.GONE);
+        loadingViewGroup.setVisibility(View.GONE);
         String inputID = userIdEditText.getText().toString();
         if(!Config.USER_ID.equals(inputID)){
             saveID(inputID);
@@ -112,6 +126,7 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
     public void onError(String message) {
         //Alert Dialog
         loadingView.setVisibility(View.GONE);
+        loadingViewGroup.setVisibility(View.GONE);
         popupView.show();
     }
 
