@@ -104,9 +104,6 @@ dependencies {
 
     //tooltip
     implementation("com.github.skydoves:balloon:1.5.1")
-
-    //opencvBoxTracker
-    implementation project(path: ':openCVLibrary348')
 }
 
 def getApkName(def variant){

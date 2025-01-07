@@ -16,4 +16,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "innocare_sdk"
 include ':app'
-include ':openCVLibrary348'
