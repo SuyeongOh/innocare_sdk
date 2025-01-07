@@ -106,6 +106,7 @@
     <string name="preference_ip">개발서버 IP</string>
     <string name="preference_camera">후면카메라 모드</string>
     <string name="preference_tracking">얼굴 추적 모드(실험적)</string>
+    <string name="preference_input_error">입력 정보를 확인하세요 !</string>
 
     <!--record -->
     <string name="record_title">측정 이력</string>
