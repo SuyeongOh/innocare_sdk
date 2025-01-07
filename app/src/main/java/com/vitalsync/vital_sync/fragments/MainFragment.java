@@ -121,6 +121,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private int sNthFrame = 0;
 
     private final Rect faceROI = new Rect();
+    private RectF originROI = new RectF();
     private boolean isFinishAnalysis = false;
     private boolean isFixedFace = false;
     private boolean isStopPredict = false;
@@ -419,6 +420,9 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                             inputImage.close();
 
                             if (isFixedFace) {
+                                MPImage image = new BitmapImageBuilder(bitmapImage).build();
+                                faceDetector.detectAsync(image, bitmapImage, System.currentTimeMillis());
+
                                 Bitmap faceImage;
                                 try {
                                     faceImage = Bitmap.createBitmap(bitmapImage, faceROI.left, faceROI.top, faceROI.width(), faceROI.height());
@@ -520,7 +524,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         try {
             if (faceDetectorResults.get(0).detections().size() >= 1) {
                 RectF box = faceDetectorResults.get(0).detections().get(0).boundingBox();
-
                 if (mTrackingOverlayView.isOutBoundary(box)) {
                     if (!isStopPredict) {
                         stopPrediction(Constant.TYPE_OF_OUT);
@@ -544,26 +547,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 faceROI.right = (int) (box.right - width/10);
                 faceROI.top = (int) (box.top + height/10 * 4);
                 faceROI.bottom = (int) (box.bottom - height/10 * 4);
-//                if(Config.LARGE_FACE_MODE){
-//                    float width = box.width();
-//                    float height = box.height();
-//                    box.left -= width/4;
-//                    box.right += width/4;
-//                    box.top -= height/4;
-//                    box.bottom += height/4;
-//                    box.round(faceROI);
-//                } else if (Config.SMALL_FACE_MODE){
-//                    float width = box.width();
-//                    float height = box.height();
-//                    box.left += width/10;
-//                    box.right -= width/10;
-//                    box.top += height/10 * 4;
-//                    box.bottom -= height/10 * 4;
-//                    box.round(faceROI);
-//                }else{
-//                    box.round(faceROI);
-//                }
-
+                originROI = box;
             }
             if (mTrackingOverlayView != null) {
                 FaceDetectorResult result = resultBundle.getResults().get(0);
@@ -580,6 +564,28 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         readyForNextImage();
     }
 
+    private void updateImage(MPImage image, EnhanceFaceDetector.ResultBundle resultBundle){
+        postInferenceCallback = image::close;
+        List<FaceDetectorResult> faceDetectorResults = resultBundle.getResults();
+
+        try {
+            if (faceDetectorResults.get(0).detections().size() >= 1) {
+                RectF box = faceDetectorResults.get(0).detections().get(0).boundingBox();
+
+                int left = (int)(box.centerX() - originROI.width()/2);
+                int right = (int)(box.centerX() + originROI.width()/2);
+                int top = (int)(box.centerY() - originROI.height()/2);
+                int bottom = (int)(box.centerY() + originROI.height()/2);
+
+                Rect updateBox = new Rect(left, top, right, bottom);
+                mTrackingOverlayView.updateBox(updateBox);
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+    }
     protected void readyForNextImage() {
         if (postInferenceCallback != null) {
             postInferenceCallback.run();
@@ -589,7 +595,11 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     @Override
     public void onResults(MPImage input, Bitmap original, EnhanceFaceDetector.ResultBundle resultBundle) {
         mOriginalBitmap = original;
-        processImage(input, resultBundle);
+        if(!isFixedFace) {
+            processImage(input, resultBundle);
+        } else {
+            updateImage(input, resultBundle);
+        }
     }
 
     private void stopPrediction(String type) {
