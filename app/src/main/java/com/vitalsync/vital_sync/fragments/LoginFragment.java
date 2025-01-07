@@ -26,6 +26,7 @@ import com.vitalsync.vital_sync.data.Config;
 import com.vitalsync.vital_sync.service.login.LoginRequest;
 import com.vitalsync.vital_sync.service.login.LoginResponse;
 import com.vitalsync.vital_sync.ui.CommonPopupView;
+import com.vitalsync.vital_sync.ui.animation.LVEatBeans;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -38,7 +39,7 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
     private Button loginButton;
     private Button guestButton;
     private FrameLayout loadingViewGroup;
-    private ProgressBar loadingView;
+    private LVEatBeans loadingView;
     private CommonPopupView popupView;
 
     private SharedPreferences loginCookie;
@@ -106,12 +107,14 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
         //TODO DB서버로 연결 후 진행
         LoginClient.getInstance().login(new LoginRequest(userId, ""), this);
         loadingView.setVisibility(View.VISIBLE);
+        loadingView.startAnim(5000);
         loadingViewGroup.setVisibility(View.VISIBLE);
     }
 
     @Override
     public void onSuccess(LoginResponse response) {
         loadingView.setVisibility(View.GONE);
+        loadingView.stopAnim();
         loadingViewGroup.setVisibility(View.GONE);
         String inputID = userIdEditText.getText().toString();
         if(!Config.USER_ID.equals(inputID)){
@@ -119,13 +122,14 @@ public class LoginFragment extends Fragment implements LoginClient.LoginResponse
         }
         Config.USER_ID = inputID;
         MainActivity activity = (MainActivity) getActivity();
-        activity.replaceFragment(new InitFragment());
+        activity.replaceFragment(new MemberFragment());
     }
 
     @Override
     public void onError(String message) {
         //Alert Dialog
         loadingView.setVisibility(View.GONE);
+        loadingView.stopAnim();
         loadingViewGroup.setVisibility(View.GONE);
         popupView.show();
     }
