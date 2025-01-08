@@ -74,6 +74,16 @@ public class OverlayView extends View {
         invalidate();
     }
 
+    public void updateBox(RectF box) {
+        float realTop = box.top * scaleFactorHeight;
+        float realBottom = box.bottom * scaleFactorHeight;
+        float realLeft = box.left * scaleFactorWidth;
+        float realRight = box.right * scaleFactorWidth;
+        bBox = new RectF(realLeft, realTop, realRight, realBottom);
+        invalidate();
+    }
+
+
     public void clear() {
         //중복 방지 차원
         if (!isClear) {
