@@ -86,7 +86,7 @@
 
     <!--ㅡmember -->
     <string name="checkup_guest">검사  \n시작  </string>
-    <string name="checkup_member">검사  \n시작  </string>
+    <string name="checkup_member">검사 시작  </string>
     <string name="record_member">측정 기록</string>
     <string name="profile_member">건강 프로필</string>
     <string name="manual_member">사용 방법</string>
