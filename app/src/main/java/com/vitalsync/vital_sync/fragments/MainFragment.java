@@ -426,8 +426,10 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                             inputImage.close();
 
                             if (isFixedFace) {
-                                MPImage image = new BitmapImageBuilder(bitmapImage).build();
-                                faceDetector.detectAsync(image, bitmapImage, System.currentTimeMillis());
+                                //MPImage image = new BitmapImageBuilder(bitmapImage).build();
+                                //faceDetector.detectAsync(image, bitmapImage, System.currentTimeMillis());
+
+                                new Handler(Looper.getMainLooper()).post(() -> updateImage(finalBitmapImage));
 
                                 Bitmap faceImage;
                                 try {
@@ -572,29 +574,10 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
 
     }
 
-    private void updateImage(Bitmap imgBitmap, EnhanceFaceDetector.ResultBundle resultBundle){
-        List<FaceDetectorResult> faceDetectorResults = resultBundle.getResults();
-
+    private void updateImage(Bitmap imgBitmap){
         try {
-//            RectF updateBox = mTracker.update(imgBitmap);
-//            if(updateBox != null){
-//                float width = updateBox.width();
-//                float height = updateBox.height();
-//                faceROI.left = (int)(updateBox.left + width/10);
-//                faceROI.right = (int) (updateBox.right - width/10);
-//                faceROI.top = (int) (updateBox.top + height/10 * 4);
-//                faceROI.bottom = (int) (updateBox.bottom - height/10 * 4);
-//                mTrackingOverlayView.updateBox(updateBox);
-//            }
-            if (faceDetectorResults.get(0).detections().size() >= 1) {
-                RectF box = faceDetectorResults.get(0).detections().get(0).boundingBox();
-
-                int left = (int)(box.centerX() - originROI.width()/2);
-                int right = (int)(box.centerX() + originROI.width()/2);
-                int top = (int)(box.centerY() - originROI.height()/2);
-                int bottom = (int)(box.centerY() + originROI.height()/2);
-
-                Rect updateBox = new Rect(left, top, right, bottom);
+            RectF updateBox = mTracker.update(imgBitmap);
+            if(updateBox != null){
                 float width = updateBox.width();
                 float height = updateBox.height();
                 faceROI.left = (int)(updateBox.left + width/10);
@@ -603,6 +586,25 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 faceROI.bottom = (int) (updateBox.bottom - height/10 * 4);
                 mTrackingOverlayView.updateBox(updateBox);
             }
+
+//            List<FaceDetectorResult> faceDetectorResults = resultBundle.getResults();
+//            if (faceDetectorResults.get(0).detections().size() >= 1) {
+//                RectF box = faceDetectorResults.get(0).detections().get(0).boundingBox();
+//
+//                int left = (int)(box.centerX() - originROI.width()/2);
+//                int right = (int)(box.centerX() + originROI.width()/2);
+//                int top = (int)(box.centerY() - originROI.height()/2);
+//                int bottom = (int)(box.centerY() + originROI.height()/2);
+//
+//                Rect updateBox = new Rect(left, top, right, bottom);
+//                float width = updateBox.width();
+//                float height = updateBox.height();
+//                faceROI.left = (int)(updateBox.left + width/10);
+//                faceROI.right = (int) (updateBox.right - width/10);
+//                faceROI.top = (int) (updateBox.top + height/10 * 4);
+//                faceROI.bottom = (int) (updateBox.bottom - height/10 * 4);
+//                mTrackingOverlayView.updateBox(updateBox);
+//            }
         } catch (Exception e){
             e.printStackTrace();
         }
@@ -620,7 +622,7 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         if(!isFixedFace) {
             processImage(img, resultBundle);
         } else {
-            //updateImage(img, resultBundle);
+            updateImage(img);
         }
         readyForNextImage();
     }
