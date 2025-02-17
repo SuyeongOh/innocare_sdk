@@ -7,7 +7,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -45,28 +44,24 @@ import android.widget.TextView;
 import com.google.mediapipe.framework.image.BitmapImageBuilder;
 import com.google.mediapipe.framework.image.MPImage;
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetectorResult;
+import com.robinhood.ticker.TickerView;
+import com.vitalsync.vital_sync.R;
 import com.vitalsync.vital_sync.activities.MainActivity;
+import com.vitalsync.vital_sync.activities.ResultActivity;
 import com.vitalsync.vital_sync.analysis.BpmAnalysisViewModel;
-import com.vitalsync.vital_sync.camera.FaceTracker;
-import com.vitalsync.vital_sync.data.Config;
 import com.vitalsync.vital_sync.analysis.EnhanceFaceDetector;
 import com.vitalsync.vital_sync.analysis.FaceImageModel;
-import com.vitalsync.vital_sync.R;
-import com.vitalsync.vital_sync.activities.ResultActivity;
 import com.vitalsync.vital_sync.camera.AutoFitSurfaceView;
 import com.vitalsync.vital_sync.camera.CameraSizes;
+import com.vitalsync.vital_sync.camera.FaceTracker;
+import com.vitalsync.vital_sync.data.Config;
 import com.vitalsync.vital_sync.data.Constant;
 import com.vitalsync.vital_sync.data.ResultVitalSign;
 import com.vitalsync.vital_sync.ui.CommonPopupView;
 import com.vitalsync.vital_sync.ui.CustomCountdownView;
 import com.vitalsync.vital_sync.ui.OverlayView;
 import com.vitalsync.vital_sync.utils.ImageUtils;
-import com.robinhood.ticker.TickerView;
 
-import org.opencv.core.MatOfByte;
-import org.opencv.imgcodecs.Imgcodecs;
-
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -576,16 +571,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
         List<FaceDetectorResult> faceDetectorResults = resultBundle.getResults();
 
         try {
-//            RectF updateBox = mTracker.update(imgBitmap);
-//            if(updateBox != null){
-//                float width = updateBox.width();
-//                float height = updateBox.height();
-//                faceROI.left = (int)(updateBox.left + width/10);
-//                faceROI.right = (int) (updateBox.right - width/10);
-//                faceROI.top = (int) (updateBox.top + height/10 * 4);
-//                faceROI.bottom = (int) (updateBox.bottom - height/10 * 4);
-//                mTrackingOverlayView.updateBox(updateBox);
-//            }
             if (faceDetectorResults.get(0).detections().size() >= 1) {
                 RectF box = faceDetectorResults.get(0).detections().get(0).boundingBox();
 
