@@ -28,7 +28,7 @@ public class Config {
     public static final double SPO2_HIGH_CUTOFF_FREQUENCY = 3.0f;
     public static boolean LARGE_FACE_MODE = false;
     public static boolean SMALL_FACE_MODE = false;
-    public static boolean SERVER_RESPONSE_MODE = false;
+    public static boolean SERVER_RESPONSE_MODE = true;
     public static final int FACE_MODEL_SIZE = 72;
 
     public static final String PRIVACY_POLICY = "https://sites.google.com/view/kwangkeelee-privacy/%ED%99%88";
