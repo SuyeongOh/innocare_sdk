@@ -2,8 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-feature android:name="android.hardware.camera" />
-    <uses-feature android:name="android.hardware.camera.autofocus" />
+    <uses-feature android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus"
+        android:required="false" />
+    <uses-feature android:name="android.hardware.type.television"/>
+    <uses-feature android:name="android.software.leanback" />
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />

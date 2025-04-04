@@ -10,12 +10,12 @@ ext {
 
 android {
     namespace 'com.vitalsync.vital_sync'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.vitalsync.vital_sync"
         minSdk 29
-        targetSdk 33
+        targetSdk 34
         //noinspection AccidentalOctal
         versionCode 16
         versionName "0.1.6"
