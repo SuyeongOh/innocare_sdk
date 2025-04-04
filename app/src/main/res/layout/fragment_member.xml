@@ -12,13 +12,15 @@
         app:layout_constraintHeight_percent="0.25"
         android:layout_marginTop="20dp"
         android:orientation="vertical"
+        android:clickable="true"
+        android:focusable="true"
         android:background="@drawable/rounded_text_box"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintHorizontal_bias="0.05"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageButton
+        <ImageView
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:background="@drawable/checkup_box_on"
@@ -49,6 +51,8 @@
         android:layout_height="0dp"
         app:layout_constraintWidth_percent="0.45"
         android:layout_marginTop="20dp"
+        android:clickable="true"
+        android:focusable="true"
         android:orientation="vertical"
         android:background="@drawable/rounded_text_box"
         app:layout_constraintHorizontal_bias="0.95"
@@ -87,6 +91,8 @@
         android:layout_height="0dp"
         app:layout_constraintWidth_percent="0.45"
         app:layout_constraintHeight_percent="0.25"
+        android:clickable="true"
+        android:focusable="true"
         android:layout_marginTop="20dp"
         android:orientation="vertical"
         android:background="@drawable/rounded_text_box"
@@ -127,6 +133,8 @@
         app:layout_constraintWidth_percent="0.45"
         android:layout_marginTop="20dp"
         android:orientation="vertical"
+        android:clickable="true"
+        android:focusable="true"
         android:background="@drawable/rounded_text_box"
         app:layout_constraintHorizontal_bias="0.95"
         app:layout_constraintEnd_toEndOf="parent"
@@ -166,6 +174,8 @@
         app:layout_constraintHeight_percent="0.25"
         android:layout_marginTop="20dp"
         android:orientation="vertical"
+        android:clickable="true"
+        android:focusable="true"
         android:background="@drawable/rounded_text_box"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintHorizontal_bias="0.05"
@@ -224,7 +234,7 @@
             android:src="@mipmap/ic_vitalsign"/>
     </LinearLayout>
 
-    <ImageButton
+    <ImageView
         android:id="@+id/member_home"
         android:layout_width="0dp"
         android:layout_height="0dp"
