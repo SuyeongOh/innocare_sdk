@@ -117,3 +117,27 @@ def getApkName(def variant){
             .toString()
             .replace(" ", "_")
 }
+
+afterEvaluate {
+    tasks.named("bundleRelease").configure { task ->
+        task.doLast {
+            def appName = "VitalSync"
+            def versionName = android.defaultConfig.versionName
+            def buildType = "release" // 다른 buildType이 있다면 변경 가능
+
+            def aabDir = file("${rootDir}/app/${buildType}")
+            def originalAab = aabDir.listFiles().find { it.name.endsWith(".aab") }
+
+            if (originalAab != null) {
+                def newAabName = "${appName}-${versionName}-${buildType}.aab"
+                def newAabFile = new File(originalAab.parent, newAabName)
+
+                originalAab.renameTo(newAabFile)
+                println "AAB file name changed :: ${newAabFile.name}"
+            } else {
+                println "AAB file does not exist."
+                println aabDir
+            }
+        }
+    }
+}
