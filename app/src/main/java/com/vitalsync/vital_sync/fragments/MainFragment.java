@@ -53,7 +53,6 @@ import com.vitalsync.vital_sync.analysis.EnhanceFaceDetector;
 import com.vitalsync.vital_sync.analysis.FaceImageModel;
 import com.vitalsync.vital_sync.camera.AutoFitSurfaceView;
 import com.vitalsync.vital_sync.camera.CameraSizes;
-import com.vitalsync.vital_sync.camera.FaceTracker;
 import com.vitalsync.vital_sync.data.Config;
 import com.vitalsync.vital_sync.data.Constant;
 import com.vitalsync.vital_sync.data.ResultVitalSign;
@@ -118,7 +117,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
     private EnhanceFaceDetector faceDetector;
     private ExecutorService mFrontCameraExecutor;
 
-    private FaceTracker mTracker;
 
     private int sNthFrame = 0;
 
@@ -542,7 +540,6 @@ public class MainFragment extends Fragment implements EnhanceFaceDetector.Detect
                 mGuidePopupView.dismiss();
 
                 isFixedFace = true;
-                mTracker = new FaceTracker(img, box);
 
                 float width = box.width();
                 float height = box.height();
